@@ -1,16 +1,18 @@
 % Chapter 1
 
-\chapter{Context and scope} % Main chapter title
+\chapter{Introduction} % Main chapter title
 
 \label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
 
 %----------------------------------------------------------------------------------------
 
+This bachelor thesis of the Computer Engineering Degree, specialization in Computing, has been done in the Facultat d’Informàtica de Barcelona of the Universitat Politècnica de Catalunya and directed by Luis Antonio Belanche Muñoz, doctorate in Computer Science.
+
 \section{Context}
 
 In statistics, machine-learning, data-mining, and other related disciplines, it is often the case that there is redundant or irrelevant data in a dataset\footnote{A table with rows / records / observations and columns / variables / features / dimensions / predictors / attributes.}. Indeed, before we can start working with the data, some form of data analysis and cleaning is required. Data cleaning may include removing duplicated rows or rows with missing values, removing observations that are clearly out-layers, removing irrelevant variables (e.g. name, surname, email address), etc.
 
-With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine-learning algorithms to this high-dimensional data rises multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data that their predicted performance with the training data. 
+With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine-learning algorithms to this high-dimensional data rises multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data that their predicted performance with the training data. (\cite{li_feature_2017})
 
 Simple manual data cleaning is not enough to achieve satisfactory amounts of dimensionality reduction. In this case we can use automatic techniques. We can classify such techniques in two categories, feature extraction, and feature selection.
 
@@ -22,17 +24,27 @@ Some well known feature extraction algorithms include Principal Component Analys
 
 \subsection{Feature Selection}
 
-In contrast, feature selection only selects a subset of the existing features, ideally the most relevant or useful. This often implies a greater loss of data (which may result in lower predictability) but it doesn't reduce explainability. Knowing which features are relevant is often desired, but for some problems it is, not only desired, it's the whole point. In domains such as genetic analysis and text mining feature selection is not necessarily used to build predictors. For example in microarray analysis feature ranking is used to identify genes (i.e. features) that discriminate between healthy and disease patients (\cite{guyon_introduction_2003}). 
+In contrast, feature selection only selects a subset of the existing features, ideally the most relevant or useful. This may imply a greater loss of information compared to feature extraction, but it doesn't reduce explainability. Some problems require feature selection explicitly. In domains such as genetic analysis and text mining, feature selection is not necessarily used to build predictors. For example in micro\-array analysis feature selection is used to identify genes (i.e. features) that dis\-criminate between healthy and disease patients. 
 
-\emph{How are feature selection algorithms classified?}
+Feature selection methods may be classified by how they are constructed in three categories:
 
-\emph{Where does SVM-RFE stand in?}
+\begin{itemize}
+    \item \textbf{Filter:} A \emph{feature ranking} criteria is used to sort the features in order of relevance, then select the $k$-most relevant.
+    \item \textbf{Wrapper:} They use a learning machine (treated as a black box) to train and test the dataset with different subsets of variables. They rank the subsets based on the performance (score) of the model. A wide range of learning machines and search strategies can be used. Within the greedy strategies we find \emph{forward selection} and \emph{backward elimination}.
+    \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the trained model itself to make feature selection. Because they don't use the score, they can also skip testing the model.
+\end{itemize}
+
+In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). It takes advantage of the fact that, for linear SVM, the variable with the smallest weight in each iteration is the one that needs to be eliminated. (\cite{guyon_introduction_2003})
 
 %----------------------------------------------------------------------------------------
 
 \section{State of the art}
 
-Some some some.
+The SVM-RFE algorithm was first proposed in a paper on the topic of cancer class\-ification (\cite{guyon_gene_2002}). Since then a lot of research in bioinfomatics has been done using it. 
+
+\emph{Stuff about how SVM-RFE has been used on cancer classification . Stuff about known and natural extensions of SVM-RFE. Maybe other interesting applications of SVM-RFE}.
+
+\emph{Justification, Identify the problem, Stakeholders}
 
 %----------------------------------------------------------------------------------------
 
