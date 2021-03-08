@@ -40,28 +40,100 @@ In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-
 
 \section{State of the art}
 
-The SVM-RFE algorithm was first proposed in a paper on the topic of cancer class\-ification (\cite{guyon_gene_2002}). Since then a lot of research in bioinfomatics has been done using it. 
+The SVM-RFE algorithm was first proposed in a paper on the topic of cancer class\-ification (\cite{guyon_gene_2002}).
 
-\emph{Stuff about how SVM-RFE has been used on cancer classification . Stuff about known and natural extensions of SVM-RFE. Maybe other interesting applications of SVM-RFE}.
+\emph{Stuff about how SVM-RFE has been used on cancer classification. Stuff about known and natural extensions of SVM-RFE. Maybe other interesting applications of SVM-RFE}.
 
-\emph{Justification, Identify the problem, Stakeholders}
+\emph{Justification, Identify the problem}
 
 %----------------------------------------------------------------------------------------
 
 \section{Objective}
 
-Explore methods to improve on the existing SVM-RFE algorithm. Such methods can be divided in either methods that improve on the SVM utilization or methods that improve on the recursive feature elimination strategy.
+The main objective of this project is to research variants of the SVM-RFE algorithm and try to optimize it. Optimizations may be in the form of improved performance, a reduction in time utilization or fewer memory required. We've classified the possible optimizations by the following categories:
 
-For the first category we will explore ways to use non-linear kernels in order to improve the candidates, in particular the use of RFK kernel.
+\begin{itemize}
+    \item Optimizations that try to use the SVM more effectively. This includes exploring non-linear kernels and other values for the regularization parameter.
+    \item Extensions to the RFE strategy. This may include reusing more information from previous iterations, sampling, etc. 
+\end{itemize}
 
-On the second category well explore options such as using results from previous iterations, and using subsets of data for optimization purposes.
+\subsection{Objective break down}
+
+To accomplish this objective, the project has been subdivided in several sub-objectives:
+
+\subsubsection*{Theoretical Part}
+
+\begin{itemize}
+    \item Do research in SVM-RFE and in the methods that will be tackled in the project.
+    \item {
+        For each method:
+        \begin{itemize}
+            \item Define the expected advantages or disadvantages of this method over the base SVM-RFE.
+            \item Compute the space and time complexities.
+        \end{itemize}
+    }
+\end{itemize}
+
+\subsubsection*{Practical Part}
+
+\begin{itemize}
+    \item Program the methods studied and the SVM-RFE extensions.
+    \item {
+        For each method:
+        \begin{itemize}
+            \item Analyze its behavior for artificial data sets.
+            \item Analyze its behavior for real-world data sets.
+        \end{itemize}
+    }
+    \item Compare the results obtained with the ones computed in the theoretical part.
+    \item Draw conclusions about all the results obtained in the project.
+\end{itemize}
+
+\subsection{Software required}
+
+The documentation will be written in \LaTeX, a document preparation system often used in academia. It has the advantage to work well with version control. A \LaTeX \ template named "\texttt{Masters/Doctoral Thesis}" will be used. This template was made by Vel and Johannes Böttcher and licensed under \texttt{LPPL 1.3}, based on previous work from Steve R. Gun and Sunil Patel and used with minor modifications. The original is available at \url{http://www.latextemplates.com/}.
+
+For the practical part the programming language of choice will be Python 3, which is currently one of the most used for machine learning related applications. Various libraries and software packages will be used for different tasks. For parsing datasets the \texttt{pandas} library will be used. For data visualization the \texttt{mathplotlib} library will be used. Also, a general tool-set designed for machine learning, the library \texttt{sklearn}, will be used. Finally, code will be documented in-place during its development with the \texttt{Jupyter Notebook} software. This documentation may be integrated later, with some modifications, in the final thesis.
+
+
+Other libraries and software packages could also be used if the need arises. 
 
 %----------------------------------------------------------------------------------------
+
+\subsection{Stakeholders}
+
+This project is intended to be of use for many involved parties. The most directly involved group, is the tutor and the researcher. Luis Antonio Belanche Muñoz is the tutor of this project. Robert Planas Jimenez would be the researcher. Feature selection algorithms is one of the areas of research of the tutor, and he has wanted to explore extensions to the SVM-RFE algorithm. Thus, he will lead and guide the researcher for the correct development of the project. The researcher is responsible for planning, developing and documenting the project, as well as experimenting, analyzing and drawing conclusions.
+
+The other group of interested parties would be stakeholders that do not interact with the project directly but still benefit from it. In the first place we have researchers on the fields of bioinformatics and data mining, that use machine learning methods (specifically, SVM-RFE) for analyzing micro-array analysis, text analysis, or other of its popular applications. Indirectly companies that make use of their findings will also benefit, and finally the general population may also benefit from better diagnostics and more effective drugs. 
+
+\subsection{Potential obstacles and risks}
+
+Some of the obstacles and risks identified that could potentially prevent the correct execution of the project are:
+
+\begin{itemize}
+    \item \textbf{Deadline of the project:} There is a deadline for the delivery of the project. This being a research project however, is considerably hard to estimate how much time tasks will take, or even decide whether a task has been finished or not.
+    \item \textbf{Bugs on some libraries:} This is considered of low risk, but is still a possibility that errors on the software package used extend to code, making it work in\-correctly.
+    \item \textbf{Slow hardware:} Machine learning algorithms in general can be very resource intensive. It could be the case that our hardware can not handle some datasets, but is an obstacle that is likely to be mitigated by using various methods. 
+    \item \textbf{Lost of data:} A hard drive failure could occur that would end in lost data. To avoid it, all code and documentation is routinely uploaded to the cloud in a GitHub repository.
+    \item \textbf{Health related issues:} In addition to health issues that can occur at any time without prior notice, we're in the middle of a pandemic.
+\end{itemize}
+
 
 \section{Methodology}
 
-Some some some
+\subsection{Framework}
 
-%----------------------------------------------------------------------------------------
+The methodology that I will use for the project is a combination of Waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In Waterfall tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will be managed like this, one phase will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by a different methodology. That will be Kanban.
 
-\section{Scope}
+Kanban is much more flexible than Waterfall, its principal objective is to manage tasks in a general way, by assigning different status to them. Kanban stands out by its simplicity, and we will continue with that simplicity by managing the visual representation of the cards in a simple plain text file, with tabulation separated columns. Each card will be in a row, with the first column defining its name and the other its status. The status I've considered are:
+
+\begin{itemize}
+    \item \textbf{To do:} The task has been defined, but I have not started to work on it yet.
+    \item \textbf{In progress:} The task has started and some progress has been made.
+    \item \textbf{On hold:} The development of the task has been paused for some unforeseen reason.
+    \item \textbf{Completed:} The task is finished.
+\end{itemize}
+
+\subsection{Validation}
+
+We will use a GitHub repository as a tool for version control, which will allows us to share code easily and the recover from data lose. The repository will contain both the code for the different experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be passed through various tests to see whether the code works as expected. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each experiment will be done 3 times and the average of the results will be the final result. Lastly, face-to-face meetings will be scheduled once every two weeks with the tutor of the project. In these meetings it will be discussed the project status and the tasks to do during the following two weeks, before the next meeting. In case of problems in the project, extraordinary meetings can be arranged.
