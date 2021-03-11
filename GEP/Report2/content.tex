@@ -68,6 +68,7 @@ To accomplish this objective, the project has been sub\-divided in two parts:
     \item {
         For each method:
         \begin{itemize}
+            \item Design the algorithm and write its formalization in pseudocode.
             \item Define the expected advantages or disadvantages of this method over the base SVM-RFE.
             \item Compute the space and time complexities.
         \end{itemize}
@@ -89,15 +90,6 @@ To accomplish this objective, the project has been sub\-divided in two parts:
     \item Draw conclusions about all the results obtained in the project.
 \end{itemize}
 
-\subsection{Software required}
-
-The documentation will be written in \LaTeX, a document preparation system often used in academia. It has the advantage to work well with version control. A \LaTeX \ template named "\texttt{Masters/Doctoral Thesis}" will be used. This template was made by Vel and Johannes Böttcher and licensed under \texttt{LPPL 1.3}, based on previous work from Steve R. Gun and Sunil Patel and used with minor modifications. The original is available at \url{http://www.latextemplates.com/}.
-
-For the practical part the programming language of choice will be Python 3, which is currently one of the most used for machine learning related applications. Various libraries and software packages will be used for different tasks. For parsing datasets the \texttt{pandas} library will be used. For data visualization the \texttt{mathplotlib} library will be used. Also, a general tool-set designed for machine learning, the library \texttt{sklearn}, will be used. Finally, code will be documented in-place during its development with the \texttt{Jupyter Notebook} software. This documentation may be integrated later, with some modifications, in the final thesis.
-
-
-Other libraries and software packages could also be used if the need arises. 
-
 %----------------------------------------------------------------------------------------
 
 \subsection{Stakeholders}
@@ -106,6 +98,7 @@ This project is intended to be of use for many involved parties. The most direct
 
 The other group of interested parties would be stakeholders that do not interact with the project directly but still benefit from it. In the first place we have researchers on the fields of bioinformatics and data mining, that use machine learning methods (specifically, SVM-RFE) for analyzing micro-array analysis, text analysis, or other of its popular applications. Indirectly companies that make use of their findings will also benefit, and finally the general population may also benefit from better diagnostics and more effective drugs. 
 
+\label{sec:risk}
 \subsection{Potential obstacles and risks}
 
 Some of the obstacles and risks identified that could potentially prevent the correct execution of the project are:
@@ -113,8 +106,8 @@ Some of the obstacles and risks identified that could potentially prevent the co
 \begin{itemize}
     \item \textbf{Deadline of the project:} There is a deadline for the delivery of the project. This being a research project however, is considerably hard to estimate how much time tasks will take, or even decide whether a task has been finished or not.
     \item \textbf{Bugs on some libraries:} This is considered of low risk, but is still a possibility that errors on the software package used extend to code, making it work in\-correctly.
-    \item \textbf{Slow hardware:} Machine learning algorithms in general can be very resource intensive. It could be the case that our hardware can not handle some datasets, but is an obstacle that is likely to be mitigated by using various methods. 
-    \item \textbf{Lost of data:} A hard drive failure could occur that would end in lost data. To avoid it, all code and documentation is routinely uploaded to the cloud in a GitHub repository.
+    \item \textbf{Insufficient computational power:} Machine learning algorithms in general can be very resource intensive. It could be the case that our hardware can not handle some datasets. 
+    \item \textbf{Hardware related issues:} A hard drive failure could occur that would end in lost data, or a failure in a router could disconnect us from the internet.
     \item \textbf{Health related issues:} In addition to health issues that can occur at any time without prior notice, we're in the middle of a pandemic.
 \end{itemize}
 
