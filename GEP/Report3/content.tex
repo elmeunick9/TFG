@@ -1,0 +1,132 @@
+% Chapter 1
+
+\chapter{Introduction} % Main chapter title
+
+\label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+
+%----------------------------------------------------------------------------------------
+
+This bachelor thesis of the Computer Engineering Degree, specialization in Computing, has been done in the Facultat d’Informàtica de Barcelona of the Universitat Politècnica de Catalunya and directed by Luis Antonio Belanche Muñoz, doctorate in Computer Science.
+
+\section{Context}
+
+In statistics, machine-learning, data-mining, and other related disciplines, it is often the case that there is redundant or irrelevant data in a dataset\footnote{A table with rows / records / observations and columns / variables / features / dimensions / predictors / attributes.}. Indeed, before we can start working with the data, some form of data analysis and cleaning is required. Data cleaning may include removing duplicated rows or rows with missing values, removing observations that are clearly out-layers, removing irrelevant variables (e.g. name, surname, email address), etc.
+
+With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine-learning algorithms to this high-dimensional data rises multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data that their predicted performance with the training data. (\cite{li_feature_2017})
+
+Simple manual data cleaning is not enough to achieve satisfactory amounts of dimensionality reduction. In this case we can use automatic techniques. We can classify such techniques in two categories, feature extraction, and feature selection.
+
+\subsection{Feature Extraction}
+
+Feature extraction techniques transform the original high-dimensional space into a new low-dimensional space by extracting or deriving information from the original features. The premise is to compress the data in order to pack the same information at the expense of model explainability\footnote{The ability to explain why certain predictions are made. Also, interpretability.}. Continuing with our data compression analogy, virtually all feature extraction techniques perform lossy com\-pres\-sion, that is, some data is lost which makes the process irreversible. Notice that, if the process was reversible then feature extraction would not decrement explainability.
+
+Some well known feature extraction algorithms include Principal Component Analysis (PCA) and auto-encoders, the first being a linear transformation over the feature-space and the second a neuronal network. PCA may be extended with a kernel method in order to make non-linear transformations. Similarly, we will also use kernels methods to extend SVM-RFE.
+
+\subsection{Feature Selection}
+
+In contrast, feature selection only selects a subset of the existing features, ideally the most relevant or useful. This may imply a greater loss of information compared to feature extraction, but it doesn't reduce explainability. Some problems require feature selection explicitly. In domains such as genetic analysis and text mining, feature selection is not necessarily used to build predictors. For example in micro\-array analysis feature selection is used to identify genes (i.e. features) that dis\-criminate between healthy and disease patients. 
+
+Feature selection methods may be classified by how they are constructed in three categories:
+
+\begin{itemize}
+    \item \textbf{Filter:} A \emph{feature ranking} criteria is used to sort the features in order of relevance, then select the $k$-most relevant.
+    \item \textbf{Wrapper:} They use a learning machine (treated as a black box) to train and test the dataset with different subsets of variables. They rank the subsets based on the performance (score) of the model. A wide range of learning machines and search strategies can be used. Within the greedy strategies we find \emph{forward selection} and \emph{backward elimination}.
+    \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the trained model itself to make feature selection. Because they don't use the score, they can also skip testing the model.
+\end{itemize}
+
+In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). It takes advantage of the fact that, for linear SVM, the variable with the smallest weight in each iteration is the one that needs to be eliminated. (\cite{guyon_introduction_2003})
+
+%----------------------------------------------------------------------------------------
+
+\section{State of the art}
+
+The SVM-RFE algorithm was first proposed in a paper on the topic of cancer class\-ification (\cite{guyon_gene_2002}).
+
+\emph{Stuff about how SVM-RFE has been used on cancer classification. Stuff about known and natural extensions of SVM-RFE. Maybe other interesting applications of SVM-RFE}.
+
+\emph{Justification, Identify the problem}
+
+%----------------------------------------------------------------------------------------
+
+\section{Objective}
+
+The main objective of this project is to research variants of the SVM-RFE algorithm and try to optimize it. Optimizations may be in the form of improved performance, a reduction in time utilization or fewer memory required. We've classified the possible optimizations by the following categories:
+
+\begin{itemize}
+    \item Optimizations that try to use the SVM more effectively. This includes exploring non-linear kernels and other values for the regularization parameter.
+    \item Extensions to the RFE strategy. This may include reusing more information from previous iterations, sampling, etc. 
+\end{itemize}
+
+\subsection{Objective break down}
+
+To accomplish this objective, the project has been sub\-divided in two parts:
+
+\subsubsection*{Theoretical Part}
+
+\begin{itemize}
+    \item Do research in SVM-RFE and in the methods that will be tackled in the project.
+    \item {
+        For each method:
+        \begin{itemize}
+            \item Design the algorithm and write its formalization in pseudocode.
+            \item Define the expected advantages or disadvantages of this method over the base SVM-RFE.
+            \item Compute the space and time complexities.
+        \end{itemize}
+    }
+\end{itemize}
+
+\subsubsection*{Practical Part}
+
+\begin{itemize}
+    \item Program the methods studied and the SVM-RFE extensions.
+    \item {
+        For each method:
+        \begin{itemize}
+            \item Analyze its behavior for artificial data sets.
+            \item Analyze its behavior for real-world data sets.
+        \end{itemize}
+    }
+    \item Compare the results obtained with the ones computed in the theoretical part.
+    \item Draw conclusions about all the results obtained in the project.
+\end{itemize}
+
+%----------------------------------------------------------------------------------------
+
+\subsection{Stakeholders}
+
+This project is intended to be of use for many involved parties. The most directly involved group, is the tutor and the researcher. Luis Antonio Belanche Muñoz is the tutor of this project. Robert Planas Jimenez would be the researcher. Feature selection algorithms is one of the areas of research of the tutor, and he has wanted to explore extensions to the SVM-RFE algorithm. Thus, he will lead and guide the researcher for the correct development of the project. The researcher is responsible for planning, developing and documenting the project, as well as experimenting, analyzing and drawing conclusions.
+
+The other group of interested parties would be stakeholders that do not interact with the project directly but still benefit from it. In the first place we have researchers on the fields of bioinformatics and data mining, that use machine learning methods (specifically, SVM-RFE) for analyzing micro-array analysis, text analysis, or other of its popular applications. Indirectly companies that make use of their findings will also benefit, and finally the general population may also benefit from better diagnostics and more effective drugs. 
+
+\label{sec:risk}
+\subsection{Potential obstacles and risks}
+
+Some of the obstacles and risks identified that could potentially prevent the correct execution of the project are:
+
+\begin{itemize}
+    \item \textbf{Deadline of the project:} There is a deadline for the delivery of the project. This being a research project however, is considerably hard to estimate how much time tasks will take, or even decide whether a task has been finished or not.
+    \item \textbf{Bugs on some libraries:} This is considered of low risk, but is still a possibility that errors on the software package used extend to code, making it work in\-correctly.
+    \item \textbf{Insufficient computational power:} Machine learning algorithms in general can be very resource intensive. It could be the case that our hardware can not handle some datasets. 
+    \item \textbf{Hardware related issues:} A hard drive failure could occur that would end in lost data, or a failure in a router could disconnect us from the internet.
+    \item \textbf{Health related issues:} In addition to health issues that can occur at any time without prior notice, we're in the middle of a pandemic.
+\end{itemize}
+
+
+\section{Methodology}
+
+\subsection{Framework}
+
+The methodology that I will use for the project is a combination of Waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In Waterfall tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will be managed like this, one phase will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by a different methodology. That will be Kanban.
+
+Kanban is much more flexible than Waterfall, its principal objective is to manage tasks in a general way, by assigning different status to them. Kanban stands out by its simplicity, and we will continue with that simplicity by managing the visual representation of the cards in a simple plain text file, with tabulation separated columns. Each card will be in a row, with the first column defining its name and the other its status. The status I've considered are:
+
+\begin{itemize}
+    \item \textbf{To do:} The task has been defined, but I have not started to work on it yet.
+    \item \textbf{In progress:} The task has started and some progress has been made.
+    \item \textbf{On hold:} The development of the task has been paused for some unforeseen reason.
+    \item \textbf{Completed:} The task is finished.
+\end{itemize}
+
+\subsection{Validation}
+
+We will use a GitHub repository as a tool for version control, which will allows us to share code easily and the recover from data lose. The repository will contain both the code for the different experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be passed through various tests to see whether the code works as expected. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each experiment will be done 3 times and the average of the results will be the final result. Lastly, face-to-face meetings will be scheduled once every two weeks with the tutor of the project. In these meetings it will be discussed the project status and the tasks to do during the following two weeks, before the next meeting. In case of problems in the project, extraordinary meetings can be arranged.

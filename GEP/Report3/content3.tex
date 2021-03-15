@@ -1,0 +1,172 @@
+% Chapter 3
+
+\chapter{Budget and Sustainability} % Main chapter title
+\label{Chapter3}
+
+In this section a budget estimation will be made. It will include personel costs per task, generic costs and other costs. Moreover, some questions regarding the sustainability aspect of the project will be answered.
+
+\section{Budget}
+
+\subsection{Costs by role and activity}
+
+In this section we will add the personnel costs to the tasks defined in section \ref{sec:tasks}. For each task a cost will be calculated based on the hourly pay wage per role and the time spend each. Four roles have been defined with their corresponding hourly wage, these are:
+
+\begin{itemize}
+    \item The \textbf{project manager} (T1) who is responsible for leading the project direction, planning and correct development.
+    \item The \textbf{researcher} (T2), who must perform research in the topic and related ideas, experiment, analyze the results and draw conclusions from them.
+    \item The \textbf{programmer} (T3), who must set up the developer environment, code the algorithms in the specified programming language and test them for cor\-rect\-ness.
+    \item The \textbf{technical writer} (T4), who is responsible for writting this project doc\-u\-men\-ta\-tion. This includes the reports for each task that requires it and the final thesis.
+\end{itemize}
+
+These roles have a clear mapping to the task groups defined in table \ref{tab:tasks}. All roles will be played by the researcher (see section \ref{sec:human_resources}) except the project manager role, which will be played by the researcher, the director and the GEP tutor. For a detailed description of each task cost see table \ref{tab:task_cost}.
+
+Notice that, altough we aligned the project roles with the task groups to simplify our calculations, it is not required to do so. A more complicated scheme where multiple tasks are assigned to a given role is also possible. In such cases we would also have to think about weather the work distribuition is even or not, and assign percentages if it isn't.
+
+\newpage
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l c c c c r}
+    \toprule
+    \tabhead{Role} & \tabhead{Year (\euro)} & \tabhead{Year +SS (\euro)} & \tabhead{Hour +SS (\euro)} & \tabhead{Task} & \tabhead{Task Cost (\euro)} \\
+    \midrule
+    Project Manager & 39 000 & 50 700 & 28.7 & T1 & 2 296 \\
+    Researcher & 32 000 & 41 600 & 23.5  & T2 & 3 760\\
+    Programmer & 26 000 & 33 800 & 19.1  & T3 & 3 065\\
+    Technical writer & 22 000 & 28 600 & 16.2 & T4 & 1 260 \\
+    \midrule
+    \textbf{Total} & & & & & \textbf{10 381} \\
+    \bottomrule\\
+    \end{tabular}
+    \caption{Anual estimated salary for the different project roles  (\cite{noauthor_salarios_2017}). The amount of working hours in a year is defined to be 1764. \emph{+SS indicates “Social Security included”}.}
+    \label{tab:task_cost}
+\end{table}
+
+\subsection{Generic costs}
+
+\subsubsection*{Amortization}
+
+In this section the amortization costs for the resources purchased in a single payment are calculated. Notice that since all the software used is free and open source, it doesn't contribuite to the cost, thus it is not displayed here. In fact, the only resource that is valid for an amortization analysis is the computer specified in section \ref{sec:hardware_resources}.
+
+The equation we use to compute the amortization cost for each resource is the following:
+
+\begin{equation}
+    \text{Amortization (\euro)} = \text{Cost (\euro)} \times \frac{1}{4\text{ years}} \times \frac{1}{100\text{ days}} \times \frac{1}{5\text{ hours}} \times \text{Hours Used}  
+\end{equation}
+
+If we apply the amortization equation to the computer, which we purchased for \euro999.95, and assuming 500 hours of usage, its estimated amrotized cost is \euro249.98.
+
+\subsubsection*{Electric cost}
+
+In this section we only calculate a rough estimate. Calculating accurately the cost of electricity involves many variables, and it's outside the scope of this thesis. The average cost of electricity in Spain, in therms of kWh, is \euro0.12. We only count the cost when the hardware is turned on. The following table (\ref{tab:electric_cost}) shows the individual and total cost per item.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l c c c r}
+    \toprule
+    \tabhead{Item} & \tabhead{Power (W)} & \tabhead{Time used (h)} & \tabhead{Consumption (kWh)} & \tabhead{Cost (\euro)} \\
+    \midrule
+    Computer & 180 & 500 & 90 & 10.8 \\
+    Router & 10 & 500 & 5 & 0.6 \\
+    \midrule
+    \textbf{Total} & & & & \textbf{11.4} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Electric cost estimate.}
+    \label{tab:electric_cost}
+\end{table}
+
+\subsubsection*{Internet cost}
+
+The internet cost in my current location is \euro29.00 per month, this is roughly about \euro0.95 per day (variance is introduced becouse a month length is not constant). The amount of working hours per day is assumed to be 5, thus the total cost the whole project is:
+
+$$
+\text{\euro}0.95\text{ /day} \times 100 \text{ days} \times 5/24 \text{ hours} = \text{\euro}19.79
+$$
+
+\subsubsection*{Work space}
+
+This project will be developed at my parents home at Figueres, with a rent of \euro400. Since the amount of people living there is 2, the actual cost is \euro200.
+
+\subsubsection*{Total generic costs}
+
+Table \ref{tab:generic_cost} summarizes the total generic costs of this project.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l r}
+    \toprule
+    \tabhead{Group} & \tabhead{Cost (\euro)} \\
+    \midrule
+    Amortization & 249.98 \\
+    Electricity & 11.4 \\
+    Internet & 19.79 \\
+    Rent & 200 \\
+    \midrule
+    \textbf{Total} & \textbf{481.17} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Total generic cost estimate.}
+    \label{tab:generic_cost}
+\end{table}
+
+\subsection{Other costs}
+
+\subsubsection*{Contingencies}
+
+Unexcpected problems that were not foreseen may appear during the development of the project, which would take part of our budget. For this reason it as always a good idea to prepare a contingency budget calculated from the budgets we've calculated up to now. We will apply a 10\% contingency margin, that is \euro108.62.
+
+\subsubsection*{Incidental cost}
+
+Unexpected problems that were foreseen and can be mitigated are descrived in section \ref{sec:risk_management}. Some of these mitigations may incur some extra cost. To be able to handle that cost in this section we will calculate a budget based on the previsible problems, their chances of actually ocurring, and the expected cost associated for solving them.
+
+\begin{itemize}
+    \item \textbf{Deadline of the project:} If an extension of the deadline is requested, that would require extra hours expend by the researcher. Assuming the extra time required to be 50 hours that would give us a cost of \euro1,175.
+    \item \textbf{Bugs on some libraries:} Implementing a \emph{bugfix} we assume would cost arround 20 hours, a task done by the programmer. The estimated cost is \euro382. The risk is small.
+    \item \textbf{Insufficient computational power:} If using smaller datasets where not an option, we would abandon the project, since purchasing a new, more powerful, computer or renting a supercomputer is too expensive. The risk is very small.
+    \item \textbf{Hardward related issues:} New hardware would be purchased, if possible only the faulty component would be replaced. This would have an estimated cost of about \euro100. The risk is small.
+\end{itemize}
+
+The following table summarized the expected cost due to foreseen incidents.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l r r r}
+    \toprule
+    \tabhead{Risk} & \tabhead{Expected (\euro)} & \tabhead{Risk (\%)} & \tabhead{Cost (\euro)} \\
+    \midrule
+    Deadline of the project & 1 175 & 30 & 352.5 \\
+    Bugs on some libraries & 382 & 10 & 38.2 \\
+    Insufficient computational power & & 5 &  \\
+    Hardward related issues & 100 & 10 & 10 \\
+    \midrule
+    \textbf{Total} & & & \textbf{400.7} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Total incidental cost estimate.}
+    \label{tab:incident_cost}
+\end{table}
+
+\subsection{Total cost}
+
+The total cost for the project is summarized in table \ref{tab:total_cost}. The cost has been computed as the sum of the justified costs explained in the other sections of the budget plan.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l r}
+    \toprule
+    \tabhead{Section} & \tabhead{Cost (\euro)} \\
+    \midrule
+    Costs by role and activity & 10 381.00 \\
+    Generic costs & 481.17 \\
+    Other costs & 509.32 \\
+    \midrule
+    \textbf{Total} & \textbf{11 371.49} \\
+    \bottomrule
+    \end{tabular}
+    \caption{Total cost estimate.}
+    \label{tab:total_cost}
+\end{table}
+
+\section{Sustainability}
+
