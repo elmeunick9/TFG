@@ -1,0 +1,137 @@
+% Chapter 2
+
+\chapter{Project Planning} % Main chapter title
+\label{Chapter2} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+
+%----------------------------------------------------------------------------------------
+
+This thesis is worth 15 ECTS credits, each of which with an estimate cost of 25 to 30 hours. Therefore, the total time allocated for this project, as indicated by the faculty, is of 375 to 450 hours. This time is to be distributed in 100 days, from 03/08/21 to 06/15/21, with an estimated work of 4 to 5 hours a day. The date of the oral defense is planned for the first week of July, this sets the deadline to be on the 06/18/21.
+
+An extra 3 ECTS credits are to be used for project managment, this is roughly 80 hours, which makes the total time estimate for the whole project (Theisis + Project Managment) to be at best 450 hours and at worse 540 hours. In order to make a proper plannification, we have defined the estimated cost to be at 500 hours.
+
+\section{Task definition}
+\label{sec:tasks}
+In this section it is presented all the tasks that will be carried out along the project. For each, a description, duration and a list of dependencies with other tasks are given.
+
+Project management is a mandatory group of such tasks, albeit not very useful, considering that: One, this project is done by a single individual, with assistance from a project director; And two, this is a research project, which makes planning of specific tasks difficult, since it is the results from the research that drive the next steps to be done.
+
+\begin{itemize}
+    \item \textbf{Context and scope:} We have to indicate the general objective(s) of the project, contextualize it and justify the reason for selecting this subject area.
+    \item \textbf{Project planning:} This will help us not lose focus while we're working on the project.
+    \item \textbf{Budget and sustainability:} For this specific project, this is irrelevant. The budget required is negligible and already defrayed; and the impact, beyond trivial matters, is likely zero and otherwise unknown. 
+    \item \textbf{Final project definition:} Review the work done in the project management tasks.
+    \item \textbf{Meetings:} Online meetings are scheduled once every two weeks with the tutor of the project. Discussion of the status and next tasks to do will be done.
+\end{itemize}
+
+This project is research focused. Therefore, before starting the practical tasks research on the various topics needs to be done. This will involve collecting and analyzing previous studies that tried new methods and extensions to the SVM-RFE algorithm. We will also have to document ourselves in the SVM and feature selection areas, as well as the algorithms and the statistical theory used in the studies. Some basic understanding of bioinformatics may also be required considering the use case of most if these studies.
+
+\begin{itemize}
+    \item \textbf{Research} previous work on the literature on extensions of the algorithm and create a short \textbf{report} with the findings.
+    \item Write the algorithm formalization in pseudocode.
+    \item Define the expected advantages or disadvantages of this method over the base SVM-RFE.
+    \item Compute the space and time complexities.
+\end{itemize}
+
+Once the initial research is done the algorithm must be codified and tested. This group is composed of the following tasks:
+
+\begin{itemize}
+    \item \textbf{Program the base SVM-RFE algorithm.} For this we will use a library for the SVM. For the RFE part, since we need to be able to extend the algorithm, we will program it from scratch.
+    \item \textbf{Program the extensions of the SVM-RFE algorithm} based on the research done and the pseudocode.
+    \item \textbf{Test the new extensions with artificial data.} This requires creating models and testing their performance with artificial data sets.
+    \item \textbf{Obtain data sets with real data.} Multiple papers refer to publically available data-sets, we could use those and compare our results.
+    \item \textbf{Test the new extensions with real data.} This requires creating models and testing their performance with real data sets.
+    \item \textbf{Analyze the results} obtained in the experiments and draw conclusions. A report will be made for reference during the final documentation.
+\end{itemize}
+
+Related to testing and analyzing the results, if we want to draw fair conclusions, comparing our results with the state of the art is important. However, the start of the art is bast and fluid, and making a fair comparison with all available research papers is a daunting task. Instead, we will use a common ground, in this case the NIPS 2003 feature selection challenge. The results of this challenge, as well as a general analysis of the algorithms used, will serve as a reference point. Thankfully an analysis of these results has already been done (\cite{guyon_result_2004}). This simplifies our problem, now we only need to compare our algorithms per\-for\-mance with those already pre\-sent\-ed in the challenge.
+
+Once finished, the final documenting phase will begin. Firstly, we will collect all the information obtained in the experimental and analysis part, which will be available in the form of the reports that we've done along the tasks. Afterwards, we can start writing the documentation of the project. This will include a fairly extensive review on concepts related to SVM, statistics, feature selection and RFE. Finally, we will have to prepare for the oral defense of the project.
+
+\begin{table}
+\centering
+\begin{tabular}{l l l l}
+\toprule
+\tabhead{ID} & \tabhead{Description} & \tabhead{Hours} & \tabhead{Dependencies} \\
+\midrule
+\rowcolor{gray!10} T1 & Project Managment & 80 &  \\
+T1.1 & Context and Scope & 20 & T2.1  \\
+T1.2 & Project planning & 10 & \\
+T1.3 & Budget  and  sustainability & 10 & T1.2 \\
+T1.4 & Final project definition & 20 & T1.1, T1.2, T1.3  \\
+T1.5 & Meetings & 20 &  \\
+\rowcolor{gray!10} T2 & Theoretical Part & 160 &  \\
+T2.1 & Research & 90 &  \\
+T2.2 & Formalize & 20 & T2.1  \\
+T2.3 & Analyze & 50 & T2.2 \\
+\rowcolor{gray!10} T3 & Practical Part & 160 &  \\
+T3.1 & Program the base SVM-RFE algorithm & 10 & T2.1  \\
+T3.2 & Program the extensions & 50 & T2.1, T3.1  \\
+T3.3 & Test with artificial data & 20 & T3.2  \\
+T3.4 & Test with real data & 30 & T3.2  \\
+T3.5 & Analyze  the  results & 50 & T3.3, T3.4 \\
+\rowcolor{gray!10} T4 & Documentation & 100 &  \\
+T4.1 & Writte the documentation & 80 & T2, T3  \\
+T4.2 & Prepare the thesis defense & 20 & T4.1  \\
+\bottomrule\\
+\end{tabular}
+\caption{Summary and time estimates of the tasks.}
+\label{tab:tasks}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.35]{gantt.png}
+    \caption{A summary of the tasks represented with a gantt chart. Notice that all the theoretical and practical tasks are done in parallel.}
+    \label{fig:gantt}
+\end{figure}
+
+\section{Resources}
+
+Our project needs resources to carry out its correct development. These resources have been divided in 4 different groups: human, hardware, software and material resources.
+
+\subsection{Human resources}
+\label{sec:human_resources}
+
+There are three human resources that are directly involved in this project.
+
+\begin{itemize}
+    \item \textbf{The researcher:} He is responsible for the development of the project, that is, he will have to plan, analyze, program, experiment and document the project.
+    \item \textbf{The director/tutor:} He is responsible for leading and guiding the researcher for the correct development of the project.
+    \item \textbf{The GEP tutor:} He is in charge of reviewing the project management tasks done in the initial stage of the project.
+\end{itemize}
+
+\subsection{Hardware Resources}
+\label{sec:hardware_resources}
+
+The most essential resource needed is a computer connected to the internet. In this project a personal computer will be used. Its specializations are 16 GB of RAM and a CPU \emph{AMD Ryzen 7 4800HS}, with a base speed of 2.9 GHz and 8 cores. Hardware required for a connection to the internet (a router, an access point, etc) is also taken into account.
+
+\subsection{Software Resources}
+
+For project management tasks \texttt{Google Calendar} will be used. A number of other Google products such as \texttt{Google Mail}, \texttt{Google Drive} or \texttt{Google Meet} will also be used as tools required for communication with the director or storing of information.
+
+The documentation will be written in \LaTeX, a document preparation system often used in academia. It has the advantage to integrate well with version control systems. A \LaTeX \ template named "\texttt{Masters/Doctoral Thesis}" will be used to facil\-itate the type\-setting and styling of the document. This template was made by Vel and Johannes Böttcher and licensed under \texttt{LPPL 1.3}, based on previous work from Steve R. Gun and Sunil Patel and used with minor modifications. The original is available at \url{http://www.latextemplates.com/}. The document will be written with the \texttt{Microsft Visual Studio Code} editor, using the \texttt{LaTeX Workshop} extension, and it will be compiled with the \texttt{MiKTex} distribuition installed on a \texttt{Linux} machine run\-ning virtualized within a \texttt{WSL} container on top of the actual operating system, a \texttt{Microsoft Windows 10}. For browsing the internet the latest available version of the \texttt{Mozilla Firefox} web browser will be used, and references to papers will be kept with the \texttt{Zotero} reference manager.
+
+For the practical part, the programming language of choice will be \texttt{Python3}. This is currently one of the programming languages with better popularity in machine learning and related applications. Various libraries and software packages will be used for different tasks. For parsing datasets the \texttt{pandas} library will be used. For data visualization the \texttt{mathplotlib} library will be used. Also, a general tool-set designed for machine learning, the library \texttt{sklearn}, will be used. Finally, code will be documented in-place during its development with the \texttt{Jupyter Notebook} software.
+
+Other libraries and software packages could also be used if the need arises. 
+
+\subsection{Material Resources}
+
+In a research focused project such as this, access to scientific journals, books and similar research material is needed. Some articles related to this research are freely available on the internet, but some require a subscription or single time payment. Fortunately, the UPC, the university this project is being developed at, has a sub\-script\-ion agree\-ment with most of these journals and provides free access to their memebers, including the students.
+
+
+\section{Risk Management}
+\label{sec:risk_management}
+The potential risks and obstacles have already been introduced in section \ref{sec:risk}. In this section we will focus on a contingency plan to mitigate the risks.
+
+\begin{itemize}
+    \item \textbf{Deadline of the project:} The flexibility of the Kanban methodology should help us modify our schedule and working hours if required. If it becomes apparent that the deadline will not be meet, that is, more than 50 hours a week of work are required to finish the project in time, an extension of the deadline can be requested.
+    \item \textbf{Bugs on some libraries:} Alternative libraries can be used. If no alternative is found, because most of the used libraries are open source, a \emph{bugfix} could be implemented. 
+    \item \textbf{Insufficient computational power:} This can be mitigated by using a small sample of the data-set. Working with fewer data, although faster, can induce a small performance reduction and make the results not comparable with each other. Therefore, this will solution is not ideal. 
+    \item \textbf{Hardware related issues:} To avoid data loss, all code and documentation will be routinely uploaded to the cloud in a \texttt{GitHub} repository and \texttt{Google Drive} account.
+    \item \textbf{Health related issues:} Not much can be done if a health related problem occurs, but various preventive actions, such as a good diet, exercise and resting habits can be promoted.
+\end{itemize}
+
+
+
+
