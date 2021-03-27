@@ -1,0 +1,106 @@
+\chapter{Background}
+\label{Chapter4}
+
+In this section we're going to review the concepts required to understand the SVM-RFE algorithm. Section \ref{sec:context} already introduced some concepts surrounding the SVM-RFE algorithm, placed it in context, and enumerated some of its applications. In this section we'll focus on the inner workings of the algorithm and how these parts add together. 
+
+\section{Machine learning}
+
+Machine learning is a subfield in the broader discipline that is artificial intelligence. These algorithms, also called learning machines or just machines, use data to learn patterns and make predictions. The data is collected in a separated and unrelated process, and structured in the form of a \emph{dataset}. Once the dataset is further cleaned and prepared, the learning machine consumes it in a process called \emph{training}. After the process of training the machine produces a \emph{model}, which is a function that can be used to make predictions on new data. Two canonical problems in machine learning are regression and classification problems.
+
+\subsection{The dataset}
+
+A dataset is simply a collection of data. In the context of machine learning this data-set will be used to make predictions, take decisions, or find patterns. For a machine learning algorithm to be able to consume a dataset the first step is to represent it in tabular form. 
+
+Most datasets come already in tabular form. Some of the most notable ex\-cep\-tions are datasets involving images. In this case computer vision methods are often used to extract numeric data representing characteristics of the image. Sometimes a more rough transformation can also be made, for example making each feature be the intensity level of a single pixel in the image. This of course produces a high number of features, most of which are redundant or irrelevant (e.g. features representing pixels of the background). 
+
+In a dataset represented as a table, columns describe different \emph{features, properties or attributes} of some group of objects and rows represent \emph{instances} of that group. For example, if objects were vehicles then features could include the brand, power, weight, max\-imum speed, and other such characteristics of various vehicles, each of which would be in a row. Different names are used in different contexts. One of the most typical naming conventions comes from the statistics domain which refers to columns as \emph{variables} and rows as \emph{observations}.
+
+\begin{table}[h]
+    \makebox[\textwidth][c]{
+        \begin{tabular}{l l l l l l l l l}
+        \toprule
+        \tabhead{Src} & \tabhead{Dst} & \tabhead{NAT-Src} & \tabhead{NAT-Dst} & \tabhead{Action} & \tabhead{Sent (B)} & \tabhead{Rcvd. (B)} & \tabhead{Packets} & \tabhead{Elapsed (sec)}\\
+        \midrule
+        57222 & 53 & 54587 & 53 & allow & 94 & 83 & 2 & 30 \\
+        56258 & 3389 & 56258 & 3389 & allow & 1600 & 3168 & 19 & 17 \\
+        6881 & 50321 & 43265 & 50321 & allow & 118 & 120 & 2 & 1199 \\
+        43537 & 2323 & 0 & 0 & deny & 60 & 0 & 1 & 0 \\
+        50002 & 443 & 45848 & 443 & allow & 6778 & 18580 & 31 & 16 \\
+        \bottomrule\\
+        \end{tabular}
+    }
+    \caption{Example extracted from the Internet Firewall Data dataset (\cite{ertam_internet_2019}). Only five observations and main variables shown. }
+    \label{tab:example_dataset}
+\end{table}
+
+\emph{Talk about tagging data, unsupervised (clusetring) vs suppervised problems, regression vs classification, dimensions and representation in space, and visualizationa and microarray analysis}
+
+\emph{On Regression and Classification, talk about parameters and hyperparameters, statistical models, mathematical expression and test and training sets, etc}
+
+----------------------------
+
+\begin{itemize}
+    \item What is machine learning.
+    \item Regression.
+    \item Classification.
+    \item The dataset, cleaning, embeddings, etc.
+\end{itemize}
+
+\section{Support Vector Machines}
+
+\begin{itemize}
+    \item 2D classification example.
+    \item Mathematical formulation as an optimization problem.
+    \item Dual
+    \item SVM with regularization.
+    \item Dual
+    \item Optimization algorithms.
+\end{itemize}
+
+\section{Kernel Methods}
+
+\begin{itemize}
+    \item What is a kernel.
+    \item The kernel trick.
+\end{itemize}
+
+\section{SVM-RFE}
+\begin{itemize}
+    \item What is RFE.
+    \item The ranking criteria for the linal case.
+\end{itemize}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      %\KwInput{$p$}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list} 
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+
+            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
+
+            \tcc*[h]{Find the feature with the smallest ranking criterion}\\
+            $f = \texttt{argmin($\vt{c}$)}$\VS
+
+            \tcc*[h]{Update the feature ranking list}\\
+            $\vt{r} = [\vt{s}(f), ...\vt{r}]$\VS
+
+            \tcc*[h]{Eliminate the feature with smallest ranking criterion}\\
+            $\vt{s} = [...\vt{s}(1:f - 1), ...\vt{s}(f + 1:|\vt{s}|)]$
+        }
+    \caption{SVM-RFE}
+\end{algorithm}
+
+
