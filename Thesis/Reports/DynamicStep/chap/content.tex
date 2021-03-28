@@ -1,5 +1,8 @@
 % Chapter 1
 
+\newcommand{\VS}{\vspace{6pt}}
+\newcommand{\vt}[1]{\vec{#1}}
+
 \chapter{Dynamic Step} % Main chapter title
 
 \label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
@@ -16,28 +19,45 @@ The percentage is a hyperparameter. It is used within every iteration to select 
 
 The reasoning behind this is that when you have many features for which you only want to select a very small subset, the required amount of iterations will be of lineal complexity on the amount of features, however, by using a percentage, we get a logarithmic complexity.
 
+Other similar modifications are also found in the literature, including using the square root of the remaining features \texttt{SQRT-RFE}, an entropy based function \texttt{E-RFE}, or \texttt{RFE-Annealing} which sets the step at $|\vt{s}| \frac{1}{i+1}$, thus, changing the percentage each iteration (\cite{ding_improving_2006}).
+
+\iffalse
+That is, the amount of features eliminated "$r$" at $j$-th iteration is the summation of the amount of features eliminated each iteration, i.e. $np^i$:
+
+\begin{equation}\label{eq:dynamicStep1}
+    r = \sum_{i = 1}^{j}{(np^i)} 
+\end{equation}
+
+It may be more interesting to see complexity as in the amount of iterations re\-quired to eliminate $r$ features, it can be derived from equation \ref{eq:dynamicStep1} as follows:
+
+\begin{align*}
+    r &= n \sum_{i = 1}^{j}{p^i} = n \sum_{i = 0}^{j-1}{(p^i)} - n + np^j \\
+    \frac{r}{n} &= \frac{1-p^j}{1-p} - 1 + p^j \\
+    \frac{r}{n} &= \frac{(1-p^j) - (1-p) + (1-p)p^j}{1-p}\\
+    \frac{(1-p)r}{n} &= (1-p^j) - (1-p) + (p^j-p^{j+1})\\
+    \frac{(1-p)r}{n} &= 1 -p^j -1 + p + p^j - p^{j+1}\\
+    \frac{(1-p)r}{n} &= p - p^{j+1}\\
+    - \frac{(1-p)r}{n} + p &= p^{j+1}\\
+    \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= \log_{p} (p^{j+1})\\
+    \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= j + 1\\
+    \log_{1/p} \left( - \frac{n}{(1-p)r} + 1/p \right) &= j + 1\\
+\end{align*}
+\fi
+
 We assume that, the bigger the step in each iteration, the worse the performance of the final selection. However, since we're selecting the worst variables first, se\-lect\-ing more of them at once shouldn't affect performance because they would have been selected anyway with height probability in the following iterations. The fewer the iterations remaining, the riskier it becomes selecting multiple variables at once, and thus a smaller step is beneficial.
 
 \section{Pseudocode formalization}
 
 \textbf{Definitions:}
 
-\newcommand{\VS}{\vspace{6pt}}
-\newcommand{\vt}[1]{\vec{#1}}
-
 \begin{itemize}
     \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
     \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of tags.
-    \item $F$ list of features.
-    \item $S$ list of selected features.
-    \item $S_f$ final selection, with $m = |S_f|$.
-    \item $A$ list of non-selected features.
-    \item $p$ the \emph{percentage} hyperparameter.
 \end{itemize}
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
-      %\KwInput{$p$}
+      \KwInput{$p$ \tcp*{p = percentage, $0 \le p \le 1$}}
       \KwOutput{$\vt{r}$}
       \KwData{$X_0,\vt{y}$}
       $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
@@ -56,16 +76,19 @@ We assume that, the bigger the step in each iteration, the worse the performance
             \tcc*[h]{Compute the ranking criteria}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
 
-            \tcc*[h]{Find the feature with the smallest ranking criterion}\\
-            $f = \texttt{argmin($\vt{c}$)}$\VS
+            \tcc*[h]{Compute $t$ based on the percentage}\\
+            $t = p|\vt{s}|$\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
 
             \tcc*[h]{Update the feature ranking list}\\
-            $\vt{r} = [\vt{s}(f), ...\vt{r}]$\VS
+            $\vt{r} = [\vt{s}(\vt{f}), ...\vt{r}]$\VS
 
-            \tcc*[h]{Eliminate the feature with smallest ranking criterion}\\
-            $\vt{s} = [...\vt{s}(1:f - 1), ...\vt{s}(f + 1:|\vt{s}|)]$
+            \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
+            $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
         }
-    \caption{SVM-RFE}
-    \end{algorithm}
+    \caption{SVM-RFE with DynamicStep}
+\end{algorithm}
 
 \section{Expectations}

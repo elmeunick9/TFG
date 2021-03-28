@@ -103,4 +103,35 @@ In a dataset represented as a table, columns describe different \emph{features, 
     \caption{SVM-RFE}
 \end{algorithm}
 
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t$ \tcp*{t = step}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list} 
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
 
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+
+            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Update the feature ranking list}\\
+            $\vt{r} = [\vt{s}(\vt{f}), ...\vt{r}]$\VS
+
+            \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
+            $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
+        }
+    \caption{SVM-RFE with Step}
+\end{algorithm}
