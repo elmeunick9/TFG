@@ -13,8 +13,6 @@ This modification is based on the constant step variant of the SVM-RFE algorithm
 
 \section{Description and reasoning}
 
-\subsection{Method 1: Percentage}
-
 The percentage is a hyperparameter. It is used within every iteration to select a number of the first ranked features. A constant step has already been used in pract\-ice, but it is expected that this method will be significantly faster without effecting the accuracy performance, or even improving it.
 
 The reasoning behind this is that when you have many features for which you only want to select a very small subset, the required amount of iterations will be of lineal complexity on the amount of features, however, by using a percentage, we get a logarithmic complexity.
@@ -52,7 +50,7 @@ We assume that, the bigger the step in each iteration, the worse the performance
 
 \begin{itemize}
     \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
-    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of tags.
+    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
 \end{itemize}
 
 \begin{algorithm}[H]
@@ -91,4 +89,33 @@ We assume that, the bigger the step in each iteration, the worse the performance
     \caption{SVM-RFE with DynamicStep}
 \end{algorithm}
 
-\section{Expectations}
+\section{Results}
+
+\subsection{Madelon Initial Analysis}
+
+First, we're using the MADELON dataset. We've initially run some tests to find how the hyper-parameters (C and step) may influence it. 
+
+The first test consists on simply doing a random feature selection and plotting the accuracy for the training and test splits. It is easy to see with figure \ref{fig:dynamicStep.madelon.base} that the classifier is not working too well with test data, even though good results appear on training data. This is probably due to overfitting. Reducing the amount of dimensions, even randomly, results on a slightly improved performance with a peak at 200 features.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/madelon-base-1.png}
+        \subcaption*{$C=1$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/madelon-base-2.png}
+        \subcaption*{$C=10^3$}
+    \end{subfigure}
+    \caption{Accuracy of an SVM classifier with a random feature selection with the Madelon dataset.}
+    \label{fig:dynamicStep.madelon.base}
+\end{figure}
+
+We tested different values for the regularization parameter, from $10^0$ to $10^{12}$ in intervals of $1000$ times each, but there is no indication that this has any major effect.
+
+
+
+
+
+
+
