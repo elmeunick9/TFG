@@ -30,7 +30,7 @@ Focus on reducing the computational cost.
 | Historic of weights | X | | | |
 | Multi-class criteria | X | | | |
 | Sampling | X | | | |
-| Dynamic Step | | X | X | |
+| Dynamic Step | |  | | X |
 | Stop condition | X | | | |
 
 # Bibliography
