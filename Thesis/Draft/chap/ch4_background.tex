@@ -31,7 +31,7 @@ In a dataset represented as a table, columns describe different \emph{features, 
         \bottomrule\\
         \end{tabular}
     }
-    \caption{Example extracted from the Internet Firewall Data dataset (\cite{ertam_internet_2019}). Only five observations and main variables shown. }
+    \caption{Example dataset extracted from the Internet Firewall Data (\cite{ertam_internet_2019}). Only five observations and main variables shown. }
     \label{tab:example_dataset}
 \end{table}
 
@@ -39,11 +39,11 @@ In a dataset represented as a table, columns describe different \emph{features, 
 
 For the classification problem we want to predict in witch group or \emph{class} to assign some new observation. Table \ref{tab:example_dataset} provides an example of what could be a good classification problem. Imagine we are building a firewall and want it to predict if some new packet in the network should be allowed to pass. We could train a classification learning machine with the dataset represented in the table (the full version) and produce a model capable of doing such predictions. Although it is trivial to identify a pattern in the example, it may not be so for real world examples. Automatic \emph{pattern recognition} is key in solving many real world problems, and it is one of the features of these algorithms.
 
-Mathematically, the set of observations is defined as $X = \{\vt{x_1}, \vt{x_2}, \dots, \vt{x_n}\}$ and the set of the corresponding labels or target classes is $y = \{y_1, y_2, \dots, y_n\}$ with every element of this set being some class $y_i = C_k$ of a discrete set of classes with size $K$. For our example, this set would be $C = \{\text{allow}, \text{deny}\}$. Thus, we can describe the goal of a classification problem as assigning some class $C_k$ to an input vector $\vt{x}$.
+Mathematically, the set of observations is defined as $X = \{\vt{x_1}, \vt{x_2}, \dots, \vt{x_n}\}$ and the set of the corresponding labels or target classes is $y = \{y_1, y_2, \dots, y_n\}$ with every element of this set being some class $y_i = C_k$ of a discrete set of classes with size $K$. They are called \emph{domain set} and \emph{label set} respectively. For our example, the classes would be $C = \{\text{allow}, \text{deny}\}$. Thus, we can describe the goal of a classification problem as assigning some class $C_k$ to an input vector $\vt{x}$.
 
 Although we've used strings to represent classes, part of the preparation process of the dataset involves turning all values into numerical scalars, so our classes would actually be some natural numbers. Also notice that every $\vt{x_i}$ is a vector containing a single numerical value for each feature excluding the label. 
 
-We make a distinction between two-class problems and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially, in fact some learning machines such as the SVM can only work with two-class problems, and use different methods to extend to the multi-class version.
+We make a distinction between two-class problems (or binary) and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially, in fact some learning machines such as the SVM can only work with two-class problems, and use different methods to extend to the multi-class version.
 
 \subsection{Visualization}
 
@@ -63,24 +63,95 @@ A visualization of the problem in some euclidean space is required to understand
     \label{fig:ch4.sep}
 \end{figure}
 
+Given a boundary we can determine in which region some new point $\vt{x}$ falls using a \emph{discriminant function}. One of the most trivial cases is when the boundary is lineal. It is convenient now to do a small refresh on the equation that describes a hyperplane.
+
+\subsubsection*{Equation of a line (slope-intercept form)}
+\begin{align}
+    y = mx + t
+\end{align}
+
+Where $m$ is the \emph{slope} or \emph{gradient}, $x$ is the independent variable of the function $y = f(x)$ and $t$ is the y-intercept value, the point of the function where the line crosses the y-axis, i.e. $t = f(0)$. This description has the advantage that can be directly represented as a function $f(x) = mx + t$.
+
+\subsubsection*{Equation of a line (standard form)}
+\begin{align}
+    ax + by = c
+\end{align}
+
+This is an equivalent form, this one however is not representable by a function $f: \mathbb{R} \rightarrow \mathbb{R}$, instead it is often represented as a set $L = \{(x, y) \st ax + by = c\}$. This allows representing vertical lines and also features the useful property that $(a, b)$ is the normal vector\footnote{A vector that is perpendicular to the surface.} of the line.
+
+\subsubsection*{Equation of a line (general form)}
+\begin{align}
+    ax + by - c = 0
+\end{align}
+
+A simple linear transformation of the standard form produces the general form (\cite{noauthor_wikipedia_2021}). This conserves the normal vector and also has the advantage of being representable by an implicit function\footnote{A function of multiple variables $f: \mathbb{R}^n \rightarrow \mathbb{R}$ such that we only consider solutions where $f(X) = 0$. For example a circle can be defined with an implicit function $f(x, y) = x^2 + y^2 - r$, but if we were to plot it in 3-D we would instead see an inverted cone.}. Notice that if represented in 3-D it would produce a plane that is perpendicular to the $xy$ plane, since its normal would always have the form $(a, b, 0)$.
+
+\subsubsection*{Equation of a 3-D Plane}
+\begin{align}
+    ax + by + cz + d = 0
+\end{align}
+
+We can extend the general form of a line with one more dimension, it only requires adding the new term $cz$ for the new dimension. We've also changed the sign of the constant term $d$ for compactness. This is a conceptual move, not an algebraic one.
+
+\subsubsection*{Equation of a Hyperplane}
+\begin{align}
+    w_1x_1 + \dots + w_nx_n + w_0 = 0
+\end{align}
+
+This is a generalization of the equation of a 3-D plane for $n$ dimensions. It also happens to be the definition of a \emph{linear equation}. The variables $w_1, \dots, w_n$ are called \emph{coefficients}, \emph{parameters} or \emph{weights}, and the variable $w_0$ is the constant term. It is important to avoid confusing $x_i$ with $\vt{x_i}$, the first is the one the coordinates of a point in some dimension, and the other is an observation of a dataset (a point). In particular, it may be the case that $\vt{x_j} = (x_1, x_2, \dots, x_n)$.
+
+We may want to compact this expression more by using vectors. So, another form for representing the equation of a hyperplane is:
+\begin{align}
+    \vb{w}^{\T}\vb{x} + w_0 = 0
+\end{align}
+
+Where $\vb{w}$ is called the \emph{vector weight} and $w_0$ the \emph{bias}. We can turn this equation into a discriminant function for two classes by simply considering what happens with points that are not in the hyperplane. By definition such points meet one of the two inequations:
+
+\begin{align}
+    \vb{w}^{\T}\vb{x} + w_0 > 0 \\
+    \vb{w}^{\T}\vb{x} + w_0 < 0
+\end{align}
+
+A point will be a solution of one of these inequations depending on whether it is in the subspace, i.e. discriminant region, facing the direction of the normal or the opposite.
+
+A linear binary classification learning machine is thus an algorithm that given some dataset finds appropriate values for the parameters $\vb{w}$ and $w_0$ of the hyper\-plane in order to produce a discriminant function $y : \mathbb{R}^n \rightarrow \mathbb{R}$ such as:
+\begin{align}
+    y(\vb{x}) = \vb{w}^{\T}\vb{x} + w_0
+\end{align}
+
 \subsection{Performance}
 
-\subsection{Microarray Analysis}
+Usually models produced by a learning machine do not always make correct pre\-dict\-ions, instead we consider them good enough if they can classify new data correctly most of the time. In order to quantize how good of a predictor some model is we can use various performance metrics.
 
-\subsubsection{EXTRA}
+The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions versus the total number of predictions made. The inverse to the accuracy is defined as the \emph{error}. Notice that the classification accuracy will always be some percentage above 50\%. This is because a classifier performing consistently worse than that can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
 
-\emph{Talk about tagging data, unsupervised (clusetring) vs suppervised problems, regression vs classification, dimensions and representation in space, and visualizationa and microarray analysis}
+In some problems a distinction is made between misclassifications depending on which class is misclassified. An example of this is how misclassifying a patient with cancer with a healthy diagnosis is worse than misclassifying a healthy patient with a cancer diagnosis, the consequence of one is potentially death due to lack of treatment while the other is simply more investigation. For these problems a quadratic amount of cases appears. For the binary classification the standard nomenclature is to name the classes \emph{positive} and \emph{negative} and then prefix them with \emph{true} or \emph{false} depending on whether the prediction was correct or not. In this way a matrix called \emph{confusion matrix} is created, with the diagonal containing all the correct predictions.
 
-\emph{On Regression and Classification, talk about parameters and hyperparameters, statistical models, mathematical expression and test and training sets, etc}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/ch4/confusion.png}
+    \caption{Confusion matrix extracted from the paper “Automatic Device Classification from Network Traffic Streams of Internet of Things” (\cite{bai_automatic_2018}).}
+    \label{fig:ch4.confusion}
+\end{figure}
 
-----------------------------
+From a confusion matrix various other metrics can be extracted, such as \emph{precision}, \emph{specificity} or \emph{recall}, but it is unlikely that we make use of them in this project. Often models internally use a \emph{loss} or \emph{cost} function that they try to minimize in order to optimize the parameters, the inverse of which is called \emph{utility function}. Even if the model doesn't internally use one such function, one can be constructed form performance metrics, which is then referred as the \emph{score}. 
 
-\begin{itemize}
-    \item What is machine learning.
-    \item Regression.
-    \item Classification.
-    \item The dataset, cleaning, embeddings, etc.
-\end{itemize}
+It is known that learning requires both \emph{generalization} and \emph{memorization}. If a model memorizes the dataset, thus has high accuracy on data already in the dataset, but doesn't generalize well, thus has low accuracy when predictions are done on new data, we say there is \emph{overfitting}. Notice that for this to be detected we must test the dataset with new data. In order to do so a dataset is often split in \emph{train} and \emph{test} subsets, and although accuracies form both subsets may be reported, only the accuracy of the test subset may be taken as good.
+
+One of the possible causes of overfitting is the \emph{Bias-Variance} trade-off. It's an effect in which if you select a very simple model then the algorithm fails to generalize (bias) but selecting a very complex algorithm increases memorization and leads to high variability in the presence of an unseen observation (variance). The best model is thus one with a middle-ground complexity.
+
+Selecting the complexity of an algorithm can be done with the use of some extra parameters, not fitted by the training phase of the leaning machine, that we call \emph{hyper-parameters}. The existence of this extra parameters depends on the models, some may not have any. Because these parameters modify the model, searching for the best hyper-parameters is called \emph{model selection}. Model selection is often done by simply trying different values of the hyper-parameters and selecting the ones that give the best result. Al\-though this coarse strategy is usually enough, more complex search strategies (such as some kind of gradient descend) can also be used. In the case of one single hyper-parameter we can draw a plot and visualize how the score evolves. Because model selection may be understood as some kind high level training, specially when com\-plex search strategies are used, a third division on the dataset may be made, named the \emph{validation} set.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/ch4/bias-and-variance.png}
+    \caption{Bias-Variance trade-off. Source (\cite{bisong_machine_2021}).}
+    \label{fig:ch4.biasvariance}
+\end{figure}
+
+Machine learning algorithms work better the more observations they are trained with, however it is not often the case that we have an unlimited amount of them. In analyzing the performance of a leaning machine, or doing model selection, it may be useful to repeat the experiments multiple times with different data of the same distribution, i.e. from the same dataset. This provides some statistical tools, such as the mean or the variance, on the resulting scores, which may prove very useful to get a better idea of what is going on. This however implies further slicing the dataset in as many slices as experiments one wants to do. After so much slicing, the remaining training subsets would often contain very few observations, thus reducing the performance of the models and nullifying the advantages of having a probability distribution on the scores. 
+
+A method called \emph{cross-validation} can be used to make mul\-ti\-ple experiments with\-out increasing the amount of data. The method first makes $K$ partitions called \emph{folds}. For each fold, one experiment is made such that the fold is used as the validation set and the remaining folds become the training set. This allows a portion $(K-1)/K$ of the observations to be used for training in each run and allows assessing performance using the whole dataset. In the particular case where $K = N$, useful for when the amount of observations is really low, we name this method \emph{leave-one-out} cross-validation. It is also possible to shuffle the data, which allows even more re-utilization. Although this method is computationally expensive (since it requires running the whole experiment $K$ times), it has the advantage of being trivial to parallelize, and thus it can run at increased speeds in computers with a multi-core CPU architecture. 
 
 \section{Support Vector Machines}
 
