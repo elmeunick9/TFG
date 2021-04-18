@@ -15,7 +15,7 @@ A dataset is simply a collection of data. In the context of machine learning thi
 
 Most datasets come already in tabular form. Some of the most notable ex\-cep\-tions are datasets involving images. In this case computer vision methods are often used to extract numeric data representing characteristics of the image. Sometimes a more direct transformation can also be made, for example making each feature be the intensity level of a single pixel in the image. This of course produces a high number of features, most of which are redundant or irrelevant (e.g. features representing pixels in the background). 
 
-In a dataset represented as a table, columns describe different \emph{features, properties or attributes} of some group of objects and rows represent \emph{instances} of that group. For example, if objects were vehicles then features could include the brand, power, weight, max\-imum speed, and other such characteristics of various vehicles, each of which would be in a row. Different names are used in different contexts. One of the most typical naming conventions comes from the statistics domain which refers to columns as \emph{variables} and rows as \emph{observations}. Sometimes different nomenclature is used to differentiate features in different stages of the cleaning and preparation process, but in this thesis we use them all instinctively.
+In a dataset represented as a table, columns describe different \emph{features}, \emph{properties} or \emph{attributes} of some group of objects and rows represent \emph{instances} or \emph{examples} of that group. For example, if objects were vehicles then features could include the brand, power, weight, max\-imum speed, and other such characteristics of various vehicles, each of which would be in a row. Different names are used in different contexts. One of the most typical naming conventions comes from the statistics domain which refers to columns as \emph{variables} and rows as \emph{observations}. Sometimes different nomenclature is used to differentiate features in different stages of the cleaning and preparation process, but in this thesis we use them all instinctively.
 
 \begin{table}[h]
     \makebox[\textwidth][c]{
@@ -36,6 +36,7 @@ In a dataset represented as a table, columns describe different \emph{features, 
 \end{table}
 
 \subsection{Classification}
+\label{sec:ch4.classification}
 
 For the classification problem we want to predict in witch group or \emph{class} to assign some new observation. Table \ref{tab:example_dataset} provides an example of what could be a good classification problem. Imagine we are building a firewall and want it to predict if some new packet in the network should be allowed to pass. We could train a classification learning machine with the dataset represented in the table (the full version) and produce a model capable of doing such predictions. Although it is trivial to identify a pattern in the example, it may not be so for real world examples. Automatic \emph{pattern recognition} is key in solving many real world problems, and it is one of the features of these algorithms.
 
@@ -46,6 +47,7 @@ Although we've used strings to represent classes, part of the preparation proces
 We make a distinction between two-class problems (or binary) and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially, in fact some learning machines such as the SVM can only work with two-class problems, and use different methods to extend to the multi-class version.
 
 \subsection{Visualization}
+\label{sec:ch4.visualization}
 
 A visualization of the problem in some euclidean space is required to understand how most classification algorithms work, and in particular SVM. Typically, clas\-si\-fi\-cation models divide the input vector space\footnote{The euclidean space of minimum dimension containing all possible input vectors $\vt{x}$.} into \emph{decision regions}. The boundaries of such regions are called \emph{decision boundaries} or \emph{decision surfaces}. If the decision boundary is in the form of some hyperplane of dimension $(D - 1)$, with $D$ being the dimension of the space, then we say that it's a linear model. A dataset whose classes can be completely separated by such linear decision boundary is said to be \emph{linearly separable}.
 
@@ -107,10 +109,10 @@ We may want to compact this expression more by using vectors. So, another form f
 
 Where $\vb{w}$ is called the \emph{vector weight} and $w_0$ the \emph{bias}. We can turn this equation into a discriminant function for two classes by simply considering what happens with points that are not in the hyperplane. By definition such points meet one of the two inequations:
 
-\begin{align}
+\begin{align*}
     \vb{w}^{\T}\vb{x} + w_0 > 0 \\
     \vb{w}^{\T}\vb{x} + w_0 < 0
-\end{align}
+\end{align*}
 
 A point will be a solution of one of these inequations depending on whether it is in the subspace, i.e. discriminant region, facing the direction of the normal or the opposite.
 
@@ -140,7 +142,7 @@ It is known that learning requires both \emph{generalization} and \emph{memoriza
 
 One of the possible causes of overfitting is the \emph{Bias-Variance} trade-off. It's an effect in which if you select a very simple model then the algorithm fails to generalize (bias) but selecting a very complex algorithm increases memorization and leads to high variability in the presence of an unseen observation (variance). The best model is thus one with a middle-ground complexity.
 
-Selecting the complexity of an algorithm can be done with the use of some extra parameters, not fitted by the training phase of the leaning machine, that we call \emph{hyper-parameters}. The existence of this extra parameters depends on the models, some may not have any. Because these parameters modify the model, searching for the best hyper-parameters is called \emph{model selection}. Model selection is often done by simply trying different values of the hyper-parameters and selecting the ones that give the best result. Al\-though this coarse strategy is usually enough, more complex search strategies (such as some kind of gradient descend) can also be used. In the case of one single hyper-parameter we can draw a plot and visualize how the score evolves. Because model selection may be understood as some kind high level training, specially when com\-plex search strategies are used, a third division on the dataset may be made, named the \emph{validation} set.
+Selecting the complexity of an algorithm can be done with the use of some extra parameters, not fitted by the training phase of the leaning machine, that we call \emph{hyper-parameters}. The existence of this extra parameters depends on the models, some may not have any. Because these parameters modify the model, searching for the best hyper-parameters is called \emph{model selection}. Model selection is often done in a brute force manner, by simply trying different values of the hyper-parameters and selecting the ones that give the best result. Al\-though this coarse strategy is usually enough, more complex search strategies such as successive halving or genetic algo\-rithms (\cite{claesen_hyperparameter_2015}) can also be used. In the case of one single hyper-parameter we can draw a plot and visualize how the score evolves. Because model selection may be understood as some kind high level training, specially when com\-plex search strategies are used, a third division on the dataset may be made, named the \emph{validation} set.
 
 \begin{figure}[H]
     \centering
@@ -149,11 +151,106 @@ Selecting the complexity of an algorithm can be done with the use of some extra 
     \label{fig:ch4.biasvariance}
 \end{figure}
 
-Machine learning algorithms work better the more observations they are trained with, however it is not often the case that we have an unlimited amount of them. In analyzing the performance of a leaning machine, or doing model selection, it may be useful to repeat the experiments multiple times with different data of the same distribution, i.e. from the same dataset. This provides some statistical tools, such as the mean or the variance, on the resulting scores, which may prove very useful to get a better idea of what is going on. This however implies further slicing the dataset in as many slices as experiments one wants to do. After so much slicing, the remaining training subsets would often contain very few observations, thus reducing the performance of the models and nullifying the advantages of having a probability distribution on the scores. 
+Machine learning algorithms work better the more observations they are trained with, however it is not often the case that we have an unlimited amount of them. In analyzing the performance of a leaning machine, or doing model selection, it may be useful to repeat the experiments multiple times with different data of the same distribution, i.e. from the same dataset. This provides second order statistics, such as the mean or the covariance, on the resulting scores, which may prove very useful to get a better idea of what is going on. This however implies further slicing the dataset in as many slices as experiments one wants to do. After so much slicing, the remaining training subsets would often contain very few observations, thus reducing the performance of the models and nullifying the advantages of having a probability distribution on the scores. 
 
 A method called \emph{cross-validation} can be used to make mul\-ti\-ple experiments with\-out increasing the amount of data. The method first makes $K$ partitions called \emph{folds}. For each fold, one experiment is made such that the fold is used as the validation set and the remaining folds become the training set. This allows a portion $(K-1)/K$ of the observations to be used for training in each run and allows assessing performance using the whole dataset. In the particular case where $K = N$, useful for when the amount of observations is really low, we name this method \emph{leave-one-out} cross-validation. It is also possible to shuffle the data, which allows even more re-utilization. Although this method is computationally expensive (since it requires running the whole experiment $K$ times), it has the advantage of being trivial to parallelize, and thus it can run at increased speeds in computers with a multi-core CPU architecture. 
 
 \section{Support Vector Machines}
+
+As it has been discussed in section \ref{sec:ch4.visualization}, the decision boundary of a binary class\-ification prob\-lem may be represented with a hyperplane, and it is the weights of this hyperplane what the learning machine tries to fit such that the hyper\-plane correctly separates the two classes. There may be infinitely many hyperplanes that correctly separate the examples of two classes, but some of them are better suited than others. For the purpose of generalization, we want decision regions that can accommodate new data outside the convex hulls\footnote{In geometry, the \emph{convex hull} or \emph{convex envelope} of a shape is the smallest convex set that contains it.} of each group of examples. That is, we want some kind of separation between the hyperplane and the observations.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/boundrybad.png}
+        \subcaption*{Bad boundary}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/boundrygood.png}
+        \subcaption*{Good boundary}
+    \end{subfigure}
+    \caption{Showing how one decision boundary may be better than another. \texttt{X} filled in blue represents new data.}
+    \label{fig:ch4.sep}
+\end{figure}
+
+There exist various learning machines that accomplish this separation, e.g. the \emph{Fisher’s linear discriminant}. Another such machine is the Support Vector Machine (SVM), which is based on the idea of finding the biggest margin between the extreme points of each class and setting the decision boundary in the center of such margin. For this reason SVM machines are said to be \emph{Maximum Margin Classifiers}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/mmc_good.png}
+        \subcaption*{Maximum margin}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/mmc_bad.png}
+        \subcaption*{Quite good margin}
+    \end{subfigure}
+    \caption{Two quite good decision boundaries with a margin, a maximum margin classifier would choose the left one.}
+    \label{fig:ch4.sep}
+\end{figure}
+
+The \emph{margin} is defined as the perpendicular distance (i.e. in the direction of the normal) between the decision bound\-ary and the closest of the examples. There is only one decision boundary that maximizes the margin. Only a limited amount of examples, defined by the number of dimensions, will reach the limits of that margin (and thus be the closest), these are called the \emph{support vectors}.
+
+\subsection{Discriminant function}
+
+We've already seen how to we can build a discriminant function from the equation of the hyperplane. Here we will explore this in a bit more depth and take a different approx. 
+
+Given a vector of unknown length $\vt{w}$ that is perpendicular to the hyperplane (thus the normal) such that its origin is at the origin of the coordinate system. And given another vector $\vt{x}$ also with origin at the origin of the coordinate system. Notice that, by how we are defining them, they are actually points, but we may want to think of them as vectors for now. We are interested in knowing in which decision region the point $\vt{x}$ is placed.
+
+To do so, we make the dot product between $\vt{w}$ and $\vt{x}$, which, in particular, will give us a scalar corresponding to the length of the projection of $\vt{x}$ over $\vt{w}$. Notice that for points within the hyperplane that length will be some constant value $c$. Thus, we can know if point $\vt{x}$ is in one region or another by comparing it with $c$. This can be expressed with the inequality $\vt{w} \cdot \vt{x} \ge c$. By making a variable $b = -c$ and expressing the dot product as a product of matrices, we can conveniently rearrange this equation as the decision rule:
+\begin{align}\label{eq:drule}
+    \vb{w}^\T \vb{x} + b \ge 0
+\end{align}
+This is analogous to the decision rule found in section \ref{sec:ch4.visualization}, in fact if we make an equality instead of an inequality we discover the equation of the hyperplane, from there we could do the process in reverse until we find the general equation of a line. 
+
+\subsection{Margin formalization}
+
+Notice from equation \ref{eq:drule} that the constant value of $b$ depends directly on the length $||\vt{w}||$, and because this length is not limited (there are infinite vectors that are normal to the hyperplane), an infinite amount of combinations exists.
+
+Therefore, we may want to restrict the decision rule to a single combination. Also, it is convenient that this restriction takes such a form that allows defining the margin. First we assign to our classes the numerical values $C = \{-1, 1\}$. Then we impose the condition that points in a decision region outside the margin must have values greater than $\pm 1$, thus for points $\vb{x}_{(+)}$ in class “$1$” and $\vb{x}_{(-)}$ in class “$-1$” we get:
+\begin{align*}
+    \vb{w}^\T \vb{x}_{(+)} + b &\ge 1\\
+    \vb{w}^\T \vb{x}_{(-)} + b &\le -1
+\end{align*}
+
+This pair of equations can be simplified to a single equation by considering the vector $\vt{y}$ that we defined in section \ref{sec:ch4.classification}. Because of the numerical values we've assigned to the classes, it will contain elements such that every $y_i \in \{-1, 1\}$. Notice that if we multiply both sides by $y_i$ (and given that we know what the value of $y_i$ will be in each case), we can produce the single equation:
+\begin{align}\label{eq:svmconstrain}
+    y_i (\vb{w}^\T \vb{x_i} + b) \ge 1
+\end{align}
+
+From this equation we may find the values of the hyperplanes that border the margin (named \emph{gutter}), that is, the points where the last equation is exactly 1. 
+
+\subsubsection*{Equation of the gutters}
+\begin{align}\label{eq:gutters}
+    y_i (\vb{w}^\T \vb{x_i} + b) -1 = 0
+\end{align}
+
+Although now we know the equation for the getters, what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
+\begin{align*}
+    (\vt{x}_{(+)} - \vt{x}_{(-)}) \cdot \frac{\vt{w}}{||\vt{w}||}
+\end{align*}
+
+Notice that form equation \ref{eq:gutters} we can derive $\vt{w} \cdot \vt{x}_{(+)} = 1 - b$ and $\vt{w} \cdot \vt{x}_{(-)} = b - 1$, applying the distributive property we obtain:
+\begin{align*}
+    \frac{(1 - b) - (b - 1)}{||\vt{w}||} \implies \frac{2}{||\vt{w}||}
+\end{align*}
+
+Since we've defined the margin to be the distance from the decision boundary to a gutter (i.e. where support vectors are), and since the decision boundary is at the same distance to both gutters, then we can see that the length of the margin will be half the distance between the gutters.
+
+\subsubsection*{Length of the margin}
+
+\begin{align}
+    \frac{1}{||\vt{w}||}
+\end{align}
+
+\subsection{Optimization problem}
+
+The problem of finding the greatest margin can be formulated as an optimization problem. Specifically we want to maximize $1/||\vt{w}||$ subject to the constraints defined in equation \ref{eq:svmconstrain}. This is equivalent to minimizing $||\vt{w}||$ subject to the same constraints. For mathematical convenience (which we will see later), we can also divide by 2 and square the objective function without it affecting the optimal solution.
+
+\subsubsection*{Primal form}
+\begin{align}
+    \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2
+\end{align}
 
 \begin{itemize}
     \item 2D classification example.
@@ -163,6 +260,7 @@ A method called \emph{cross-validation} can be used to make mul\-ti\-ple experim
     \item Dual
     \item Optimization algorithms.
 \end{itemize}
+
 
 \section{Kernel Methods}
 
