@@ -225,7 +225,7 @@ From this equation we may find the values of the hyperplanes that border the mar
     y_i (\vb{w}^\T \vb{x_i} + b) -1 = 0
 \end{align}
 
-Although now we know the equation for the getters, what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
+Although now we know the equation for the gutters, what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
 \begin{align*}
     (\vt{x}_{(+)} - \vt{x}_{(-)}) \cdot \frac{\vt{w}}{||\vt{w}||}
 \end{align*}
@@ -240,7 +240,7 @@ Since we've defined the margin to be the distance from the decision boundary to 
 \subsubsection*{Length of the margin}
 
 \begin{align}
-    \frac{1}{||\vt{w}||}
+    \frac{1}{||\vt{w}||} = \frac{1}{\sqrt{\vb{w}^\T \vb{w}}}
 \end{align}
 
 \subsection{Optimization problem}
@@ -248,9 +248,91 @@ Since we've defined the margin to be the distance from the decision boundary to 
 The problem of finding the greatest margin can be formulated as an optimization problem. Specifically we want to maximize $1/||\vt{w}||$ subject to the constraints defined in equation \ref{eq:svmconstrain}. This is equivalent to minimizing $||\vt{w}||$ subject to the same constraints. For mathematical convenience (which we will see later), we can also divide by 2 and square the objective function without it affecting the optimal solution.
 
 \subsubsection*{Primal form}
-\begin{align}
-    \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2
+\begin{align}\label{eq:svm_primal} 
+    \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2 \text{\quad s.t. \quad} \forall i : y_i (\vb{w}^\T \vb{x_i} + b) - 1 \ge 0
 \end{align}
+
+This is a constrained quadratic optimization problem. There are various known algorithms that can solve constrained optimization problems, such as the \emph{simplex} algorithm. However, in our case it may be appropriate to use the \emph{Lagrangian} method. This method doesn't directly return a solution, instead it transforms the problem into another version, from which a direct solution may be more easily computed.
+
+\subsubsection*{Lagrangian}
+
+Imagine we had an easier optimization problem. E.g. a maximization pro\-blem such that its optimization function $f : \R^{D-1} \rightarrow \R$ is a function $f(\vt{x})$ of $D$ dimensions, and it has a single equality constrain $g(\vt{x}) = 0$ of $D - 1$ dimensions. Notice how the constraint is “projected” on top of $f(\vt{x})$. Then the Lagrangian method consists on optimizing a new function (equation \ref{eq:lagrangian_base}), via introducing a new pa\-ram\-e\-ter $\lambda$ called the \emph{Lagrangian multiplier}. 
+\begin{align}\label{eq:lagrangian_base} 
+    L(\vt{x}, \lambda) = f(x) - \lambda g(x)
+\end{align}
+
+Notice how there is only a subset of the images of $f(\vt{x})$ for which $f$ and $g$ inter\-sect. Where the intersection is defined as $\{\vt{x} \in \R^{D-1}\ |\ \exists \vt{c} : f(\vt{x}) = c \land g(\vt{x}) = 0\}$. Many values of $c$ contribute to the intersection, however we are only interested in the maximum or minimum values, since for these $\vt{x}$ becomes a \emph{stationary point}.
+
+An interesting property of these functions is that in the stationary points the di\-rec\-tion of the normal of both functions must be the same. Note that if the normal of $f$ was not orthogonal to the surface of $g$, we could increase $c$ by moving a short distance along the constraint surface. Also remember that the normal is the same as the gradient of that function, i.e. $\nabla f$. Therefore, there must exist a parameter $\lambda \neq 0$ (or $\lambda > 0$ for a minimization problem) such that:
+\begin{align}
+    \nabla f - \lambda \nabla g = 0
+\end{align}
+
+From this we see that the constrained stationary condition is obtained by setting $\nabla_x L = 0$. Notice that the gradient is defined as the partial derivatives of each coordinate in the vector, that is:
+\begin{align*}
+    \nabla_x L = \left( \frac{\partial L}{\partial x_1}, \frac{\partial L}{\partial x_2}, \cdots, \frac{\partial L}{\partial x_n} \right)
+\end{align*}
+
+At first glance it may look overwhelming, but given that $L$ is the same for all $x_i$ and that we can reuse the arithmetic operators for operations between vectors, doing the gradient is very similar than doing the partial derivate over a single scalar. 
+
+Going back to the SVM formalization, we can define the Lagrangian of the primal form (equation \ref{eq:svm_primal}) as:
+\begin{align}\label{eq:svm_lagrangian_from_primal}
+    L(\vt{w}, b, \vt{\alpha}) = \frac{1}{2} ||\vt{w}||^2 - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1\right]
+\end{align}
+
+Now we want to take the partial derivative with respect to $\vt{x}$ and equal to 0. Note that $||\vt{w}|| = \sqrt{w_1^2, w_2^2, \dots, w_n^2}$, if we elevate this expression to the power of two we can eliminate the square root, then if we divide by 2 we get a vector $\left( \frac{1}{2} w_1^2, \dots, \frac{1}{2} w_n^2 \right)$ which by deviating each coordinate we get $\vt{w}$. Therefore:
+\begin{align}
+    \frac{\partial L}{\partial \vt{w}} = \vt{w} - \sum \alpha_i y_i \vt{x_i} = 0 \implies \vt{w} = \sum \alpha_i y_i \vt{x_i}
+\end{align}
+
+Also, by doing the gradient with respect to $b$ and comparing with 0 we get:
+\begin{align}
+    \frac{\partial L}{\partial b} = - \sum \alpha_i y_i = 0 \implies \sum \alpha_i y_i = 0
+\end{align}
+ 
+If we plug these expressions back in equation \ref{eq:svm_lagrangian_from_primal} we can construct the \emph{dual form}. Note that $     ||\vt{w}||^2 = \vb{w}^\T \vb{w}$.
+
+\begin{align*}
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1\right]
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \alpha_i \left[ y_i \vb{w}^\T \vb{x_i} + y_i b - 1\right]
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \left[ \alpha_i y_i \vb{w}^\T \vb{x_i} + \alpha_i y_i b - \alpha_i \right]
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \alpha_i y_i \vb{w}^\T \vb{x_i} - \sum \alpha_i y_i b + \sum \alpha_i
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \alpha_i y_i \vb{w}^\T \vb{x_i} - b \sum \alpha_i y_i + \sum \alpha_i 
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \sum \alpha_i y_i \vb{w}^\T \vb{x_i} + \sum \alpha_i 
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \vt{w} \cdot \sum \alpha_i y_i \vb{x_i} + \sum \alpha_i 
+\\
+    L &= \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+    - \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right) + \sum \alpha_i 
+\\
+    L &= \sum \alpha_i - \frac{1}{2} \left( \sum \alpha_i y_i \vt{x_i} \right) \cdot \left( \sum \alpha_j y_j \vt{x_j} \right)
+\end{align*}
+
+\subsubsection*{Dual form}
+\begin{align}
+    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
+    \text{\quad s.t. \quad} \forall \alpha_i : \alpha_i \ge 0 \land \sum \alpha_i y_i = 0
+\end{align}
+
+This variation of the optimization problem has the immediate advantage of op\-ti\-miz\-ing over $\vt{\alpha}$ instead of $\vt{w}$. In cases where the number of dimensions exceeds the number of examples, solving this formulation is more efficient. Another historical reason for which the dual form has been preferred is because it allows using kernels (\cite{chapelle_training_2007}), something we will see later in section \ref{sec:ch4.kernels}.
+
+Both this form and the primal form will require the use of a quadratic op\-ti\-miza\-tion solver. The general complexity of such algorithms is $O(n^3)$. However, various techniques can be used that accomplish to reduce this complexity for both the primal and the dual forms.
+
+\subsection{Regularization}
+
+
 
 \begin{itemize}
     \item 2D classification example.
@@ -263,6 +345,7 @@ The problem of finding the greatest margin can be formulated as an optimization 
 
 
 \section{Kernel Methods}
+\label{sec:ch4.kernels}
 
 \begin{itemize}
     \item What is a kernel.
