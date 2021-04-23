@@ -31,7 +31,7 @@ Focus on reducing the computational cost.
 | Multi-class criteria | X | | | |
 | Sampling | X | | | |
 | Dynamic Step | |  | | X |
-| Stop condition | X | | | |
+| Stop condition | | X | | |
 
 # Bibliography
 

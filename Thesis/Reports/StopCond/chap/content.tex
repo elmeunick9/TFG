@@ -1,0 +1,66 @@
+\newcommand{\VS}{\vspace{6pt}}
+\newcommand{\vt}[1]{\vec{#1}}
+
+\chapter{Stop Condition} % Main chapter title
+
+\label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+
+%----------------------------------------------------------------------------------------
+
+This modification intends to find the optimal number of features that still performs reasonably well in terms of accuracy (i.e. stop condition) in a non-expensive manner. 
+
+\section{Description and reasoning}
+\label{sec:stopCond.desc}
+
+Such objective requires specifying a trade-off between accuracy and size of the fea\-ture subset. We could use cross-validation together with a function such as $a = \text{accuracy}$, $p = \text{percentage of selected features}$, $f(a, p) = t_0a + (1-p)$. Notice that a new parameter $t_0$ is required to determine the importance of one term over the other. Cross-validation however is a slow technique, as it requires to execute the whole SVM-RFE algorithm many times.
+
+The alternative we propose here is to use the weights $w$ calculated at every iteration of the SVM-RFE algorithm as an approximation of the accuracy difference. We hypothesize that greater values in the ranking criteria of the eliminated fea\-tures will result in a greater loss of accuracy. That is, when eliminating $k$ features, we calculate the commutative sum of the ranking criteria of the eliminated features and, if above a certain threshold, we stop.
+
+\section{Pseudocode formalization}
+
+\textbf{Definitions:}
+
+\begin{itemize}
+    \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
+    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
+\end{itemize}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t, t_0$ \tcp*{$t$ = step, $t_0$ = threshold, $0 \le t_0$}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list}
+      $q = 0$ \tcp*{stop condition}
+      \While{$|\vt{s}| > 0 \land q > s$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+
+            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Sum selected ranking criteria to determine stop cond.}\\
+            $q = \underset{i}{\sum} f_i$\VS
+
+            \tcc*[h]{Update the feature ranking list}\\
+            $\vt{r} = [\vt{s}(\vt{f}), ...\vt{r}]$\VS
+
+            \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
+            $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
+        }
+    \caption{SVM-RFE with Stop Condition}
+\end{algorithm}
+
+\section{Results}
+

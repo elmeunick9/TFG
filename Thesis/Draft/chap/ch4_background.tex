@@ -332,7 +332,9 @@ Both this form and the primal form will require the use of a quadratic op\-ti\-m
 
 \subsection{Regularization}
 
+It is now time to talk about the big elephant in the room\footnote{An obvious truth or fact, especially one regarded as embarrassing or undesirable, that is being intentionally ignored or left unaddressed.}. Until now, we've seen how it is desirable to maximize the margin, but we've purposely ignored the common situation where examples are not linearly separable. It could simply be that classes follow a distribution that is not separable using a hyperplane, in which case we would use kernels. But it could also be the case that although classes are close to be linearly separable there is some overlapping in their distributions.  
 
+We can solve this problem by redefining our margin as a \emph{soft margin}, such that we allow some amount of observations to be incorrectly classified, thus falling in the wrong side of the decision boundary, but with a penalty that increases with the distance to that boundary. 
 
 \begin{itemize}
     \item 2D classification example.
