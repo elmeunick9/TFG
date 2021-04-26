@@ -152,12 +152,6 @@ table,
 \end{center}
 \end{titlepage}
 
-
-
-%----------------------------------------------------------------------------------------
-%	THESIS CONTENT - CHAPTERS
-%----------------------------------------------------------------------------------------
-
 \newcommand{\tabhead}[1]{\textbf{#1}}
 \newcommand{\VS}{\vspace{6pt}}
 \newcommand{\vt}[1]{\vec{#1}}
@@ -165,6 +159,42 @@ table,
 \newcommand{\vb}[1]{\mathbf{#1}}
 \newcommand{\T}{\text{T}}
 \newcommand{\R}{\mathbb{R}}
+\newcommand{\ip}[1]{\langle#1\rangle}
+
+%----------------------------------------------------------------------------------------
+%	SYMBOLS
+%----------------------------------------------------------------------------------------
+
+\begin{symbols}{lll} % Include a list of Symbols (a three column table)
+
+	$X$ & Dataset & $\{\vt{x_1}, \vt{x_2}, \dots, \vt{x_N}\}$ \\
+	$\vt{x_i}$ & Example, observation, ... & $\{x_1, x_2, \dots, x_D\}$ \\
+	$Y$ & Dataset labels & $\{y_1, y_2, \dots, y_N\}$ \\
+	$\vt{w}$, $\vb{w}$ & Weight vector & $\{w_1, w_2, \dots, w_D\}$ \\
+	$b$ & Constant term, bias & E.g. $\vt{w} \cdot \vt{x} + b = 0$\\
+	$\alpha_i, \gamma_i$ & Lagrange multipliers & \\
+	$\xi_i$ & Slack variables & \\
+	$C$ & Regularization parameter & \\
+	%Symbol & Name & Unit \\
+	
+	\addlinespace % Gap to separate the Roman symbols from the Greek
+	
+	$\vt{u} \cdot \vt{v}$ & Dot/Scalar product (vector) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
+	$\vb{u^\T}\vb{v}$ & Dot/Scalar product (matrix) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
+	$\ip{\vb{u}, \vb{v}}$ & Inner product & E.g. $\vt{u} \cdot \vt{v}$ \\
+	$|n|$ & Absolute value & $\sqrt{n^2}$\\
+	$||\vt{u}||$ & Euclidean length & $\sqrt{\vt{u} \cdot \vt{u}}$\\
+	$d(u, v)$ & Euclidean distance & $||\vt{u} - \vt{v}||$\\
+
+	\addlinespace
+
+	$\phi(\vt{x})$ & Feature map & $\phi : D \rightarrow H$\\
+
+\end{symbols}
+
+%----------------------------------------------------------------------------------------
+%	THESIS CONTENT - CHAPTERS
+%----------------------------------------------------------------------------------------
 
 \mainmatter % Begin numeric (1,2,3...) page numbering
 

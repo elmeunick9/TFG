@@ -225,7 +225,7 @@ From this equation we may find the values of the hyperplanes that border the mar
     y_i (\vb{w}^\T \vb{x_i} + b) -1 = 0
 \end{align}
 
-Although now we know the equation for the gutters, what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
+Although now we know the equation for the gutters (analogy for the margin being a street), what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
 \begin{align*}
     (\vt{x}_{(+)} - \vt{x}_{(-)}) \cdot \frac{\vt{w}}{||\vt{w}||}
 \end{align*}
@@ -281,7 +281,7 @@ Going back to the SVM formalization, we can define the Lagrangian of the primal 
 \end{align}
 
 Now we want to take the partial derivative with respect to $\vt{x}$ and equal to 0. Note that $||\vt{w}|| = \sqrt{w_1^2, w_2^2, \dots, w_n^2}$, if we elevate this expression to the power of two we can eliminate the square root, then if we divide by 2 we get a vector $\left( \frac{1}{2} w_1^2, \dots, \frac{1}{2} w_n^2 \right)$ which by deviating each coordinate we get $\vt{w}$. Therefore:
-\begin{align}
+\begin{align}\label{eq:svm_representer}
     \frac{\partial L}{\partial \vt{w}} = \vt{w} - \sum \alpha_i y_i \vt{x_i} = 0 \implies \vt{w} = \sum \alpha_i y_i \vt{x_i}
 \end{align}
 
@@ -330,24 +330,128 @@ This variation of the optimization problem has the immediate advantage of op\-ti
 
 Both this form and the primal form will require the use of a quadratic op\-ti\-miza\-tion solver. The general complexity of such algorithms is $O(n^3)$. However, various techniques can be used that accomplish to reduce this complexity for both the primal and the dual forms.
 
+For this dual formulation, instead of directly finding the values of $\vt{w}$ we find the values of $\vt{\alpha}$. If we want to later calculate the values of the weight vector we can use the \emph{representer theorem} (equation \ref{eq:svm_representer}). For the constant parameter $b$ we can use the margin boundary equation \ref{eq:gutters}, which with some algebra can be expressed as $b = y_i - \vb{w^\T}\vb{x_i}$.
+
 \subsection{Regularization}
 
-It is now time to talk about the big elephant in the room\footnote{An obvious truth or fact, especially one regarded as embarrassing or undesirable, that is being intentionally ignored or left unaddressed.}. Until now, we've seen how it is desirable to maximize the margin, but we've purposely ignored the common situation where examples are not linearly separable. It could simply be that classes follow a distribution that is not separable using a hyperplane, in which case we would use kernels. But it could also be the case that although classes are close to be linearly separable there is some overlapping in their distributions.  
+Until now, we've seen how it is desirable to maximize the margin, but we've pur\-pose\-ly ignored the common situation where examples are not linearly separable. It could simply be that classes follow a distribution that is not separable using a hyperplane, in which case we would use kernels. But it could also be the case that although classes are close to be linearly separable there is some overlapping in their distributions.  
 
-We can solve this problem by redefining our margin as a \emph{soft margin}, such that we allow some amount of observations to be incorrectly classified, thus falling in the wrong side of the decision boundary, but with a penalty that increases with the distance to that boundary. 
+We can solve this problem by redefining our margin as a \emph{soft margin}, such that we allow some amount of observations to be incorrectly classified, thus falling within the margin or in the wrong side of the decision boundary, but with a penalty that increases with the distance to correct side of the margin. To do so we introduce \emph{slack variables}, one for each example, such that $\xi_i = 0$ if the example $i$ is correctly classified, $0 < \xi_i < 1$ if within the margin, and $\xi_i \ge 1$ if it's in the wrong side of the margin.
 
-\begin{itemize}
-    \item 2D classification example.
-    \item Mathematical formulation as an optimization problem.
-    \item Dual
-    \item SVM with regularization.
-    \item Dual
-    \item Optimization algorithms.
-\end{itemize}
+Now we can reformulate our \emph{primal} with this new variables, penalizing the sum of misclassifications and also introducing a \emph{regularization parameter} $C$ that allows to specify the desired trade-off strength between correct classification and slack.
 
+\subsubsection*{Primal form with regularization}
+\begin{align}\label{eq:svm_primal_reg} 
+    \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2 + C \sum_{i=1}^{N} \xi_i
+    \text{\quad s.t. \quad} 
+    \forall i : y_i (\vb{w}^\T \vb{x_i} + b) \ge 1 - \xi_i \quad \land \quad \xi_i \ge 0
+\end{align}
+
+An equivalent way to perform regularization is by using an empirical risk mini\-mization approx. Given our decision rule (equation \ref{eq:drule}), we need to find a \emph{loss function} that works well for classification problems, such as the \emph{hinge loss}, defined as:
+\begin{align}
+    l(t) = \max \{0, 1 - t\} \text{\quad where \quad} t = y_if(x_i) = y_i (\vb{w}^\T \vb{x_i} + b)
+\end{align}
+
+This can also be written:
+\begin{align*}
+    l(t) = \left\{
+        \begin{array}{ll}
+            0   & \mbox{if} \quad t \ge 1 \\
+            1-t & \mbox{if} \quad t < 1  
+        \end{array}
+    \right.
+\end{align*}
+
+For a given training set we seek to minimize the total loss, while regularizing the objective with $l_2$-regularization (i.e. $||\vt{w}||^2$). This gives the unconstrained reg\-u\-lar\-iza\-tion problem equivalent to equation \ref{eq:svm_primal_reg}:
+\begin{align}
+    \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2 + C \sum_{i=1}^{N} \max \{0, 1 -  y_i (\vb{w}^\T \vb{x_i} + b)\}
+\end{align}
+
+Using the same Lagrangian process shown for the hard margin version, we can obtain the dual form of the soft margin version as follows:
+
+\begin{align*}
+    L(\vt{w}, b, \vt{\xi}, \vt{\alpha}, \vt{\gamma}) = 
+    \frac{1}{2} ||\vt{w}||^2 + C \sum \xi_i
+    - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1 + \xi_i \right]
+    - \sum \gamma_i \xi_i
+\end{align*}
+
+\subsubsection*{Dual form with regularization}
+\begin{align}\label{eq:svm_dual_reg} 
+    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
+    \text{\quad s.t. \quad} \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
+\end{align}
+
+This is notably similar to the hard margin version, where only one constrain has changed. 
+
+\pagebreak
 
 \section{Kernel Methods}
 \label{sec:ch4.kernels}
+
+The use of kernel functions enables learning machines such as SVM to have non-linear decision boundaries, thus allowing them to make correct predictions even if the dataset is not linearly separable (but separable nonetheless).
+
+\subsection{Feature map}
+
+A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, vectors in some space $D$ (typically $\mathbb{R}^D$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
+
+For the sake using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that defines an inner product and also is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
+
+To verify that a space is a real metric space we need to see that, for any vectors $\vb{x}$, $\vb{y}$, $\vb{z}$ and scalars $a$, $b$:
+
+\begin{enumerate}
+    \item The inner product is symmetric:
+    \begin{align*}
+        \ip{\vb{x}, \vb{y}} = \ip{\vb{x}, \vb{y}}
+    \end{align*}
+    \item The inner product is lineal:
+    \begin{align*}
+        \ip{a\vb{x} + b\vb{y}, \vb{z}} = a\ip{\vb{x}, \vb{z}} + b\ip{\vb{y}, \vb{z}} 
+    \end{align*}
+    \item The inner product of the same element is positive definite:
+    \begin{align*}
+        \ip{\vb{x}, \vb{x}} \ge 0
+    \end{align*}
+    Where $\ip{\vb{x}, \vb{x}} = 0$ only if $\vb{x}$ is neutral, i.e. $\vt{x} = (0,0,\dots, 0)$. \\
+    These three properties are enough to define a \emph{product space}, to make it also a metric space we need to add the next two.
+    \item The triangle inequality holds:
+    \begin{align*}
+        d(\vb{x}, \vb{z}) \le d(\vb{x}, \vb{y}) + d(\vb{y}, \vb{z}) 
+    \end{align*}
+    \item The more general Cauchy–Schwarz inequality, from which the triangle in\-equal\-i\-ty can actually be derived.
+    \begin{align*}
+        |\ip{\vb{x}, \vb{y}}| \le ||\vb{x}||\ ||\vb{y}|| 
+    \end{align*}
+\end{enumerate}
+
+It is not hard to extend these properties to complex spaces, although outside the scope of this project. Finally, to see that this space is complete, we need to check that every Cauchy sequence in this space is convergent, i.e. has a limit also in the space. In other words, given a metric, such as the euclidean distance, there will always be points $\vb{x}$ and $\vb{y}$ such that for any $r > 0$ we have that $d(\vb{x}, \vb{y}) < r$. Euclidean spaces $\mathbb{R}^n$ as well as the complex space $\mathbb{C}$, and others are examples of Hilbert spaces.
+
+\subsection{Kernel functions}
+
+A \emph{similarity function} is a function $d : \mathcal{X \times X} \rightarrow \mathbb{R}$ that uses some similarity measure (e.g. euclidean distance) to determine if two objects (e.g. points, vectors) are similar and returns a real number specifying how much. Kernel functions are a class of similarity functions for which a feature map is implicitly defined, such that:
+\begin{align}
+    k(\vb{x_i}, \vb{x_j}) = \ip{\phi(\vb{x_i}), \phi(\vb{x_j})}
+\end{align}
+
+We can compute explicitly a kernel function if we have the feature mapping defined, for instance, given:
+\begin{align*}
+    \phi : \mathbb{R}^2 \rightarrow \mathbb{R}^4 &
+    \qquad\qquad
+    \phi(x_1, x_2) = (x_1^2, x_2^2, x_1x_2, x_1x_2)
+\end{align*}
+
+Remember that the inner product in an euclidean space $\mathbb{R}^n$ is defined as the dot product. Then the kernel function, for two points $\vb{a}, \vb{b} \in \mathbb{R}^2$ is:
+\begin{align*}
+    k(\vb{a}, \vb{b}) &= \ip{\phi(\vb{a}), \phi(\vb{b})} = \ip{\phi(a_1, a_2), \phi(b_1, b_2)} \\
+    &= a_1^2b_1^2 + a_2^2b_2^2 + a_1a_2b_1b_2 + a_1a_2b_1b_2 \\
+    &= (a_1b_1)^2 + (a_2b_2)^2 + 2(a_1b_1)(a_2b_2) \\
+    &= (a_1b_1 + a_2b_2)^2 = \ip{\vb{a}, \vb{b}}^2
+\end{align*}
+
+Notice how a kernel function may actually simplify the computation and reduce the required amount of operations compared to actually transforming the points and then applying the inner product. In this case, for in\-stance, we see that although the feature mapping is doubling the amount of di\-men\-sions, the kernel function that uses it can be simplified to an inner product in the domain. Thus, we can also define a kernel function without defining the feature map explicitly, e.g. $k(\vb{a}, \vb{b}) = \ip{\vb{a}, \vb{b}}^2$.
+
+\subsection{The kernel trick}
+
 
 \begin{itemize}
     \item What is a kernel.
