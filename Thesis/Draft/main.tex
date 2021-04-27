@@ -172,15 +172,17 @@ table,
 	$Y$ & Dataset labels & $\{y_1, y_2, \dots, y_N\}$ \\
 	$\vt{w}$, $\vb{w}$ & Weight vector & $\{w_1, w_2, \dots, w_D\}$ \\
 	$b$ & Constant term, bias & E.g. $\vt{w} \cdot \vt{x} + b = 0$\\
+	$\vt{u} \cdot \vt{v}$ & Dot/Scalar product (vector) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
+	$\vb{u^\T}\vb{v}$ & Dot/Scalar product (matrix) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
+
+	\addlinespace
+
 	$\alpha_i, \gamma_i$ & Lagrange multipliers & \\
 	$\xi_i$ & Slack variables & \\
 	$C$ & Regularization parameter & \\
-	%Symbol & Name & Unit \\
-	
-	\addlinespace % Gap to separate the Roman symbols from the Greek
-	
-	$\vt{u} \cdot \vt{v}$ & Dot/Scalar product (vector) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
-	$\vb{u^\T}\vb{v}$ & Dot/Scalar product (matrix) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
+
+	\addlinespace 
+
 	$\ip{\vb{u}, \vb{v}}$ & Inner product & E.g. $\vt{u} \cdot \vt{v}$ \\
 	$|n|$ & Absolute value & $\sqrt{n^2}$\\
 	$||\vt{u}||$ & Euclidean length & $\sqrt{\vt{u} \cdot \vt{u}}$\\
@@ -189,6 +191,8 @@ table,
 	\addlinespace
 
 	$\phi(\vt{x})$ & Feature map & $\phi : D \rightarrow H$\\
+	$k(\vb{x_i}, \vb{x_j})$ & Kernel function & $\ip{\phi(\vb{x_i}), \phi(\vb{x_j})}$\\
+	$\gamma, \sigma$ & RBF Kernel Parameter & \\
 
 \end{symbols}
 

@@ -389,13 +389,13 @@ This is notably similar to the hard margin version, where only one constrain has
 \section{Kernel Methods}
 \label{sec:ch4.kernels}
 
-The use of kernel functions enables learning machines such as SVM to have non-linear decision boundaries, thus allowing them to make correct predictions even if the dataset is not linearly separable (but separable nonetheless).
+The use of kernel functions enables learning machines such as SVM to have non-linear decision boundaries, thus allowing them to make correct predictions even if the dataset is not linearly separable (but separable nonetheless), see Figure \ref{fig:ch4.kernels}.
 
 \subsection{Feature map}
 
-A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, vectors in some space $D$ (typically $\mathbb{R}^D$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
+A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, or projects, vectors in some space $D$ (typically $\mathbb{R}^D$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
 
-For the sake using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that defines an inner product and also is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
+For the sake of using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that defines an inner product and also is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
 
 To verify that a space is a real metric space we need to see that, for any vectors $\vb{x}$, $\vb{y}$, $\vb{z}$ and scalars $a$, $b$:
 
@@ -424,7 +424,7 @@ To verify that a space is a real metric space we need to see that, for any vecto
     \end{align*}
 \end{enumerate}
 
-It is not hard to extend these properties to complex spaces, although outside the scope of this project. Finally, to see that this space is complete, we need to check that every Cauchy sequence in this space is convergent, i.e. has a limit also in the space. In other words, given a metric, such as the euclidean distance, there will always be points $\vb{x}$ and $\vb{y}$ such that for any $r > 0$ we have that $d(\vb{x}, \vb{y}) < r$. Euclidean spaces $\mathbb{R}^n$ as well as the complex space $\mathbb{C}$, and others are examples of Hilbert spaces.
+It is not hard to extend these properties to complex spaces, although outside the scope of this project. Finally, to see that this space is complete, we need to check that every Cauchy sequence in this space is convergent, i.e. has a limit also in the space. In other words, given a metric, such as the euclidean distance, there will always be points $\vb{x}$ and $\vb{y}$ such that for any $r > 0$ we have that $d(\vb{x}, \vb{y}) < r$. Euclidean spaces $\mathbb{R}^n$ as well as the complex space $\mathbb{C}$, and others, are examples of Hilbert spaces.
 
 \subsection{Kernel functions}
 
@@ -448,21 +448,75 @@ Remember that the inner product in an euclidean space $\mathbb{R}^n$ is defined 
     &= (a_1b_1 + a_2b_2)^2 = \ip{\vb{a}, \vb{b}}^2
 \end{align*}
 
-Notice how a kernel function may actually simplify the computation and reduce the required amount of operations compared to actually transforming the points and then applying the inner product. In this case, for in\-stance, we see that although the feature mapping is doubling the amount of di\-men\-sions, the kernel function that uses it can be simplified to an inner product in the domain. Thus, we can also define a kernel function without defining the feature map explicitly, e.g. $k(\vb{a}, \vb{b}) = \ip{\vb{a}, \vb{b}}^2$.
+Notice how a kernel function may actually simplify the computation and reduce the required amount of operations compared to actually transforming the points and then applying the inner product. In this case, for in\-stance, we see that although the feature mapping is doubling the amount of di\-men\-sions, the kernel function that uses it can be simplified to an inner product in the domain. Thus, we can also define a kernel function without defining the feature map explicitly, e.g. $k(\vb{a}, \vb{b}) = \ip{\vb{a}, \vb{b}}^2$. Also note that there may be multiple feature maps that result in the same kernel. 
+
+One powerful alternative technique to construct kernels implicitly is to build them out of simpler kernels as building blocks. This can be done using a set of known properties. Given valid kernels $k_1(\vb{a}, \vb{b})$ and $k_2(\vb{a}, \vb{b})$, with $\vb{a}, \vb{b} \in \mathcal{X}$, the following kernels are also valid:
+\begin{align}
+    k(\vb{a}, \vb{b}) &= c k_1(\vb{a}, \vb{b})\\
+    k(\vb{a}, \vb{b}) &= f(\vb{a}) k_1(\vb{a}, \vb{b}) f(\vb{b})\\
+    k(\vb{a}, \vb{b}) &= q(k_1(\vb{a}, \vb{b}))\\
+    k(\vb{a}, \vb{b}) &= \text{exp}(k_1(\vb{a}, \vb{b}))\\
+    k(\vb{a}, \vb{b}) &= k_1(\vb{a}, \vb{b}) + k_2(\vb{a}, \vb{b})\\
+    k(\vb{a}, \vb{b}) &= k_1(\vb{a}, \vb{b}) k_2(\vb{a}, \vb{b})\\
+    k(\vb{a}, \vb{b}) &= k_{r}(\phi(\vb{a}), \phi(\vb{b}))
+\end{align} 
+where $c > 0$ is a constant, $f(\cdot)$ is any function, $q(\cdot)$ is a polynomial function with nonnegative coefficients, and $k_r$ only applies to euclidean spaces $\mathbb{R}^n$ (\cite{bishop_pattern_2006}).
+
+Using this knowledge we can construct some of the most popular kernels:
+
+\subsubsection*{Linear kernel}
+\begin{align}
+    k(\vb{a}, \vb{b}) = \ip{\vb{a}, \vb{b}}
+\end{align}
+
+\subsubsection*{Polynomial kernel}
+\begin{align}
+    k(\vb{a}, \vb{b}) = (\ip{\vb{a}, \vb{b}} + c)^d
+\end{align}
+For some $d \in \mathbb{N}$ and $c \ge 0$, when $c = 0$ is said to be homogeneous.
+
+\subsubsection*{RBF (Radial Basis Function) / Gaussian / Squared Exponential Kernel}
+\begin{align}
+    k(\vb{a}, \vb{b}) = \text{exp}(-\gamma ||\vb{a} - \vb{b}||^2)
+\end{align}
+Where $\gamma$ is a parameter that sets the “spread” of the kernel and $\text{exp}(x) = e^x$. Recall that a Gaussian distribution has a bell-shaped curve, that is, closer points have more similarity (and thus a greater value) than more separated points. By setting $\gamma = \frac{1}{2\sigma^2}$ we can write it in the equivalent Gaussian form:
+\begin{align}
+    k(\vb{a}, \vb{b}) = \text{exp}\left(-\frac{||\vb{a} - \vb{b}||^2}{2\sigma^2}\right)
+\end{align}
+
+This kernel has multiple interesting properties. It can be expressed as an infinite sum of polynomial kernels, this implies that the projection, i.e. the feature space, is a space with infinite dimension (\cite{bernstein_radial_2017}). In contrast with other kernels, where using the implicit kernel function only provides an improvement in com\-pu\-ta\-tion\-al cost, in this case not needing to calculate the feature map explicitly allows turning a problem that is not computable into one that can be computed trivially.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.7\linewidth]{img/ch4/kernels.png}
+    \caption{Input space decision boundary of SVM with different kernels. Source (\cite{deisenroth_mathematics_2020}).}
+    \label{fig:ch4.kernels}
+\end{figure}
+
 
 \subsection{The kernel trick}
 
+Recalling the SVM formulation with regularization, equation \ref{eq:svm_primal_reg}, what we want to do now is to use a feature map such that the SVM operates on the feature space instead of the input space. If we modify every instance $\vb{x}$ with $\phi(\vb{x})$, replace the dot product with the inner product, and produce the dual using the Lagrangian method over this new formulation, we will obtain:
+\begin{align*}
+    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \ip{\phi(\vt{x_i}), \phi(\vt{x_j})}
+    \text{\quad s.t. \quad} \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
+\end{align*}
 
-\begin{itemize}
-    \item What is a kernel.
-    \item The kernel trick.
-\end{itemize}
+Notice that with this new formulation we can replace the inner product with a kernel function and profit from all the advantages that kernels provide over having to explicitly compute the inner product in the feature space. This is called the “kernel trick”.
+
+\subsubsection*{SVM Dual form (kernel version)}
+\begin{align}\label{eq:svm_dual_kernel} 
+    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j k(\vb{x_i}, \vb{x_j})
+    \text{\ \ \ s.t. \ \ } \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
+\end{align}
+
+With this new version we also have the possibility to precompute all values of the kernel. We do this by defining a matrix $K_{i,j} = k(\vb{x_i}, \vb{x_j})$ called \emph{Gram matrix} or sometimes \emph{kernel matrix}. Because of the properties of kernels, a kernel matrix will always be symmetric and positive semi-definite, i.e. $\forall \vb{z} \in \mathbb{R}^n : \vb{z}^T K \vb{z} \ge 0$.
+
+In the context of image processing, a convolution between a kernel matrix (also called \emph{convolution matrix}) and an image is used to do all kinds of filtering, including blurring, sharpening, embossing, edge detection, and more. This specific kernel matrix is generated using all discrete points representing pixel positions (the center of cells in a grid) with an origin in the center of the grid.
+
+Another advantage of using kernels is that, since they don't restrict the input space to real numbers, you can now use SVM to classify between all kind of objects, e.g. sets, sequences, strings, graphs and distributions.
 
 \section{SVM-RFE}
-\begin{itemize}
-    \item What is RFE.
-    \item The ranking criteria for the linal case.
-\end{itemize}
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
@@ -496,6 +550,13 @@ Notice how a kernel function may actually simplify the computation and reduce th
         }
     \caption{SVM-RFE}
 \end{algorithm}
+
+----
+
+\begin{itemize}
+    \item What is RFE.
+    \item The ranking criteria for the linal case.
+\end{itemize}
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
