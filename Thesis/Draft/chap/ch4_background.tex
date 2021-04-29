@@ -108,7 +108,6 @@ We may want to compact this expression more by using vectors. So, another form f
 \end{align}
 
 Where $\vb{w}$ is called the \emph{vector weight} and $w_0$ the \emph{bias}. We can turn this equation into a discriminant function for two classes by simply considering what happens with points that are not in the hyperplane. By definition such points meet one of the two inequations:
-
 \begin{align*}
     \vb{w}^{\T}\vb{x} + w_0 > 0 \\
     \vb{w}^{\T}\vb{x} + w_0 < 0
@@ -368,7 +367,6 @@ For a given training set we seek to minimize the total loss, while regularizing 
 \end{align}
 
 Using the same Lagrangian process shown for the hard margin version, we can obtain the dual form of the soft margin version as follows:
-
 \begin{align*}
     L(\vt{w}, b, \vt{\xi}, \vt{\alpha}, \vt{\gamma}) = 
     \frac{1}{2} ||\vt{w}||^2 + C \sum \xi_i
@@ -514,11 +512,61 @@ With this new version we also have the possibility to precompute all values of t
 
 In the context of image processing, a convolution between a kernel matrix (also called \emph{convolution matrix}) and an image is used to do all kinds of filtering, including blurring, sharpening, embossing, edge detection, and more. This specific kernel matrix is generated using all discrete points representing pixel positions (the center of cells in a grid) with an origin in the center of the grid.
 
+Sometimes the dual SVM formulation will be expressed in terms of the kernel matrix directly. Another matrix formulation can be done by using the \emph{Hessian} matrix, which for SVM is defined as $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$. This allows expressing equation \ref{eq:svm_dual_kernel} as a cost function (to be minimized) with the formula $(1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$, where $\vb{1}$ (in bold) is a vector of 1.
+
 Another advantage of using kernels is that, since they don't restrict the input space to real numbers, you can now use SVM to classify between all kind of objects, e.g. sets, sequences, strings, graphs and distributions.
 
 \section{SVM-RFE}
 
-\begin{algorithm}[H]
+Continuing our discussion on section \ref{sec:ch1.feature_selection}, SVM-RFE is an embedded feature se\-lec\-tion algorithm. In this section we shall explore in more detail how and why this algorithm works.
+
+\subsection{Ranking criteria}
+
+One basic idea of feature selection is to use a feature ranking and then select a number $r$ of the best ranking features as the final selection. For classification prob\-lems, one possible way to produce such a ranking is to evaluate how well a single feature contributes to the separation of the classes, these are called \emph{correlation filter methods} and the evaluation function \emph{correlation coefficients}, e.g:
+\begin{align*}
+    w_i = \frac{\mu_i(+) - \mu_i(-)}{\sigma_i(+) + \sigma_i(-)} 
+\end{align*}
+where $\mu_i$ and $\sigma_i$ are the mean and standard deviations for the observation in the $(+)$ and $(-)$ class respectively. Large positive values of $w_i$ indicate strong correlation with class $(+)$ and large negative values with class $(-)$. The absolute or the square of $w_i$ can be used as the \emph{ranking criteria}, i.e. the scores of each feature such that when sorted produce a feature ranking. Other similar correlation based ranking criterion include \emph{Fisher}, \emph{Pearson}, \emph{Spearman} or \emph{Kendall} coefficients.
+
+Note that a feature that is correlated to some class is by itself a class predictor (albeit an imperfect one). This class predictors may be combined, either directly or with some scheme, e.g. \emph{weighted voting}, to produce a linear discriminant classifier (\cite{guyon_gene_2002}).
+\begin{align*}
+    D(\vt{x}) = \vt{w} \cdot (\vt{x} - \mu) 
+\end{align*}
+
+If opposite is also true, given a wight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
+
+An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the wight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the wight vector produced by an SVM.
+
+One problem of this interpretation is that only works when the decision bound\-ary is lineal. However, it gives us a hint on how to generalize it for non-linear decision boundaries: We can use the change in objective function (or cost function) when a feature is removed as a ranking criterion. Let $J$ be the SVM cost function $J = (1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$. Then, to compute the change in cost function $DJ(i)$ caused by removing the feature $i$, we leave the $\boldsymbol{\alpha}$ unchanged (for performance reasons) and recompute the matrix $\vb{H}$, yielding $\vb{H}(-i)$ where the notation $(-i)$ means that the component $i$ has been removed. The resulting ranking coefficient is:
+\begin{align*}
+    DJ(i) = [(1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}]
+     - [(1/2) \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha} - \alpha^\T \vb{1}]
+\end{align*}
+
+\subsubsection*{General ranking coefficient for SVM}
+\begin{align}
+    DJ(i) = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha})
+\end{align}
+
+Note that when the kernel is lineal then $\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} = ||\vb{w}||^2$, therefore:
+\begin{align*}
+    DJ(i) &= (1/2)(||\vb{w}||^2 - ||\vb{w}(-i)||^2) \\
+          &= (1/2)[(w_1^2 + w_2^2 + \dots + w_D^2) - (w_1^2 + w_2^2 + \dots + w_{i-1}^2 + 0 + w_{i+1}^2 + \dots + w_D^2)] \\
+          &= (1/2)(w_i^2) \quad \sim \quad (w_i)^2
+\end{align*} 
+
+\iffalse
+Let $J$ be any cost function, e.g. $J = (1/2)||\vb{w}||^2$ for SVM (equation \ref{eq:svm_primal}), we can approximate the change in cost function $DJ(i)$ caused by setting feature $w_i$ to 0 by expanding $J$ in Taylor series\footnote{Any real or complex differentiable function can be expressed as a Taylor series, which is a polynomial of the form $f(a) + \frac{f'(a)}{1!}(x - a) + \frac{f''(a)}{2!}(x - a)^2 + \dots$, where $a$ is some point in the domain. The function can thus be approximated by restricting the polynomial to some order $n$.} to second order. At the optimum of $J$ the first order term can be neglected, yielding:
+\begin{align*}
+    DJ(i) = (1/2) \frac{\partial^2 J}{\partial w_i^2} (0 - w_i)^2 = \frac{\partial \vb{w}}{\partial w_i} (w_i)^2 = (w_i)^2
+\end{align*}
+\fi
+
+Computationally, the non-lineal version is more expensive, however we may be able to optimize it by only recomputing support vectors (since $\boldsymbol{\alpha}$ is unchanged), and by caching partial results on the other components of these vectors.
+
+\subsection{Recursive Feature Elimination}
+
+\begin{algorithm}[h]
     \DontPrintSemicolon
       %\KwInput{$p$}
       \KwOutput{$\vt{r}$}
@@ -551,14 +599,10 @@ Another advantage of using kernels is that, since they don't restrict the input 
     \caption{SVM-RFE}
 \end{algorithm}
 
-----
+\subsection{Assessing performance}
 
-\begin{itemize}
-    \item What is RFE.
-    \item The ranking criteria for the linal case.
-\end{itemize}
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
     \DontPrintSemicolon
       \KwInput{$t$ \tcp*{t = step}}
       \KwOutput{$\vt{r}$}
