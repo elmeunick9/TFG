@@ -121,6 +121,7 @@ A linear binary classification learning machine is thus an algorithm that given 
 \end{align}
 
 \subsection{Performance}
+\label{sec:ch4.performance}
 
 Usually models produced by a learning machine do not always make correct pre\-dict\-ions, instead we consider them good enough if they can classify new data correctly most of the time. In order to quantize how good of a predictor some model is we can use various performance metrics.
 
@@ -279,7 +280,7 @@ Going back to the SVM formalization, we can define the Lagrangian of the primal 
     L(\vt{w}, b, \vt{\alpha}) = \frac{1}{2} ||\vt{w}||^2 - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1\right]
 \end{align}
 
-Now we want to take the partial derivative with respect to $\vt{x}$ and equal to 0. Note that $||\vt{w}|| = \sqrt{w_1^2, w_2^2, \dots, w_n^2}$, if we elevate this expression to the power of two we can eliminate the square root, then if we divide by 2 we get a vector $\left( \frac{1}{2} w_1^2, \dots, \frac{1}{2} w_n^2 \right)$ which by deviating each coordinate we get $\vt{w}$. Therefore:
+Now we want to take the partial derivative with respect to $\vt{x}$ and equal to 0. Note that $||\vt{w}|| = \sqrt{\vb{w}^\T\vb{w}}$, if we elevate this expression to the power of two we can eliminate the square root. The derivative for one component is $\frac{\partial [(1/2)\vb{w}^\T\vb{w}]}{\partial w_i} = w_i$, combining them (derivative of the vector) we get $\vt{w}$. Therefore:
 \begin{align}\label{eq:svm_representer}
     \frac{\partial L}{\partial \vt{w}} = \vt{w} - \sum \alpha_i y_i \vt{x_i} = 0 \implies \vt{w} = \sum \alpha_i y_i \vt{x_i}
 \end{align}
@@ -533,11 +534,11 @@ Note that a feature that is correlated to some class is by itself a class predic
     D(\vt{x}) = \vt{w} \cdot (\vt{x} - \mu) 
 \end{align*}
 
-If opposite is also true, given a wight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
+The opposite is also true, given a wight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
 
 An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the wight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the wight vector produced by an SVM.
 
-One problem of this interpretation is that only works when the decision bound\-ary is lineal. However, it gives us a hint on how to generalize it for non-linear decision boundaries: We can use the change in objective function (or cost function) when a feature is removed as a ranking criterion. Let $J$ be the SVM cost function $J = (1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$. Then, to compute the change in cost function $DJ(i)$ caused by removing the feature $i$, we leave the $\boldsymbol{\alpha}$ unchanged (for performance reasons) and recompute the matrix $\vb{H}$, yielding $\vb{H}(-i)$ where the notation $(-i)$ means that the component $i$ has been removed. The resulting ranking coefficient is:
+One problem of this interpretation is that it only works when the decision bound\-ary is lineal. However, it gives us a hint on how to make a generalization for non-linear decision boundaries: We can use the change in objective function (or cost function) when a feature is removed as a ranking criterion. Let $J$ be the SVM cost function $J = (1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$. First, we train the machine and compute the $\boldsymbol{\alpha}$ parameters. Then, to compute the change in cost function $DJ(i)$ caused by removing the feature $i$, we leave the $\boldsymbol{\alpha}$ unchanged (for performance reasons) and recompute the matrix $\vb{H}$, yielding $\vb{H}(-i)$ where the notation $(-i)$ means that the component $i$ has been removed. The resulting ranking coefficient is:
 \begin{align*}
     DJ(i) = [(1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}]
      - [(1/2) \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha} - \alpha^\T \vb{1}]
@@ -551,56 +552,30 @@ One problem of this interpretation is that only works when the decision bound\-a
 Note that when the kernel is lineal then $\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} = ||\vb{w}||^2$, therefore:
 \begin{align*}
     DJ(i) &= (1/2)(||\vb{w}||^2 - ||\vb{w}(-i)||^2) \\
-          &= (1/2)[(w_1^2 + w_2^2 + \dots + w_D^2) - (w_1^2 + w_2^2 + \dots + w_{i-1}^2 + 0 + w_{i+1}^2 + \dots + w_D^2)] \\
+          &= (1/2)[(w_1^2 + w_2^2 + \dots + w_D^2) - (w_1^2 + \dots + w_{i-1}^2 + 0 + w_{i+1}^2 + \dots + w_D^2)] \\
           &= (1/2)(w_i^2) \quad \sim \quad (w_i)^2
 \end{align*} 
 
-\iffalse
-Let $J$ be any cost function, e.g. $J = (1/2)||\vb{w}||^2$ for SVM (equation \ref{eq:svm_primal}), we can approximate the change in cost function $DJ(i)$ caused by setting feature $w_i$ to 0 by expanding $J$ in Taylor series\footnote{Any real or complex differentiable function can be expressed as a Taylor series, which is a polynomial of the form $f(a) + \frac{f'(a)}{1!}(x - a) + \frac{f''(a)}{2!}(x - a)^2 + \dots$, where $a$ is some point in the domain. The function can thus be approximated by restricting the polynomial to some order $n$.} to second order. At the optimum of $J$ the first order term can be neglected, yielding:
+Computationally, the non-lineal version is more expensive, however we may be able to optimize it by only recomputing support vectors (since $\boldsymbol{\alpha}$ is unchanged), and by caching partial results on the other components of these vectors.
+
+\begin{sloppypar}
+There are other ranking coefficients that use the information form the model trained by some learning machine, e.g. \emph{Relevancy and Redundancy Criteria} (\cite{mundra_svm-rfe_2007}), or the \emph{Span Estimate Gradient} (\cite{rakotomamonjy_variable_2003}).
+\end{sloppypar}
+
+Particularly, one method that also returns a ranking coefficient $(w_i)^2$ for the lineal case is based on the OBD algorithm (\cite{guyon_gene_2002}). It approximates the dif\-fer\-ence with a Taylor series expansion\footnote{Any real or complex differentiable function can be expressed as a Taylor series, which is a polynomial of the form $f(a) + \frac{f'(a)}{1!}(x - a) + \frac{f''(a)}{2!}(x - a)^2 + \dots$, where $a$ is some point in the domain. The function can thus be approximated by restricting the polynomial to some order $n$.} to second order. At the optimum of $J$ the first order term can be neglected, yielding:
 \begin{align*}
     DJ(i) = (1/2) \frac{\partial^2 J}{\partial w_i^2} (0 - w_i)^2 = \frac{\partial \vb{w}}{\partial w_i} (w_i)^2 = (w_i)^2
 \end{align*}
-\fi
-
-Computationally, the non-lineal version is more expensive, however we may be able to optimize it by only recomputing support vectors (since $\boldsymbol{\alpha}$ is unchanged), and by caching partial results on the other components of these vectors.
 
 \subsection{Recursive Feature Elimination}
 
-\begin{algorithm}[h]
-    \DontPrintSemicolon
-      %\KwInput{$p$}
-      \KwOutput{$\vt{r}$}
-      \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
-      $\vt{r} = []$ \tcp*{feature ranked list} 
-      \While{$|\vt{s}| > 0$}
-        {
-            \tcc*[h]{Restrict training examples to good feature indices}\\
-            $X=X_0(:,\vt{s})$\VS
+The criteria $DJ(i)$ estimates the effect of removing one feature at a time on the objective function. It doesn't perform particularly well when several features are removed. This problem can be overcome by using an iterative procedure, called RFE (Recursive Feature Elimination), where we eliminate one feature and retrain the learning machine each iteration.
 
-            \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+This is an instance of backward feature elimination, and since we're using the wight vector of the learning machine in order to compute the feature ranking, we're performing an embedded method. For performance reasons it may be more efficient to remove multiple features at a time, thus we can introduce a \emph{step} parameter $t$ to indicate how many features to do at a time. In this case the method produces a feature subset ranking, a nested set of the form $F_1 \subset F_2 \subset \dots \subset F$. This feature subset ranking may better be represented as a list of vectors, such that when flat\-tened produces the final feature ranking.
 
-            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+Note that with this method, top ranked features are not necessarily the most relevant when taken individually, it is when taken together that features of a subset $F_m$ are relevant in some sense.
 
-            \tcc*[h]{Compute the ranking criteria}\\
-            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
-
-            \tcc*[h]{Find the feature with the smallest ranking criterion}\\
-            $f = \texttt{argmin($\vt{c}$)}$\VS
-
-            \tcc*[h]{Update the feature ranking list}\\
-            $\vt{r} = [\vt{s}(f), ...\vt{r}]$\VS
-
-            \tcc*[h]{Eliminate the feature with smallest ranking criterion}\\
-            $\vt{s} = [...\vt{s}(1:f - 1), ...\vt{s}(f + 1:|\vt{s}|)]$
-        }
-    \caption{SVM-RFE}
-\end{algorithm}
-
-\subsection{Assessing performance}
-
+In the following figure we present a pseudocode implementation of the SVM-RFE algorithm, which is the particular case of RFE where SVM are used. For clarity purposes this implementation is restricted to linear SVM and the associated ranking criteria.
 
 \begin{algorithm}[h]
     \DontPrintSemicolon
@@ -632,5 +607,70 @@ Computationally, the non-lineal version is more expensive, however we may be abl
             \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
             $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
         }
-    \caption{SVM-RFE with Step}
+    \caption{SVM-RFE}
 \end{algorithm}
+
+Note that, although we're using vectors to store the feature ranking, by using another structure (like a dictionary in \texttt{Python}) we could store the specific feature subsets, this is actually done in some implementations. Also, this code doesn't perform any kind caching, nor does it test the machine with a validation set so that an accuracy score can be produced.
+
+\subsection{Assessing performance}
+
+Since learning machines will produce different levels of performance depending on the dataset, a baseline feature selection method is required in order to make proper comparisons. We can use a \emph{random feature selection} as the baseline method. This method is a good baseline because we expect that no method should perform worse than a purely uninformed one. It simply consists in making a random feature ranking and testing the accuracy of SVM with multiple feature subsets, specifically we make each feature subset by removing $t$ features each time based on the ranking order. For numerical stability we may also use cross-validation and take the mean of the results. Note that, although with this method the feature ranking is made at no cost, evaluating the accuracy at each step is just as computationally expensive as SVM-RFE itself, since one SVM training has to be performed each iteration. It is expected that this method will return acceptable results when all features are used, and decrease linearly in accuracy as features are removed.
+
+When using SVM-RFE we actually have two different methods for evaluating the performance of the selection. As an embedded method, we can evaluate the accuracy at each iteration of the algorithm, by first passing a validation set to it. If the feature subsets evaluated are of the same size as in the random selection, i.e. the same step is used, this will make a fair comparison. Another option is to use SVM-RFE purely for generating the ranking and, after that, take the same approx we've used for random selection, fit and test at each iteration. This second approx will be as Computationally expensive as running SVM-RFE twice, but it allows producing performance metrics at the same intervals as the baseline method, even when the SVM-RFE algorithm uses different ones, thus making a fair comparison. In this case SVM-RFE is actually acting like a wrapper method instead of an embedded one.
+
+The following comparison (Figure \ref{fig:ch4.dynamicStep.vanilla.comp}) has been made with an artificial dataset of 300 features, only 50 of which informative. Note that we provide both train and test accuracy, only the second is a valid metric of the expected accuracy on new samples, however, plotting the train accuracy is also useful to determine the overfitting as well as provide clues on the behavior of the selection algorithm.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla300-random.png}
+        \subcaption*{\textbf{A.} Random selection}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla300-svmrfe-s300.png}
+        \subcaption*{\textbf{B.} SVM-based filter method, step = 300}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla300-svmrfe-s10.png}
+        \subcaption*{\textbf{C.} SVM-RFE, step = 10}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla300-svmrfe.png}
+        \subcaption*{\textbf{D.} SVM-RFE, step = 1}
+    \end{subfigure}
+    \caption{Mean accuracy using 20-fold CV of an SVM classifier with different selection methods.}
+    \label{fig:ch4.dynamicStep.vanilla.comp}
+\end{figure}
+
+As expected, random selection (plot \textbf{A}) performs significatively worse than any other method. We also verify, by comparing plots \textbf{B} and \textbf{C}, our previous assumption that the more iterations (smaller step) the better the accuracy. This relationship, however, doesn't seem to be lineal, as the same effect can not be appreciated when comparing plots \textbf{C} and \textbf{D}.
+
+Notice that when evaluating the performance of a feature selection algorithm two variables must be considered, one is accuracy performance and the other is amount of features. A selection with a great accuracy but a lot of features may not be as good as a section with a decent accuracy and only a handful of features. That is, we want to maximize accuracy while minimizing amount of features. These two variables do not operate on the same range, and it can even be the case that the importance of one over the other is problem-dependent. This makes comparing multiple instances hard, this is why we are comparing pairs of plots instead of simply a pair of values.
+
+Formally this is known as a multi-objective optimization problem. In this kind of problems a solution is not necessary unique, instead it is a set of \emph{Pareto optimal}\footnote{A concept more commonly used in game theory, decision theory or economics.} solutions, i.e. solutions such that no other solution in the set of feasible so\-lu\-tions is better. Of course this also means that all Pareto optimal solutions are just as good. To score the solutions a \emph{scalarization function} is used, such that the multi-objective problem becomes a single objective optimization problem. This function establishes a degree of trade-off between the different objectives and must be chosen based on expert criteria, i.e. the user decides what is more important for the specific problem at hand.
+
+If the criteria is known beforehand, it can be used to guide the optimization problem. In our case, for example, it could be used to guide model selection, see (Section \ref{sec:ch4.performance}). This is known as an a priori method. If all feasible solutions (or a rep\-re\-sen\-ta\-tive subset) are first computed, this is known as a posteriori method. One typical scalar\-iza\-tion function is the weighted sum, also called \emph{linear scalarization}.
+
+\subsubsection*{Linear Scalarization}
+\begin{align} 
+    \underset{\vb{x} \in \vb{X}}{\text{arg} \min}\ \sum_{i=1}^k w_i f_i(\vb{x})
+\end{align}
+where each $w_i$ is a weight and each $f_i(\vb{x})$ is a cost function (\cite{vasumathi_scalarizing_2019}). In our case we would only have two objective functions, the accuracy at each feature subset $\texttt{Acc}(F_i)$, and the percentage of features selected $|F_i| / |F|$. Thus, the scalar\-iza\-tion function will be of the form:
+\begin{align*} 
+    \underset{F_i \in F}{\text{arg} \min}\ w_1 (1 - \texttt{Acc}(F_i)) + w_2 (|F_i| / |F|)
+\end{align*}
+
+Using the wrapper form of SVM-RFE we can calculate the optimum on the val\-i\-da\-tion set and plot it. This is an a posteriori method.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla200-tradeoff.png}
+        \subcaption*{$w = (0.95, 0.05)$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch4/vanilla200-tradeoffB.png}
+        \subcaption*{$w = (0.6, 0.4)$}
+    \end{subfigure}
+    \caption{Different optimums caused by changing the criteria for the linear scalarization function, projected as a red line.}
+    \label{fig:ch4.tradeoff}
+\end{figure}

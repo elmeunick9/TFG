@@ -2,3 +2,5 @@ microarray
 inequations
 hyperplanes
 nonnegative
+significatively
+scalarization
