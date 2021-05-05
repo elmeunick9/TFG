@@ -1,0 +1,72 @@
+\newcommand{\VS}{\vspace{6pt}}
+\newcommand{\vt}[1]{\vec{#1}}
+
+\chapter{Sampling} % Main chapter title
+
+In this experiment we want to see if using a different subset of observations each iteration can reduce computational cost without negatively affecting performance.
+
+\label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+
+%----------------------------------------------------------------------------------------
+
+
+\section{Description and reasoning}
+\label{sec:ch5.sampling.desc}
+
+Sampling is the process of selecting a representative part of a population. In machine learning sampling is done when creating a dataset, where each observation is a \emph{sample} of some unknown distribution. 
+
+Sampling may also be done, a second time, when preparing the dataset. Clas\-si\-fi\-cation algorithms often require that all classes have a similar number of ob\-ser\-va\-tions, when this condition is not meet it is said that the dataset has \emph{sampling bias}. To avoid sampling bias, the dataset is resampled with another method called \emph{stratified random sampling}. This method consists on making a new dataset with only a subset of the observations, while imposing the restriction that all classes must have the same number of observations.
+
+Because SVM computational cost is directly related to the amount of examples (i.e. samples), using only a subset of observations on each iteration can reduce this cost. In doing that, it is expected that performance will decrease, but we hope that in choosing a different subset each iteration, the performance will increase to levels similar to those we would see while using all data.
+
+The reasoning for this last statement is that, although the algorithm only uses a subset of the data each iteration, by the time the algorithm finishes all data should've been used. Also, it is known that sampling improves generalization, thus we hope that this approx will reduce the gap between test and train error compared to the version with all data.
+
+Further improvements may be introduced by reusing support vectors after the first iteration. Also, a dynamic sampling size may also be considered.
+
+\section{Pseudocode formalization}
+
+\textbf{Definitions:}
+
+\begin{itemize}
+    \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
+    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
+\end{itemize}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = number of samples, $0 < k \le |X_0|$}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list}
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Determine subset of examples by random sampling}\\
+            $idx = \texttt{random\_sample}(|X_0|, k)$\VS
+
+            \tcc*[h]{Restrict subset of examples to good feature indices}\\
+            $X=X_0(idx,\vt{s})$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+
+            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Update the feature ranking list}\\
+            $\vt{r} = [\vt{s}(\vt{f}), ...\vt{r}]$\VS
+
+            \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
+            $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
+        }
+    \caption{SVM-RFE with Random Sampling}
+\end{algorithm}
+
+\section{Results}
+
