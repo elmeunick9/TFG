@@ -12,9 +12,27 @@ This modification intends to find the optimal number of features that still perf
 \section{Description and reasoning}
 \label{sec:stopCond.desc}
 
-Such objective requires specifying a trade-off between accuracy and size of the fea\-ture subset. We could use cross-validation together with a function such as $a = \text{accuracy}$, $p = \text{percentage of selected features}$, $f(a, p) = t_0a + (1-p)$. Notice that a new parameter $t_0$ is required to determine the importance of one term over the other. Cross-validation however is a slow technique, as it requires to execute the whole SVM-RFE algorithm many times.
+For SVM-RFE usually two stop conditions are considered, one is to calculate all feature subsets until a single feature remains. The second is to use a parameter to specify the number of desired features.
 
-The alternative we propose here is to use the weights $w$ calculated at every iteration of the SVM-RFE algorithm as an approximation of the accuracy difference. We hypothesize that greater values in the ranking criteria of the eliminated fea\-tures will result in a greater loss of accuracy. That is, when eliminating $k$ features, we calculate the commutative sum of the ranking criteria of the eliminated features and, if above a certain threshold, we stop.
+\subsubsection*{Using all feature subsets}
+
+Calculating all feature subsets and then trying to find the best one is expensive. However, this process allows us to define a trade-off and find all Pareto optimal solutions by the method of scalarization as discussed in section [m4.1.3]. This pro\-cess also allows us to plot the hyperplane (in our case a red line) indicating all points that, if feasible, would also be Pareto optimal.
+
+\subsubsection*{Using a feature subset size parameter}
+
+Using a desired feature subset size parameter is usually inconvenient. The best situation would be if that size is a re\-quire\-ment, but often we rather have a preference (e.g. prioritize accuracy). It is impossible to know which is the optimal size without running the algorithm, but we need to know that before running it. This is similar to the chicken and the egg problem\footnote{If something is a chicken and egg problem, it is impossible to deal with a problem because the solution is also the cause of the problem.}.
+
+This kind of problems can usually be solved by approximation, i.e. we first run a simplified, computationally inexpensive, version of SVM-RFE (e.g. resampling or increasing the step) and we deduce the optimal size form that. Once the optimal size is known (approximately), we can run the full SVM-RFE version.
+
+Note that implementing this stop condition is trivial, we only need to modify the exit condition in line 4 of [Algorithm \ref{alg:svmrfe-stopcond}] such that we exit if $|\vt{s}| > p$ with $p$ being the subset size parameter.
+
+\subsubsection*{Alternative}
+
+Here we propose a more efficient alternative. As discussed in section [m4.4.1] the ranking criteria is an indicative of the performance of the classification when re\-mov\-ing some feature $f_i$, in other words, the feature importance. Thus, we can determine a stop condition such that when important features are selected for being removed (their ranking criteria value is big) we stop iterating.
+
+The actual limit can be indicated with a parameter, a threshold, this one being a subjective question similar to that of the trade-off between accuracy and feature subset size.
+
+It would also be interesting to investigate whether we can actually estimate the final accuracy using the ranking criteria and from there perform linear scalarization in the same way that we did when using all feature subsets. We could then compare if both methods give similar results.
 
 \section{Pseudocode formalization}
 
@@ -33,7 +51,7 @@ The alternative we propose here is to use the weights $w$ calculated at every it
       $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranked list}
       $q = 0$ \tcp*{stop condition}
-      \While{$|\vt{s}| > 0 \land q > s$}
+      \While{$|\vt{s}| > 0 \land t_0 > q$}
         {
             \tcc*[h]{Restrict training examples to good feature indices}\\
             $X=X_0(:,\vt{s})$\VS
@@ -50,16 +68,20 @@ The alternative we propose here is to use the weights $w$ calculated at every it
             \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
             $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
 
-            \tcc*[h]{Sum selected ranking criteria to determine stop cond.}\\
-            $q = \underset{i}{\sum} f_i$\VS
-
-            \tcc*[h]{Update the feature ranking list}\\
-            $\vt{r} = [\vt{s}(\vt{f}), ...\vt{r}]$\VS
-
-            \tcc*[h]{Eliminate the features with the $t$ smallest ranking criterion}\\
-            $\vt{s} = [[...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$ for all $i]$
+            \tcc*[h]{Iterate over the feature subset}\\
+            \For{$f_i \in \vt{f}$}{
+                \tcc*[h]{Store last weight eliminated}\\
+                $q = \vt{c}(f_i)$\VS
+    
+                \tcc*[h]{Update the feature ranking list}\\
+                $\vt{r} = [\vt{s}(f_i), ...\vt{r}]$\VS
+    
+                \tcc*[h]{Eliminate the feature selected}\\
+                $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
+            }
         }
     \caption{SVM-RFE with Stop Condition}
+    \label{alg:svmrfe-stopcond}
 \end{algorithm}
 
 \section{Results}

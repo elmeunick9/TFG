@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn.svm import LinearSVC
+from sklearn.utils import resample
+from sklearn import preprocessing
 
 class SVM_RFE():
     def __init__(self, n_features_to_select, step=4):
@@ -59,34 +61,34 @@ class SVM_RFE():
 
         return self
 
-class SVM_RFE_DYNAMIC_STEP():
-    def __init__(self, n_features_to_select, percentage=0.3, cval=1):
-        self.n_features_to_select = n_features_to_select
+class SVM_RFE_STOPCOND():
+    def __init__(self, step=4, percentage=[0.8, 0.2]):
+        self.step = step
         self.percentage = percentage
-        self.cval = cval
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
+        self.wscores_ = {}
         self.test_scores_ = {}
-
-        n_features_to_select = self.n_features_to_select
+        
         n_features = X0.shape[1]
-        if n_features_to_select is None:
-            n_features_to_select = n_features
             
         support_ = np.ones(n_features, dtype=bool)
         ranking_ = np.ones(n_features, dtype=int)
-    
+        q = 0
+        q_max = None
+
         # np.sum(support_) is the number of selected features.
         # It starts at n_features and decreases every iteration.
-        while np.sum(support_) > n_features_to_select:
+        while np.sum(support_) > 0:
             
             # Remaining features, represented with a list of indices.
             features = np.arange(n_features)[support_]
             X = X0[:, features]
 
             # Declare and train the SVM
-            estimator = LinearSVC(C=self.cval, max_iter=5000, dual=False)
+            #with time_code('SVM #' + str(np.sum(support_))):
+            estimator = LinearSVC(C=10, max_iter=5000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
@@ -96,21 +98,19 @@ class SVM_RFE_DYNAMIC_STEP():
             # Flatten ranks, required for Multi-Class Classification.
             ranks = np.ravel(ranks)
 
-            # Calculate t (step)
-            min_threshold = np.sum(support_) - n_features_to_select
-            threshold = max(int(self.percentage * min_threshold), 1)
-
             # Record score
-            self.scores_[np.sum(support_) - 1] = estimator.score(X,y)
+            self.scores_[np.sum(support_) - 1]  = estimator.score(X,y)
             if test: self.test_scores_[np.sum(support_) - 1] = estimator.score(test[0][:, features], test[1])
 
             # Eliminate the worse feature
+            threshold = min(self.step, np.sum(support_))
             for i in range(0, threshold):
                 selected_feature = features[ranks[i]]
                 support_[selected_feature] = False
                 ranking_[np.logical_not(support_)] += 1
-
-
+                if not q_max: q_max = np.max(np.ravel(importances))
+                q = np.ravel(importances)[ranks[i]] / q_max
+                self.wscores_[np.sum(support_)] = 1 - q
 
         # Set final attributes
         self.n_features_ = support_.sum()

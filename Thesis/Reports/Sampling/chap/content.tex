@@ -70,3 +70,80 @@ Further improvements may be introduced by reusing support vectors after the firs
 
 \section{Results}
 
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s20.png}
+        \subcaption*{\textbf{A1.} $t = 20$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5.png}
+        \subcaption*{\textbf{A2.} $t = 5$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5-05v.png}
+        \subcaption*{\textbf{A3.} $t = 5$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s20-p01-pre.png}
+        \subcaption*{\textbf{B1.} $t = 20, k = 10\%$ PRE}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5-p01-pre.png}
+        \subcaption*{\textbf{B2.} $t = 5, k = 10\%$ PRE}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5-p05-pre.png}
+        \subcaption*{\textbf{B3.} $t = 5, k = 50\%$ PRE}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s20-p01.png}
+        \subcaption*{\textbf{C1.} $t = 20, k = 10\%$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5-p01.png}
+        \subcaption*{\textbf{C2.} $t = 5, k = 10\%$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/300-s5-p05.png}
+        \subcaption*{\textbf{C3.} $t = 5, k = 50\%$}
+    \end{subfigure}
+    \caption{Grid comparing algorithms on each row \textbf{A-B-C} and the hyperparameter configuration for each \textbf{1} (step = 20), \textbf{2} (step = 5, sample = 10\%) and \textbf{3} (step = 5, sample = 50\%).}
+    \label{fig:dynamicStep.vanilla.comp}
+\end{figure}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        &Feat.&Acc.&Score&Feat.&Acc.&Score&Feat.&Acc.&Score \\
+        \midrule
+        \textbf{A}&      115 & 85.25\% & 0.194 &      97 & 84.51\% & 0.189 &     73 & 82.51\% & 0.189\\
+        \textbf{B}&      85 & 71.88\% & 0.281 &       85 & 71.79\% & 0.282 &     73 & 80.58\% & 0.204\\
+        \textbf{C}&      85 & 79.38\% & 0.221 &       49 & 79.99\% & 0.193 &     73 & 86.08\% & 0.160\\
+        \bottomrule
+        \end{tabular}
+    \caption{Perfomrance.}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l | c c c | c c c | c c c }
+        \toprule
+        \multicolumn{1}{c}{} &\multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        &Iter.&Time ($s$) &Var. ($s^2$)&Iter.&Time ($s$) &Var. ($s^2$)&Iter.&Time ($s$) &Var. ($s^2$) \\
+        \midrule
+        \textbf{A}&      15 & 07.82 & 0.26 &      60 & 30.35 & 7.68 &     60 & 30.87 & 2.21\\
+        \textbf{B}&      15 & 01.46 & 0.16 &      60 & 05.29 & 1.86 &     60 & 16.26 & 4.70\\
+        \textbf{C}&      15 & 03.18 & 2.14 &      60 & 13.43 & 5.51 &     60 & 19.64 & 1.75\\
+        \bottomrule
+        \end{tabular}
+    \caption{Times.}
+\end{table}
+
+Accuracy trade-off is 80\%. Problem is 8000 observations with 20-fold cross validation, 300 features, 100 informative.

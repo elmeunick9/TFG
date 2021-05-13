@@ -1,5 +1,7 @@
 import numpy as np
 from sklearn.svm import LinearSVC
+from sklearn.utils import resample
+from sklearn import preprocessing
 
 class SVM_RFE():
     def __init__(self, n_features_to_select, step=4):
@@ -59,16 +61,16 @@ class SVM_RFE():
 
         return self
 
-class SVM_RFE_DYNAMIC_STEP():
-    def __init__(self, n_features_to_select, percentage=0.3, cval=1):
+class SVM_RFE_SAMPLING():
+    def __init__(self, n_features_to_select = None, step=4, percentage=0.5):
         self.n_features_to_select = n_features_to_select
+        self.step = step
         self.percentage = percentage
-        self.cval = cval
 
-    def fit(self, X0, y, test=()):
+    def fit(self, X0, y0, test=()):
         self.scores_ = {}
         self.test_scores_ = {}
-
+        
         n_features_to_select = self.n_features_to_select
         n_features = X0.shape[1]
         if n_features_to_select is None:
@@ -80,13 +82,20 @@ class SVM_RFE_DYNAMIC_STEP():
         # np.sum(support_) is the number of selected features.
         # It starts at n_features and decreases every iteration.
         while np.sum(support_) > n_features_to_select:
-            
+            # Sample
+            idx = np.indices((X0.shape[0],))[0]
+            idx = resample(idx, n_samples = int(X0.shape[0]*self.percentage), replace=False)
+
             # Remaining features, represented with a list of indices.
             features = np.arange(n_features)[support_]
-            X = X0[:, features]
+            X = X0[idx]
+            X = X[:, features]
+            X = preprocessing.scale(X)
+            y = y0[idx]
 
             # Declare and train the SVM
-            estimator = LinearSVC(C=self.cval, max_iter=5000, dual=False)
+            #with time_code('SVM #' + str(np.sum(support_))):
+            estimator = LinearSVC(C=10, max_iter=5000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
@@ -97,8 +106,7 @@ class SVM_RFE_DYNAMIC_STEP():
             ranks = np.ravel(ranks)
 
             # Calculate t (step)
-            min_threshold = np.sum(support_) - n_features_to_select
-            threshold = max(int(self.percentage * min_threshold), 1)
+            threshold = min(self.step, np.sum(support_) - n_features_to_select)
 
             # Record score
             self.scores_[np.sum(support_) - 1] = estimator.score(X,y)
@@ -109,7 +117,6 @@ class SVM_RFE_DYNAMIC_STEP():
                 selected_feature = features[ranks[i]]
                 support_[selected_feature] = False
                 ranking_[np.logical_not(support_)] += 1
-
 
 
         # Set final attributes

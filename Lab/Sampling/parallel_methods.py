@@ -4,7 +4,8 @@ from sklearn.svm import LinearSVC
 from multiprocessing import Pool
 import random
 
-from svm_rfe import SVM_RFE, SVM_RFE_DYNAMIC_STEP
+from svm_rfe import SVM_RFE, SVM_RFE_SAMPLING
+
 
 class DSMethods:
     def __init__(self, n_features, X_train, y_train, X_test, y_test):
@@ -74,10 +75,17 @@ class DSMethods:
         return self._svm_rfe(rfe, XT, yT, Xt, yt)
 
     def svm_rfe_dynamic_step_only(self, args):
-        train_index, test_index, percentage, stop, cval = args
+        train_index, test_index, percentage, stop = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_DYNAMIC_STEP(n_features_to_select=stop, percentage=percentage, cval=cval)
+        rfe = SVM_RFE_DYNAMIC_STEP(n_features_to_select=stop, percentage=percentage)
         return self._svm_rfe_only(rfe, XT, yT, Xt, yt)
 
-    
+    def svm_rfe_sampling(self, args):
+        stop = 1
+        train_index, test_index, step, percentage = args
+        XT, Xt = self.X_train[train_index], self.X_train[test_index]
+        yT, yt = self.y_train[train_index], self.y_train[test_index]
+        rfe = SVM_RFE_SAMPLING(n_features_to_select=1, step=step, percentage=percentage)
+        print("HELLO", XT.shape)
+        return self._svm_rfe(rfe, XT, yT, Xt, yt)

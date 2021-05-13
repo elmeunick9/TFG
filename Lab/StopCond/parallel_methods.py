@@ -4,7 +4,8 @@ from sklearn.svm import LinearSVC
 from multiprocessing import Pool
 import random
 
-from svm_rfe import SVM_RFE, SVM_RFE_DYNAMIC_STEP
+from svm_rfe import SVM_RFE, SVM_RFE_STOPCOND
+
 
 class DSMethods:
     def __init__(self, n_features, X_train, y_train, X_test, y_test):
@@ -58,6 +59,26 @@ class DSMethods:
 
         return rfe.scores_, rfe.test_scores_, rfe.scores_, elapsed_time
 
+    def _svm_rfe_stopcond(self, rfe, XT, yT, Xt, yt):
+        start_time = time.time()
+        rfe.fit(XT, yT)
+        elapsed_time = time.time() - start_time
+
+        train_scores = {}
+        test_scores = {}
+        test_selection = np.argsort(rfe.ranking_)
+
+        for i in range(1, self.n_features, int(self.n_features/50)):
+            features = test_selection[:i]
+
+            svm = LinearSVC(C=10, max_iter=5000, dual=False)
+            svm.fit(XT[:,features], yT)
+
+            train_scores[i] = svm.score(XT[:,features], yT)
+            test_scores[i] = svm.score(Xt[:,features], yt)
+
+        return train_scores, test_scores, rfe.scores_, elapsed_time, rfe.wscores_
+
     def svm_rfe(self, args):
         train_index, test_index, step = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
@@ -74,10 +95,23 @@ class DSMethods:
         return self._svm_rfe(rfe, XT, yT, Xt, yt)
 
     def svm_rfe_dynamic_step_only(self, args):
-        train_index, test_index, percentage, stop, cval = args
+        train_index, test_index, percentage, stop = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_DYNAMIC_STEP(n_features_to_select=stop, percentage=percentage, cval=cval)
+        rfe = SVM_RFE_DYNAMIC_STEP(n_features_to_select=stop, percentage=percentage)
         return self._svm_rfe_only(rfe, XT, yT, Xt, yt)
 
-    
+    def svm_rfe_sampling(self, args):
+        stop = 1
+        train_index, test_index, step, percentage = args
+        XT, Xt = self.X_train[train_index], self.X_train[test_index]
+        yT, yt = self.y_train[train_index], self.y_train[test_index]
+        rfe = SVM_RFE_SAMPLING(n_features_to_select=1, step=step, percentage=percentage)
+        return self._svm_rfe(rfe, XT, yT, Xt, yt)
+
+    def svm_rfe_stopcond(self, args):
+        train_index, test_index, step, percentage = args
+        XT, Xt = self.X_train[train_index], self.X_train[test_index]
+        yT, yt = self.y_train[train_index], self.y_train[test_index]
+        rfe = SVM_RFE_STOPCOND(step=step, percentage=percentage)
+        return self._svm_rfe_stopcond(rfe, XT, yT, Xt, yt)
