@@ -25,13 +25,13 @@ Focus on reducing the computational cost.
 
 | Extension Name | TO DO | DEFINITION | IMPLEMENTATION | COMPLETED
 | :- | -: | -: | -: | -: |
-| Non-linear Kernel | X | | | |
+| Non-linear Kernel | | X | | |
 | Avoid CV | X | | | |
 | Historic of weights | X | | | |
 | Multi-class criteria | X | | | |
-| Sampling | X | | | |
+| Sampling | | | X | |
 | Dynamic Step | |  | | X |
-| Stop condition | | X | | |
+| Stop condition | |  | X | |
 
 # Bibliography
 

@@ -77,7 +77,7 @@ class DSMethods:
             train_scores[i] = svm.score(XT[:,features], yT)
             test_scores[i] = svm.score(Xt[:,features], yt)
 
-        return train_scores, test_scores, rfe.scores_, elapsed_time, rfe.wscores_
+        return train_scores, test_scores, rfe.scores_, elapsed_time, rfe.wscores_, rfe.selected_i
 
     def svm_rfe(self, args):
         train_index, test_index, step = args

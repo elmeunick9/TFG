@@ -75,8 +75,9 @@ class SVM_RFE_STOPCOND():
             
         support_ = np.ones(n_features, dtype=bool)
         ranking_ = np.ones(n_features, dtype=int)
-        q = 0
+    
         q_max = None
+        prev_scal_q = 1
 
         # np.sum(support_) is the number of selected features.
         # It starts at n_features and decreases every iteration.
@@ -111,6 +112,14 @@ class SVM_RFE_STOPCOND():
                 if not q_max: q_max = np.max(np.ravel(importances))
                 q = np.ravel(importances)[ranks[i]] / q_max
                 self.wscores_[np.sum(support_)] = 1 - q
+                
+            # Scalarization and exit condition
+            i = np.sum(support_)
+            scal_q = self.percentage[0] * q + self.percentage[1] * (i / n_features)
+            if not prev_scal_q < scal_q - 0.001:
+                prev_scal_q = scal_q
+                self.selected_i = i
+                # break
 
         # Set final attributes
         self.n_features_ = support_.sum()

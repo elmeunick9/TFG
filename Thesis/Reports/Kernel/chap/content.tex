@@ -1,0 +1,76 @@
+\chapter{Non-linear Kernels} % Main chapter title
+
+\label{Chapter1} % For referencing the chapter elsewhere, use \ref{Chapter1} 
+\label{eq:ch4.grankingcoeff}
+
+%----------------------------------------------------------------------------------------
+
+This modification intends to apply the required modifications in the calculation of the ranking criteria so that non-linear kernels can be used in the SVM.
+
+\section{Description and reasoning}
+\label{sec:stopCond.desc}
+
+When a problem is not linearly separable, we know that a hard-margin SVM will not be able to correctly place a decision boundary. In this case a soft-margin SVM may be used, but it only works to some extent and if the underlying distribution is near linearly separable. If it is not the case, much better results can be achieved by using non-linear kernels.
+
+To use this method within SVM-RFE we must first be able to compute the ranking coefficient from a non-linear kernel. In contrast with the linear kernel case, where the ranking coefficient can be simplified to $(w_i)^2$, for non-linear kernels, however, since it is a more general case, no simplification can be performed. Instead, we use the general ranking coefficient for SVM (Equation \ref{eq:ch4.grankingcoeff}), which we restate here:
+\begin{align*}
+    DJ(i) = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha})
+\end{align*}
+
+Note that the \emph{hessian} matrix $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$ needs be computed each iteration (since the dimension of $\vb{x_i}$ and $\vb{x_j}$ will change), and also for each feature removed in each iteration. This is slow, however various optimizations may exist, as discussed in Section [ref.].
+
+\section{Pseudocode formalization}
+
+\textbf{Definitions:}
+
+\begin{itemize}
+    \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
+    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
+\end{itemize}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = kernel function}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list}
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Precompute hessian matrix}\\
+            $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j}) \qquad \text{for all} \qquad \vb{x_i}, \vb{x_j} \in X$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y, k \texttt{)}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [c_1, c_2, \dots, c_{|\vt{s}|}]$ \\
+            \For{$c_l \in \vt{c}$}{
+                \tcc*[h]{Compute new hessian with the feature $l$ removed}\\
+                $\vb{H_{i,j}}(-l) = y_iy_jk(\vb{x_i}, \vb{x_j}) \qquad \text{for all} \qquad \vb{x_i}, \vb{x_j} \in X(-l)$\VS
+    
+                \tcc*[h]{Calculate ranking coefficient}\\
+                $c_l = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-l) \boldsymbol{\alpha})$
+            }\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Iterate over the feature subset}\\
+            \For{$f_i \in \vt{f}$}{
+                \tcc*[h]{Update the feature ranking list}\\
+                $\vt{r} = [\vt{s}(f_i), ...\vt{r}]$\VS
+    
+                \tcc*[h]{Eliminate the feature selected}\\
+                $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
+            }
+        }
+    \caption{SVM-RFE with Stop Condition}
+    \label{alg:svmrfe-stopcond}
+\end{algorithm}
+
+\section{Results}
+
