@@ -1,4 +1,5 @@
 import numpy as np
+from numpy.random import gamma
 from sklearn.metrics import pairwise
 from sklearn.svm import LinearSVC, SVC
 from sklearn.utils import resample
@@ -66,11 +67,12 @@ class SVM_RFE():
         return self
 
 class SVM_RFE_KERNEL():
-    def __init__(self, C=1, n_features_to_select = 1, step=4, kernel='linear'):
+    def __init__(self, C=1, n_features_to_select = 1, step=4, kernel='linear', gamma = 1.0):
         self.n_features_to_select = n_features_to_select
         self.step = step
         self.kernel = kernel
         self.C = C
+        self.gamma = gamma
         self.nY = None
 
         id = uuid.uuid4()
@@ -87,6 +89,7 @@ class SVM_RFE_KERNEL():
     def computeKernelMatrix(self, X, Y):
         if self.kernel == 'linear': return pairwise.polynomial_kernel(X, Y, degree=1)
         if self.kernel == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C)
+        if self.kernel == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
 
     def computeHessianMatrix(self, K, y):
         return np.multiply(np.multiply.outer(y, y), K)
@@ -114,6 +117,7 @@ class SVM_RFE_KERNEL():
             # Remaining features, represented with a list of indices.
             features = np.arange(n_features)[support_]
             X = X0[:, features]
+            X = preprocessing.scale(X)
 
             # Precompute Hessian Matrix
             K = self.computeKernelMatrix(X, X)

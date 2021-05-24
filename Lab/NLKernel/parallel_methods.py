@@ -1,5 +1,6 @@
 import time
 import numpy as np
+from numpy.random import gamma
 from sklearn.svm import LinearSVC, SVC
 from multiprocessing import Pool
 import random
@@ -18,10 +19,12 @@ class DSMethods:
         self.kernel = kernel
         self.kernel_matrix = None
         self.C = 0.1
+        self.gamma = 1.0
 
     def computeKernelMatrix(self, X, Y):
         if self.kernel_matrix == 'linear': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=1)
         if self.kernel_matrix == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C)
+        if self.kernel_matrix == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
 
     def randomSelection(self, CVal=10):
         start_time = time.time()
@@ -157,5 +160,5 @@ class DSMethods:
         train_index, test_index, step = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_KERNEL(C=self.C, step=step, kernel=self.kernel_matrix)
+        rfe = SVM_RFE_KERNEL(C=self.C, step=step, kernel=self.kernel_matrix, gamma=self.gamma)
         return self._svm_rfe(rfe, XT, yT, Xt, yt)

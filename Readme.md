@@ -40,3 +40,14 @@ Focus on reducing the computational cost.
 [2] SVM-RFE Based Feature Selection and Taguchi Parameters Optimization for Multiclass SVM Classifier
 
 [3] Classification of lip color based on multiple SVM-RFE
+
+# Things to comment
+
+* Raco revision update.
+* Reunio de control, schedule.
+* Using historic of weights will not work. 
+  * Alternatively the previous iteration dual coefficients could be used to initialize the SVM and produce faster results. This is however problematic because sklearn and libsvm do not expose such API. It would require modifications on the C source code of these libraries.
+  * What if we use variance instead? We know that the actual ranking coefficients will produce worse predictions, but maybe a feature with height variance is indicative of something (candidate for being removed)?
+* Isn't "Avoid using corss-validation" and "Multi-class criteria" not a bit outside the scope of the project? They are not really useful for the MADELON dataset, or any dataset we've been using.
+* Sampling works surprisingly well.
+* Combining Sampling + DynamicStep + NonLinear Kernel, can we produce better accuracy for the MADELON dataset?
