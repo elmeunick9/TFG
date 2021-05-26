@@ -7,6 +7,7 @@ from sklearn import preprocessing
 
 import uuid
 import logging
+import time
 
 class SVM_RFE():
     def __init__(self, n_features_to_select, step=4):
@@ -67,13 +68,16 @@ class SVM_RFE():
         return self
 
 class SVM_RFE_KERNEL():
-    def __init__(self, C=1, n_features_to_select = 1, step=4, kernel='linear', gamma = 1.0):
+    def __init__(self, C=1, n_features_to_select = 1, step=4, kernel='linear', gamma = 1.0, degree = 3):
         self.n_features_to_select = n_features_to_select
         self.step = step
         self.kernel = kernel
         self.C = C
         self.gamma = gamma
+        self.degree = degree
+
         self.nY = None
+        self._H_y = None
 
         id = uuid.uuid4()
         self.logger = logging.getLogger(str(id))
@@ -88,11 +92,40 @@ class SVM_RFE_KERNEL():
 
     def computeKernelMatrix(self, X, Y):
         if self.kernel == 'linear': return pairwise.polynomial_kernel(X, Y, degree=1)
-        if self.kernel == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C)
+        if self.kernel == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=self.degree)
         if self.kernel == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
 
-    def computeHessianMatrix(self, K, y):
-        return np.multiply(np.multiply.outer(y, y), K)
+    def computeHessianMatrix(self, K):
+        return np.multiply(self._H_y, K)
+
+    def getKernelFunction(self):
+        if self.kernel == 'linear':
+            def k(a, b):
+                return np.dot(a, b)
+            return k
+        if self.kernel == 'poly':
+            C = self.C
+            d = self.degree
+            def k(a, b):
+                return  (np.dot(a, b) + C) ** d
+            return k
+        if self.kernel == 'rbf':
+            g = -self.gamma
+            def k(a, b):
+                c = a - b
+                return np.exp(g * np.dot(c, c))
+            return k
+
+    def computeKernelMatrixManually(self, X, Y):
+        k = self.getKernelFunction()
+        K = np.
+        for x in X:
+            for y in Y:
+
+
+    def updateHessianMatrix(self, supports, H, X):
+        pass
+            
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
@@ -100,6 +133,7 @@ class SVM_RFE_KERNEL():
         
         self.nY = y.copy()
         self.nY[self.nY == 0] = -1
+        self._H_y = np.multiply.outer(y, y)
         
         n_features_to_select = self.n_features_to_select
         n_features = X0.shape[1]
@@ -111,34 +145,37 @@ class SVM_RFE_KERNEL():
     
         # np.sum(support_) is the number of selected features.
         # It starts at n_features and decreases every iteration.
+        elapsed_time = 0
         while np.sum(support_) > n_features_to_select:
             self.logger.info("PROGRESS " + "{:.2%}".format(1.0 - np.sum(support_) / n_features))
 
             # Remaining features, represented with a list of indices.
             features = np.arange(n_features)[support_]
             X = X0[:, features]
-            X = preprocessing.scale(X)
+            #X = preprocessing.scale(X)
 
             # Precompute Hessian Matrix
             K = self.computeKernelMatrix(X, X)
-            H = self.computeHessianMatrix(K, self.nY)
+            H = self.computeHessianMatrix(K)
 
             # Declare and train the SVM
             estimator = SVC(C=self.C, max_iter=5000, kernel='precomputed')
             estimator.fit(K, y)
 
+            start_time = time.time()
             # Get importance and rank them
             a = np.ones(H.shape[0])
             a[estimator.support_] = estimator.dual_coef_[0]
-            aHa = np.dot(np.dot(a, H), a) 
+            aHa = np.dot(np.dot(a, H), a)
             importances = np.zeros(X.shape[1])
             flist = list(range(0, X.shape[1]))
             for i in flist:
                 X_i = X[:, np.delete(flist, i)]
                 K_i = self.computeKernelMatrix(X_i, X_i)
-                H_i = self.computeHessianMatrix(K_i, y)
+                H_i = self.computeHessianMatrix(K_i)
                 aH_ia = np.dot(np.dot(a, H_i), a) 
                 importances[i] = (1/2) * (aHa - aH_ia)
+            elapsed_time += time.time() - start_time
 
             ranks = np.argsort(importances)
 
@@ -162,6 +199,8 @@ class SVM_RFE_KERNEL():
         self.n_features_ = support_.sum()
         self.support_ = support_
         self.ranking_ = ranking_
+
+        self.logger.info(f"ELAPSED IN HESSIAN: {elapsed_time}")
 
         return self
 

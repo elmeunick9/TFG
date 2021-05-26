@@ -68,9 +68,136 @@ Note that the \emph{hessian} matrix $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$
                 $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
             }
         }
-    \caption{SVM-RFE with Stop Condition}
+    \caption{SVM-RFE with general Kernel}
     \label{alg:svmrfe-stopcond}
 \end{algorithm}
 
 \section{Results}
 
+\subsection*{Notes on the implementation}
+
+Using non-linear kernels requires a change in the underlying implementation we've been using for SVM. Until now, we've been relying on the \texttt{LinearSVC} model pro\-vid\-ed by \texttt{Sklearn}, this implementation is in turn based on the \texttt{LIBLINEAR} im\-ple\-men\-ta\-tion for SVM written by the \emph{National Taiwan University}. The authors state that this solver is much faster than the more general version, thus the reason we've been using it, but it can only handle linear kernels. The general version, \texttt{LIBSVM}, created by the same team, is the option we're going to use instead. Because now we need to switch, it is interesting to see what will be the increase in computational cost, shown in the table \ref{ch5.kernels.tc1}.
+
+For this first test we've generated artificial datasets with 100 features each, 20 which are informative. Because we want to test the differences with the linear kernel we've used 6 Gaussian clusters per class, this makes the problem more difficult for lineal separators. 
+
+To obtain similar results to what we would get with SVM-RFE, we've tested under the random feature selection model (which is the same as RFE with random criteria) and made a comparison using different amount of samples.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l c c c}
+        \toprule
+        Obs. & \texttt{LIBLINEAR} & \texttt{LIBSVM} \emph{Linear} & \texttt{LIBSVM} \emph{Precomputed} \\
+        \midrule
+        500 & 02.67s & 08.17s — x0.32 & 12.04s — x0.22 \\
+        1000 & 02.94s & 17.30s — x0.17 & 23.84s — x0.12 \\
+        2000 & 04.28s & 43.96s — x0.10 & 50.36s — x0.08 \\
+        \bottomrule
+        \end{tabular}
+    \caption{Cost in time and speedup of a random selection under different implementations and sample sizes.}
+    \label{ch5.kernels.tc1}
+\end{table}
+
+Note that the sample size increases the cost more than linearly, this may suggest that methods such as dynamic sampling can perform even better than with the \texttt{LIBLINEAR} implementation.
+
+We also note that using a precomputed kernel matrix (\emph{Gramm} matrix) does affect computational cost. This is likely an implementation detail and it is not significant enough to require further in\-ves\-ti\-ga\-tion.
+
+We can also plot some examples to compare differences in accuracy, in Figure \ref{fig:ch5.kernel.cmp1} note that the precomputed kernel, which is a degree-3 polynomial kernel, performs much better at the start, thus we can expect it to also perform significantly better with SVM-RFE. At the same time, we can appreciate some differences between the two linear kernels, but they're still clearly following the same curve, which indicates that both implementations are equivalent.  
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/random_liblinarl.png}
+        \subcaption*{\texttt{LIBLINEAR}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/random_linar.png}
+        \subcaption*{\texttt{LIBSVM} \emph{Linear}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/random_precomputed.png}
+        \subcaption*{\texttt{LIBSVM} \emph{Precomputed}}
+    \end{subfigure}
+    \caption{Comparison of random selection with 2000 observations.}
+    \label{fig:ch5.kernel.cmp1}
+\end{figure}
+
+\subsection*{Performance evaluation}
+
+We observe experimentally in figure \ref{fig:ch5.kernel.cmp2} that, for some datasets, using a non-lineal kernel improves the accuracy of SVM-RFE.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/art_linear.png}
+        \subcaption*{Linear}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/art_poly.png}
+        \subcaption*{Poly $D=3$}
+    \end{subfigure}
+    \caption{Comparison of SVM-RFE on linear and non-linear kernel with 1000 observations and step of 5.}
+    \label{fig:ch5.kernel.cmp2}
+\end{figure}
+
+Non-lineal kernels also involve more hyper-parameters, thus increasing the im\-por\-tance of model selection. The choice of kernel is in itself a hyper-parameter. If a polynomial kernel is chosen then the \emph{degree} and \emph{coefficient} are also hyper-parameters, if a Gaussian kernel is chosen then \emph{gamma}.
+
+\subsection*{MADELON}
+
+For this experiment we use the MADELON dataset with a sample of 1200 ob\-ser\-va\-tions after normalization. We're using a trade-off linear scalarization of 0.8 to determine the optimum, and a constant step of 20 and 10 for the RFE and validation phases respectively. Also, for numerical stability, all results are an average of a 6-fold cross-validation.
+
+\subsubsection*{Polynomial}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1}&      11 & 58.92\% & 0.333 &      21 & 69.08\% & 0.256 &    21 & 74.25\% & 0.214\\
+        \textbf{0.2}&      1  & 61.33\% & 0.310 &      21 & 69.17\% & 0.255 &    21 & 76.58\% & 0.196\\
+        \textbf{0.3}&      1  & 61.42\% & 0.309 &      21 & 70.17\% & 0.247 &    21 & 77.08\% & 0.191\\
+        \textbf{0.4}&      1  & 61.33\% & 0.310 &      21 & 70.92\% & 0.241 &    21 & 77.42\% & 0.189\\
+        \textbf{0.5}&      11 & 61.42\% & 0.313 &      21 & 70.83\% & 0.242 &    21 & 78.33\% & 0.182\\
+        \textbf{0.6}&      1  & 61.25\% & 0.310 &      21 & 71.00\% & 0.240 &    21 & 78.00\% & 0.184\\
+        \textbf{0.7}&      1  & 61.08\% & 0.312 &      21 & 70.58\% & 0.244 &    21 & 77.50\% & 0.188\\
+        \textbf{0.8}&      1  & 61.25\% & 0.310 &      21 & 70.00\% & 0.248 &    21 & 76.92\% & 0.193\\
+        \textbf{0.9}&      1  & 61.08\% & 0.312 &      21 & 70.00\% & 0.248 &    21 & 78.42\% & 0.181\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{4}} & \multicolumn{3}{c}{\textbf{5}} & \multicolumn{3}{c}{\textbf{6}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1}&      21 & 72.83\% & 0.226 &      21 & 70.58\% & 0.244 &    21 & 67.17\% & 0.271\\
+        \textbf{0.2}&      21 & 80.92\% & 0.161 &      21 & 78.08\% & 0.184 &    21 & 77.75\% & 0.186\\
+        \textbf{0.3}&      21 & 81.92\% & 0.153 &      21 & 83.92\% & 0.137 &    21 & 81.67\% & 0.155\\
+        \textbf{0.4}&      21 & 82.75\% & 0.146 &      21 & 84.75\% & 0.130 &    21 & 83.58\% & 0.140\\
+        \textbf{0.5}&      21 & 83.08\% & 0.144 &      21 & 84.75\% & 0.130 &    21 & 85.84\% & 0.122\\
+        \textbf{0.6}&      21 & 84.00\% & 0.136 &      21 & 85.75\% & 0.122 &    21 & 84.16\% & 0.135\\
+        \textbf{0.7}&      21 & 82.92\% & 0.145 &      21 & 85.50\% & 0.124 &    21 & 84.08\% & 0.132\\
+        \textbf{0.8}&      21 & 83.75\% & 0.138 &      21 & 85.42\% & 0.125 &    \mrk{21} & \mrk{86.16\%} & \mrk{0.115}\\
+        \textbf{0.9}&      21 & 84.33\% & 0.138 &      \mrk{21} & \mrk{86.83\%} & \mrk{0.114} &    21 & 84.08\% & 0.132\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{7}} & \multicolumn{3}{c}{\textbf{8}} & \multicolumn{3}{c}{\textbf{9}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1}&      11 & 66.33\% & 0.274 &      11 & 64.92\% & 0.285 &    11 & 63.25\% & 0.298\\
+        \textbf{0.2}&      11 & 69.17\% & 0.251 &      11 & 57.33\% & 0.345 &    11 & 56.67\% & 0.351\\
+        \textbf{0.3}&      11 & 70.75\% & 0.238 &      11 & 55.17\% & 0.363 &    11 & 51.50\% & 0.392\\
+        \textbf{0.4}&      11 & 83.00\% & 0.140 &      11 & 58.17\% & 0.339 &    21 & 53.50\% & 0.380\\
+        \textbf{0.5}&      21 & 82.25\% & 0.150 &      11 & 80.25\% & 0.162 &    11 & 58.75\% & 0.334\\
+        \textbf{0.6}&      11 & 84.42\% & 0.129 &      11 & 85.33\% & 0.122 &    11 & 79.83\% & 0.166\\
+        \textbf{0.7}&      \mrk{11} & \mrk{85.58\%} & \mrk{0.120} &      11 & 80.41\% & 0.161 &    21 & 80.10\% & 0.160\\
+        \textbf{0.8}&      11 & 84.08\% & 0.132 &      11 & 82.50\% & 0.144 &    11 & 82.75\% & 0.142\\
+        \textbf{0.9}&      11 & 83.42\% & 0.137 &      \mrk{11} & \mrk{85.75\%} & \mrk{0.118} &    11 & 82.00\% & 0.148\\
+        \bottomrule
+        \end{tabular}
+    \caption{Perfomrance.}
+\end{table}

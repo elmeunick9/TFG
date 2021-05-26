@@ -5,6 +5,7 @@ from sklearn.svm import LinearSVC, SVC
 from multiprocessing import Pool
 import random
 from sklearn.metrics import pairwise
+from sklearn import preprocessing
 
 from svm_rfe import SVM_RFE, SVM_RFE_KERNEL
 
@@ -20,10 +21,11 @@ class DSMethods:
         self.kernel_matrix = None
         self.C = 0.1
         self.gamma = 1.0
+        self.degree = 3
 
     def computeKernelMatrix(self, X, Y):
         if self.kernel_matrix == 'linear': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=1)
-        if self.kernel_matrix == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C)
+        if self.kernel_matrix == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=self.degree)
         if self.kernel_matrix == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
 
     def randomSelection(self, CVal=10):
@@ -76,6 +78,7 @@ class DSMethods:
 
             if self.kernel == 'precomputed':
                 X = XT[:,features]
+                #X = preprocessing.scale(X)
                 x = Xt[:,features]
                 K = self.computeKernelMatrix(X, X)
                 k = self.computeKernelMatrix(x, X)
@@ -160,5 +163,5 @@ class DSMethods:
         train_index, test_index, step = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_KERNEL(C=self.C, step=step, kernel=self.kernel_matrix, gamma=self.gamma)
+        rfe = SVM_RFE_KERNEL(C=self.C, step=step, kernel=self.kernel_matrix, gamma=self.gamma, degree=self.degree)
         return self._svm_rfe(rfe, XT, yT, Xt, yt)
