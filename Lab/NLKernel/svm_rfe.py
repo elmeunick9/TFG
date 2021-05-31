@@ -5,6 +5,9 @@ from sklearn.svm import LinearSVC, SVC
 from sklearn.utils import resample
 from sklearn import preprocessing
 
+from numba import njit
+from numba.typed import List
+
 import uuid
 import logging
 import time
@@ -67,6 +70,40 @@ class SVM_RFE():
 
         return self
 
+@njit
+def combolutionMatrixCachePoly(X):
+    m = X.shape[0]
+    n = X.shape[0]
+    C = np.empty((m, n))
+    for i in range(m):
+        for j in range(n):
+            C[i, j] = np.dot(X[i], X[j])
+    return C
+
+@njit
+def combolutionMatrixCacheGauss(X):
+    m = X.shape[0]
+    n = X.shape[0]
+    C = np.empty((m, n))
+    for i in range(m):
+        for j in range(n):
+            c = X[i] - X[j]
+            C[i, j] = np.dot(c, c)
+    return C
+
+@njit
+def updateMatrixPoly(X, K, C, Y, t, support, degree, gamma, coef0):
+    for i in support:
+        for j in support:
+            K[i, j] = (((C[i,j] - X[i,t]*X[j,t]) * gamma + coef0) ** degree) * Y[i, j]
+
+@njit
+def updateMatrixGauss(X, K, C, Y, t, support, gamma):
+    for i in support:
+        for j in support:
+            c = X[i,t] - X[j,t]
+            K[i, j] = np.exp(-gamma * (C[i,j] - c*c)) * Y[i, j]
+
 class SVM_RFE_KERNEL():
     def __init__(self, C=1, n_features_to_select = 1, step=4, kernel='linear', gamma = 1.0, degree = 3):
         self.n_features_to_select = n_features_to_select
@@ -78,6 +115,8 @@ class SVM_RFE_KERNEL():
 
         self.nY = None
         self._H_y = None
+        self._H_C = None
+        self._H_K = None
 
         id = uuid.uuid4()
         self.logger = logging.getLogger(str(id))
@@ -91,41 +130,30 @@ class SVM_RFE_KERNEL():
         self.logger.warning('START')
 
     def computeKernelMatrix(self, X, Y):
-        if self.kernel == 'linear': return pairwise.polynomial_kernel(X, Y, degree=1)
-        if self.kernel == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=self.degree)
-        if self.kernel == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
+        if self.kernel == 'linear' or self.kernel == 'poly':
+            degree = 1 if self.kernel == 'linear' else self.degree
+            self._H_K = pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=degree)
+            return self._H_K
+        if self.kernel == 'rbf':
+            self._H_K = pairwise.rbf_kernel(X, Y, gamma=self.gamma)
+            return self._H_K
+    
+    def updatedKernelMatrix(self, X, i, supports):
+        if self.kernel == 'linear' or self.kernel == 'poly':
+            degree = 1 if self.kernel == 'linear' else self.degree
+            gamma = 1.0 / X.shape[1]
+            updateMatrixPoly(X, self._H_K, self._H_C, self._H_y, i, supports, degree, gamma, self.C)
+        if self.kernel == 'rbf':
+            updateMatrixGauss(X, self._H_K, self._H_C, self._H_y, i, supports, self.gamma)
 
     def computeHessianMatrix(self, K):
         return np.multiply(self._H_y, K)
 
-    def getKernelFunction(self):
-        if self.kernel == 'linear':
-            def k(a, b):
-                return np.dot(a, b)
-            return k
-        if self.kernel == 'poly':
-            C = self.C
-            d = self.degree
-            def k(a, b):
-                return  (np.dot(a, b) + C) ** d
-            return k
-        if self.kernel == 'rbf':
-            g = -self.gamma
-            def k(a, b):
-                c = a - b
-                return np.exp(g * np.dot(c, c))
-            return k
-
-    def computeKernelMatrixManually(self, X, Y):
-        k = self.getKernelFunction()
-        K = np.
-        for x in X:
-            for y in Y:
-
-
-    def updateHessianMatrix(self, supports, H, X):
-        pass
-            
+    def combolutionMatrixCache(self, X):
+        if self.kernel == 'linear' or self.kernel == 'poly':
+            return combolutionMatrixCachePoly(X)
+        else:
+            return combolutionMatrixCacheGauss(X)
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
@@ -157,24 +185,32 @@ class SVM_RFE_KERNEL():
             # Precompute Hessian Matrix
             K = self.computeKernelMatrix(X, X)
             H = self.computeHessianMatrix(K)
+            self._H_C = self.combolutionMatrixCache(X)
 
             # Declare and train the SVM
             estimator = SVC(C=self.C, max_iter=5000, kernel='precomputed')
             estimator.fit(K, y)
 
+            # Record score
+            self.scores_[np.sum(support_) - 1] = estimator.score(K,y)
+
             start_time = time.time()
             # Get importance and rank them
             a = np.ones(H.shape[0])
             a[estimator.support_] = estimator.dual_coef_[0]
+
+            self.logger.info(f"SUPPORTS: {estimator.support_.shape}, TOTAL: {X.shape}")
+
             aHa = np.dot(np.dot(a, H), a)
             importances = np.zeros(X.shape[1])
             flist = list(range(0, X.shape[1]))
+            #H_i = np.empty((X.shape[0], X.shape[0]))
             for i in flist:
-                X_i = X[:, np.delete(flist, i)]
-                K_i = self.computeKernelMatrix(X_i, X_i)
-                H_i = self.computeHessianMatrix(K_i)
-                aH_ia = np.dot(np.dot(a, H_i), a) 
+                self.updatedKernelMatrix(X, i, List(estimator.support_))
+                #H_i = self.computeHessianMatrix(K_i)
+                aH_ia = np.dot(np.dot(a, K), a) 
                 importances[i] = (1/2) * (aHa - aH_ia)
+           
             elapsed_time += time.time() - start_time
 
             ranks = np.argsort(importances)
@@ -185,8 +221,6 @@ class SVM_RFE_KERNEL():
             # Calculate t (step)
             threshold = min(self.step, np.sum(support_) - n_features_to_select)
 
-            # Record score
-            self.scores_[np.sum(support_) - 1] = estimator.score(K,y)
 
             # Eliminate the worse feature
             for i in range(0, threshold):

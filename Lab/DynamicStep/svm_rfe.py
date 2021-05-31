@@ -86,7 +86,7 @@ class SVM_RFE_DYNAMIC_STEP():
             X = X0[:, features]
 
             # Declare and train the SVM
-            estimator = LinearSVC(C=self.cval, max_iter=5000, dual=False)
+            estimator = LinearSVC(C=self.cval, max_iter=10000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
