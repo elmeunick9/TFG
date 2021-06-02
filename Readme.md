@@ -26,12 +26,13 @@ Focus on reducing the computational cost.
 | Extension Name | TO DO | DEFINITION | IMPLEMENTATION | COMPLETED
 | :- | -: | -: | -: | -: |
 | Non-linear Kernel | | | X | |
-| Avoid CV | X | | | |
-| Historic of weights | X | | | |
-| Multi-class criteria | X | | | |
+| ~~Avoid CV~~ | X | | | |
+| ~~Historic of weights~~ | X | | | |
+| Multi-class criteria | | | X | |
 | Sampling | | | X | |
 | Dynamic Step | |  | | X |
 | Stop condition | |  | X | |
+| Combo | | | X |
 
 # Bibliography
 
@@ -43,11 +44,5 @@ Focus on reducing the computational cost.
 
 # Things to comment
 
-* Raco revision update.
-* Reunio de control, schedule.
-* Using historic of weights will not work. 
-  * Alternatively the previous iteration dual coefficients could be used to initialize the SVM and produce faster results. This is however problematic because sklearn and libsvm do not expose such API. It would require modifications on the C source code of these libraries.
-  * What if we use variance instead? We know that the actual ranking coefficients will produce worse predictions, but maybe a feature with height variance is indicative of something (candidate for being removed)?
-* Isn't "Avoid using corss-validation" and "Multi-class criteria" not a bit outside the scope of the project? They are not really useful for the MADELON dataset, or any dataset we've been using.
-* Sampling works surprisingly well.
-* Combining Sampling + DynamicStep + NonLinear Kernel, can we produce better accuracy for the MADELON dataset?
+* Not much improvement on the combo version, but about 2\%, that is something, right?
+* Yet another hyper-parameter for multi, but seems important.

@@ -1,0 +1,67 @@
+\chapter{Multi-class classification} % Main chapter title
+
+%----------------------------------------------------------------------------------------
+
+In this section we extend SVM-RFE to the multi-class classification problem.
+
+\section{Description and reasoning}
+\label{sec:stopCond.desc}
+
+When it comes to extending SVM to handle a multi-class problems two common methods exists, OvR (One-vs-Rest) and OvO (One-vs-One). In both cases the idea is to divide the problem in a set of binary classification problems and use a joint decision function that operates on the results of each of these. Because we're not really making any predictions during the SVM-RFE procedure, we can not use this joint decision function. Instead, we must find a way to merge the ranking criteria obtained form each problem to find a joint ranking criteria.
+
+We know that the ranking criteria is an estimator of the importance of some feature for a given binary decision problem. It can be the case that a feature is very useful to distinguish between two classes but useless for the rest. In this case a joint ranking criteria formed by taking the mean, the median or the sum will result in poor selections. A better idea would be to take the maximum. However, it may also be desirable to estimate the joint importance a feature has by considering its individual importance in more than one problem, that is, a feature that is important in more than one binary classification problem is more important than another that is only important in one such classification problem even if the second feature has a greater individual importance. A way to perform such ranking would be, for instance, the sum of the squares. For both methods proposed a normalization of all feature rankings is probably adequate.
+
+Note that \texttt{sklearn} only supports OvO, and is therefore the option we will use.
+
+\section{Pseudocode formalization}
+
+\textbf{Definitions:}
+
+\begin{itemize}
+    \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
+    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
+\end{itemize}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t$ \tcp*{$t$ = step}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranked list}
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Compute the joint ranking criteria}\\
+            $\vt{c} = [0, 0, \dots, ]$\\
+            \For{$\vt{Xl} \subseteq \vt{X}$, $\vt{yl} \subseteq \vt{y}$ with $\vt{Xl}$ and $\vt{yl}$ being an instance of OvO}{
+                \tcc*[h]{Train the classifier}\\
+                $\vt{\alpha} = \texttt{SVM-train(} \vt{Xl}, \vt{yl} \texttt{)}$\VS
+
+                \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+                $\vt{w} = \sum_k{\vt{\alpha_k} \vt{yl_k} \vt{Xl_k}}$\VS
+    
+                \tcc*[h]{Compute the joint ranking criteria}\\
+                $\vt{c} = [\max(c_i, (w_i)^2) \text{ for all $i$}]$\VS
+            }\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Iterate over the feature subset}\\
+            \For{$f_i \in \vt{f}$}{
+                \tcc*[h]{Update the feature ranking list}\\
+                $\vt{r} = [\vt{s}(f_i), ...\vt{r}]$\VS
+    
+                \tcc*[h]{Eliminate the feature selected}\\
+                $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
+            }
+        }
+    \caption{SVM-RFE for multi-class classification problems}
+    \label{alg:svmrfe-stopcond}
+\end{algorithm}
+
+\section{Results}
+
