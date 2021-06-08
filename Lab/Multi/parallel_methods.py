@@ -6,6 +6,7 @@ from multiprocessing import Pool
 import random
 from sklearn.metrics import pairwise
 from sklearn import preprocessing
+from sklearn.feature_selection import RFE
 
 from svm_rfe import  SVM_RFE_MULTI
 
@@ -30,13 +31,16 @@ class DSMethods:
         if self.kernel_matrix == 'poly': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=self.degree)
         if self.kernel_matrix == 'rbf': return pairwise.rbf_kernel(X, Y, gamma=self.gamma)
 
-    def randomSelection(self, CVal=10):
+    def randomSelection(self, CVal=10, ranking=None):
         start_time = time.time()
         random_scores_train = {}
         random_scores_test = {}
-        random_selection = random.sample(range(0, self.n_features), self.n_features)
+        if ranking is None:
+            random_selection = random.sample(range(0, self.n_features), self.n_features)
+        else:
+            random_selection = ranking
 
-        for i in range(1, self.n_features, int(self.n_features/50)):
+        for i in range(1, self.n_features, int(self.n_features / 50)):
             features = random_selection[:i]
         
             if self.kernel == 'liblinear':
@@ -94,7 +98,7 @@ class DSMethods:
                 train_scores[i] = svm.score(XT[:,features], yT)
                 test_scores[i] = svm.score(Xt[:,features], yt)
 
-        return train_scores, test_scores, rfe.scores_, elapsed_time
+        return train_scores, test_scores, rfe.scores_ if hasattr(rfe, 'scores_') else None, elapsed_time
 
     def _svm_rfe_only(self, rfe, XT, yT, Xt, yt):
         start_time = time.time()
@@ -224,5 +228,13 @@ class DSMethods:
         train_index, test_index, step = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_MULTI(n_features_to_select=1, step=step)
+        rfe = SVM_RFE_MULTI(n_features_to_select=1, step=step, C=self.C)
+        return self._svm_rfe(rfe, XT, yT, Xt, yt)
+
+    def svm_rfe_vanilla(self, args):
+        train_index, test_index, step = args
+        XT, Xt = self.X_train[train_index], self.X_train[test_index]
+        yT, yt = self.y_train[train_index], self.y_train[test_index]
+        svc = SVC(kernel="linear", C=self.C)
+        rfe = RFE(estimator=svc, n_features_to_select=1, step=step)
         return self._svm_rfe(rfe, XT, yT, Xt, yt)

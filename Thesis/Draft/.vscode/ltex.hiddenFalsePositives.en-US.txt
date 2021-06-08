@@ -1,0 +1,1 @@
+{"rule":"POSSESSIVE_APOSTROPHE","sentence":"^\\QFor the multi-class classification extension we've used the digits dataset (Optical Recognition of Handwritten Digits Data Set)\\E$"}

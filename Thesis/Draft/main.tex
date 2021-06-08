@@ -160,6 +160,7 @@ table,
 \newcommand{\T}{\text{T}}
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\ip}[1]{\langle#1\rangle}
+\newcommand{\mrk}[1]{\cellcolor{gray!25}#1}
 
 %----------------------------------------------------------------------------------------
 %	SYMBOLS
@@ -167,10 +168,15 @@ table,
 
 \begin{symbols}{lll} % Include a list of Symbols (a three column table)
 
-	$X$ & Dataset & $\{\vt{x_1}, \vt{x_2}, \dots, \vt{x_N}\}$ \\
-	$\vt{x_i}$ & Example, observation, ... & $\{x_1, x_2, \dots, x_D\}$ \\
-	$Y$ & Dataset labels & $\{y_1, y_2, \dots, y_N\}$ \\
-	$\vt{w}$, $\vb{w}$ & Weight vector & $\{w_1, w_2, \dots, w_D\}$ \\
+	$n$ & Number of observations & \\
+	$d$ & Number of dimensions & \\
+
+	\addlinespace
+
+	$X$ & Dataset & $\{\vt{x_1}, \vt{x_2}, \dots, \vt{x_n}\}$ \\
+	$\vt{x_i}$ & Example, observation, ... & $\{x_1, x_2, \dots, x_d\}$ \\
+	$Y$ & Dataset labels & $\{y_1, y_2, \dots, y_n\}$ \\
+	$\vt{w}$, $\vb{w}$ & Weight vector & $\{w_1, w_2, \dots, w_d\}$ \\
 	$b$ & Constant term, bias & E.g. $\vt{w} \cdot \vt{x} + b = 0$\\
 	$\vt{u} \cdot \vt{v}$ & Dot/Scalar product (vector) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
 	$\vb{u^\T}\vb{v}$ & Dot/Scalar product (matrix) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
@@ -184,16 +190,21 @@ table,
 	\addlinespace 
 
 	$\ip{\vb{u}, \vb{v}}$ & Inner product & E.g. $\vt{u} \cdot \vt{v}$ \\
-	$|n|$ & Absolute value & $\sqrt{n^2}$\\
+	$|x|$ & Absolute value & $\sqrt{x^2}$\\
 	$||\vt{u}||$ & Euclidean length & $\sqrt{\vt{u} \cdot \vt{u}}$\\
-	$d(u, v)$ & Euclidean distance & $||\vt{u} - \vt{v}||$\\
+	$d(\vt{u}, \vt{v})$ & Euclidean distance & $||\vt{u} - \vt{v}||$\\
 
 	\addlinespace
 
 	$\phi(\vt{x})$ & Feature map & $\phi : D \rightarrow H$\\
 	$k(\vb{x_i}, \vb{x_j})$ & Kernel function & $\ip{\phi(\vb{x_i}), \phi(\vb{x_j})}$\\
 	$\gamma, \sigma$ & RBF Kernel Parameter & \\
+	$\vb{H}$ & Hessian Matrix of dual SVM & $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$\\
 
+	\addlinespace
+
+	$\vt{s}$ & Surviving features & $[1,2, \dotsc, d]$ \\
+	$t$ & Constant Step & \\
 \end{symbols}
 
 %----------------------------------------------------------------------------------------

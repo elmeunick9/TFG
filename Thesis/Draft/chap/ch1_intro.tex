@@ -49,8 +49,9 @@ The paper already proposes some natural extensions to the al\-go\-rithm, such as
 %----------------------------------------------------------------------------------------
 
 \section{Objective}
+\label{sec:ch1.objective}
 
-The main objective of this project is to research extensions of the SVM-RFE algorithm and try to optimize it. Optimizations may be in the form of improved performance, a reduction in time utilization or less memory required. We've classified the possible extensions as follows.
+The main objective of this project is to research extensions of the SVM-RFE algorithm and try to optimize it. Optimizations may be in the form of improved performance or a reduction in time utilization. We've classified the possible extensions as follows.
 
 \subsubsection*{Main extensions}
 
@@ -58,8 +59,6 @@ These focus on improving the performance of the selection.
 
 \begin{itemize}
     \item \textbf{Non-linear kernel:} New ranking criteria needs to be found for the kernel used.
-    \item \textbf{Avoid using cross-validation:} The $C$ parameter may be used in a better way.
-    \item \textbf{Use information form previous iterations:} E.g. make a better ranking cri\-te\-rion by combining the weights of the previous iteration with the current one. 
     \item \textbf{Multi-class criteria:} Find a ranking criterion that can handle multiple weight vectors in a useful way.
 \end{itemize}
 
@@ -68,9 +67,15 @@ These focus on improving the performance of the selection.
 Focus on reducing the computational cost.
 
 \begin{itemize}
-    \item \textbf{Sampling:} Use a subset of the observations. Ideally, use a different subset on each iteration, see if results converge.
+    \item \textbf{Sampling:} Use a different subset of the observations on each iteration.
     \item \textbf{Dynamic Step:} Instead of using a constant value in each iteration, calculate it dynamically.
     \item \textbf{Stop condition:} Determine the amount of features that are relevant (SVM-RFE only provides a ranking) in an effective and inexpensive manner.
+\end{itemize}
+
+\subsubsection*{Combination of various extensions}
+
+\begin{itemize}
+    \item \textbf{Combo:} Mix Sampling, Dynamic Step and Non-linear Kernels into a single implementation.
 \end{itemize}
 
 \subsection{Objective break down}
@@ -148,4 +153,4 @@ An uppercase letter \texttt{"X"} will mark the current state of any given card. 
 
 \subsection{Validation}
 
-We will use a GitHub repository as a tool for version control, which will allows us to share code easily and the recover from data lose. The repository will contain both the code for the different experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be tested with multiple standard data sets. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each experiment will be done 3 times and the average of the results will be the final result. Lastly, face-to-face meetings will be scheduled once every two weeks with the tutor of the project. In these meetings it will be discussed the project status and the tasks to do during the following two weeks, before the next meeting. In case of problems in the project, extraordinary meetings can be arranged.
+We will use a GitHub repository as a tool for version control, which will allows us to share code easily and the recover from data lose. The repository will contain both the code for the different experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be tested with multiple standard data sets. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each ex\-per\-i\-ment will be done 6 times and the average of the results will be the final result. Lastly, face-to-face meetings will be scheduled once every two weeks with the tutor of the project. In these meetings it will be discussed the project status and the tasks to do during the following two weeks, before the next meeting. In case of problems in the project, extraordinary meetings can be arranged.
