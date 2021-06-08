@@ -20,6 +20,7 @@ class DSMethods:
         self.kernel = kernel
         self.kernel_matrix = None
         self.C = 0.1
+        self.C2 = 0.1
         self.gamma = 1.0
         self.degree = 3
 
@@ -34,7 +35,7 @@ class DSMethods:
         random_scores_test = {}
         random_selection = random.sample(range(0, self.n_features), self.n_features)
 
-        for i in range(1, self.n_features, int(self.n_features/50)):
+        for i in range(1, self.n_features, int(self.n_features/200)):
             features = random_selection[:i]
         
             if self.kernel == 'liblinear':
@@ -68,7 +69,7 @@ class DSMethods:
         test_scores = {}
         test_selection = np.argsort(rfe.ranking_)
 
-        for i in range(1, self.n_features, 1):
+        for i in range(1, self.n_features, int(self.n_features/50)):
             features = test_selection[:i]
 
             if self.kernel == 'liblinear':
