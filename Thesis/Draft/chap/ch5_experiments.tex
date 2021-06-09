@@ -172,6 +172,7 @@ The relative time cost of each method can be estimated as the area under the cur
 \subsection{Results}
 
 \subsubsection*{Analysis with artificially generated data}
+\label{sec:ch5.dstep.gen}
 
 We generate a 2 class dataset with the following code. The scalarization trade-off used is of 80\% accuracy, 20\% feature subset size. All results are mean values extracted from a 7-fold cross-validation procedure.
 
@@ -436,6 +437,28 @@ The reasoning for this last statement is that, although the algorithm only uses 
 
 \subsection{Results}
 
+\subsubsection*{Analysis with artificially generated data}
+
+We generate a 2 class dataset with the following code. The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. Are results are mean values extracted form a 20-fold cross-validation procedure. For this dataset we've used $C = 10$ across all experiments.
+
+\begin{verbatim}
+    X, y = make_classification(
+        n_samples = 8000, n_clusters_per_class = 2, n_features = 300, 
+        n_informative = 100, n_redundant=2, n_repeated=0,
+        flip_y= 0.01, random_state=8, class_sep = 1.0
+    )
+\end{verbatim}\VS
+
+To test this extension we've created 3 algorithms:
+
+\begin{itemize}
+    \item \textbf{A:} No sampling is done, all examples are used as usual.
+    \item \textbf{B:} Sampling is done once, as a preprocessing step, not within SVM-RFE.
+    \item \textbf{C:} Sampling is done within SVM-RFE, as explained in Section \ref{sec:ch5.sampling.desc}. 
+\end{itemize}
+
+Figure \ref{fig:ch5.sampling.vanilla.comp} illustrates the results for 3 different parameter sets (3×3 grid).
+
 \begin{figure}[H]
     \centering
     \begin{subfigure}[b]{0.32\linewidth}
@@ -474,7 +497,7 @@ The reasoning for this last statement is that, although the algorithm only uses 
         \includegraphics[width=\linewidth]{img/ch5/sampling/300-s5-p05.png}
         \subcaption*{\textbf{C3.} $t = 5, k = 50\%$}
     \end{subfigure}
-    \caption{Grid comparing algorithms on each row \textbf{A-B-C} and the hyperparameter configuration for each \textbf{1} (step = 20), \textbf{2} (step = 5, sample = 10\%) and \textbf{3} (step = 5, sample = 50\%).}
+    \caption{Grid comparing algorithms on each row \textbf{A-B-C} and the hyper-parameter configuration for each \textbf{1} (step = 20), \textbf{2} (step = 5, sample = 10\%) and \textbf{3} (step = 5, sample = 50\%).}
     \label{fig:ch5.sampling.vanilla.comp}
 \end{figure}
 
@@ -489,7 +512,7 @@ The reasoning for this last statement is that, although the algorithm only uses 
         \midrule
         \textbf{A}&      115 & 85.25\% & 0.194 &      97 & 84.51\% & 0.189 &     73 & 82.51\% & 0.189\\
         \textbf{B}&      85 & 71.88\% & 0.281 &       85 & 71.79\% & 0.282 &     73 & 80.58\% & 0.204\\
-        \textbf{C}&      85 & 79.38\% & 0.221 &       49 & 79.99\% & 0.193 &     73 & 86.08\% & 0.160\\
+        \textbf{C}&      85 & 79.38\% & 0.221 &       49 & 79.99\% & 0.193 &     \mrk{73} & \mrk{86.08\%} & \mrk{0.160}\\
         \bottomrule
         \end{tabular}
     \caption{Perfomrance.}
@@ -506,14 +529,108 @@ The reasoning for this last statement is that, although the algorithm only uses 
         \midrule
         \textbf{A}&      15 & 07.82 & 0.26 &      60 & 30.35 & 7.68 &     60 & 30.87 & 2.21\\
         \textbf{B}&      15 & 01.46 & 0.16 &      60 & 05.29 & 1.86 &     60 & 16.26 & 4.70\\
-        \textbf{C}&      15 & 03.18 & 2.14 &      60 & 13.43 & 5.51 &     60 & 19.64 & 1.75\\
+        \textbf{C}&      15 & 03.18 & 2.14 &      60 & 13.43 & 5.51 &     \mrk{60} & \mrk{19.64} & \mrk{1.75}\\
         \bottomrule
         \end{tabular}
     \caption{Times.}
 \end{table}
 
-Accuracy trade-off is 80\%. Problem is 8000 observations with 20-fold cross validation, 300 features, 100 informative.
+Note how algorithm \textbf{C} performs significatively better than \textbf{B} for all parameter sets, although it takes a bit more time. This extra time consumption can be attributed to the resampling procedure being performed each iteration of SVM-RFE versus only once. This will only be noticeable when the amount of samples is big. However, algorithm \textbf{C} is always faster than algorithm \textbf{A} and even performs better in one parameter set.
 
+\subsubsection*{Analysis with artificially generated data 2}
+
+We've recycled the dataset generated for the dynamic step extension (Section \ref{sec:ch5.dstep.gen}) and repeated the experiment using the same parameters, including the 7-fold cross-validation and fixing a constant step of 10. The fol\-low\-ing tables summarize the result.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{Percentage} & \multicolumn{3}{c}{\textbf{1.0}} & \multicolumn{3}{c}{\textbf{0.5}} & \multicolumn{3}{c}{\textbf{0.2}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.000010} &    \mrk{37} & \mrk{89.50\%} & \mrk{0.109} &    55 & 88.70\% & 0.127 &    43 & 84.10\% & 0.156\\
+        \textbf{0.000100} &    37 & 89.50\% & 0.109 &    37 & 87.50\% & 0.125 &    43 & 82.20\% & 0.171\\
+        \textbf{0.001000} &    85 & 88.10\% & 0.152 &    37 & 85.20\% & 0.143 &    37 & 79.11\% & 0.192\\
+        \textbf{0.010000} &   103 & 85.30\% & 0.186 &    67 & 85.10\% & 0.164 &    13 & 75.99\% & 0.201\\
+        \textbf{0.100000} &    85 & 84.00\% & 0.185 &    67 & 84.90\% & 0.165 &    19 & 78.00\% & 0.189\\
+        \bottomrule
+        \end{tabular}
+    \caption{Grid search of SVM-RFE with preprocessed sampling.}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c}
+        \toprule
+        \multicolumn{1}{c}{\textbf{C/Percentage}} & \textbf{1.0} & \textbf{0.5} & \textbf{0.2} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{0.000010} & \mrk{0:00.972} & 0:00.308 & 0:00.119\\
+        \textbf{0.000100} & 0:01.249 & 0:00.422 & 0:00.166\\
+        \textbf{0.001000} & 0:01.799 & 0:00.497 & 0:00.481\\
+        \textbf{0.010000} & 0:02.604 & 0:02.106 & 0:02.492\\
+        \textbf{0.100000} & 0:09.914 & 0:02.279 & 0:00.207\\
+        \bottomrule
+        \end{tabular}
+    \caption{Execution time (min:sec.msec) of SVM-RFE with pre\-processed sampling.}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{Percentage} & \multicolumn{3}{c}{\textbf{0.5}} & \multicolumn{3}{c}{\textbf{0.2}} & \multicolumn{3}{c}{\textbf{0.1}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.000010} &    31 & 85.20\% & 0.139 &    37 & 86.20\% & 0.135 &    67 & 88.01\% & 0.141\\
+        \textbf{0.000100} &    55 & 90.10\% & 0.116 &    43 & 89.70\% & 0.111 &    73 & 90.00\% & 0.129\\
+        \textbf{0.001000} &    \mrk{37} & \mrk{90.30\%} & \mrk{0.102} &    49 & 89.90\% & 0.113 &    49 & 88.60\% & 0.124\\
+        \textbf{0.010000} &    49 & 90.20\% & 0.111 &    49 & 89.00\% & 0.121 &    49 & 87.20\% & 0.135\\
+        \textbf{0.100000} &    37 & 88.30\% & 0.118 &    55 & 86.70\% & 0.143 &    43 & 85.90\% & 0.141\\
+        \bottomrule
+        \end{tabular}
+    \caption{Grid search of SVM-RFE with sampling.}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c}
+        \toprule
+        \multicolumn{1}{c}{\textbf{C/Percentage}} & \textbf{0.5} & \textbf{0.2} & \textbf{0.1} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+
+        \textbf{0.000010} & 0:00.303 & 0:00.130 & 0:00.101\\
+        \textbf{0.000100} & 0:00.315 & 0:00.129 & 0:00.097\\
+        \textbf{0.001000} & \mrk{0:00.331} & 0:00.145 & 0:00.098\\
+        \textbf{0.010000} & 0:00.376 & 0:00.166 & 0:00.114\\
+        \textbf{0.100000} & 0:00.499 & 0:00.262 & 0:00.170\\
+        \bottomrule
+        \end{tabular}
+    \caption{Execution time of SVM-RFE with sampling.}
+\end{table}
+
+We see similar results in this experiment, reaching both better performance and time even compared to the version without sampling (percentage of 100\%). We note that the best regularization parameter $C$ is kept the same when using preprocessed sampling, yet it is shifted when using sampling within RFE.
+
+\subsubsection*{Analysis with Madelon}
+
+We've tested this extension with the Madelon dataset, but we've obtained similar results as in the previous extension. That is, there is no improvement in accuracy compared to the filter version. This makes using any kind of sampling non-practical given that if only one iteration is done then sampling outside or inside SVM-RFE are equivalent. Furthermore, outside sampling produces worse results.
+
+\subsection{Conclusions}
+
+This is a summary of the pros and cons we've found for this extension:
+
+\begin{itemize}
+    \item It is always faster than using no sampling, but slower than using sampling as a preprocessing step.
+    \item It generally performs much better than using a preprocessed sampling, and may even improve on the performance of the version with no sampling.
+    \item Its performance depends on the amount of iterations, improving the more there are and being equivalent to preprocessed sampling for the filter case.
+\end{itemize}
+
+In general, we recommend using SVM-RFE with sampling whenever possible, specially to improve the speed of the algorithm.
 
 \section{Stop Condition}
 

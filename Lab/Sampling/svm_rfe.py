@@ -4,9 +4,10 @@ from sklearn.utils import resample
 from sklearn import preprocessing
 
 class SVM_RFE():
-    def __init__(self, n_features_to_select, step=4):
+    def __init__(self, n_features_to_select, step=4, C=0.1):
         self.n_features_to_select = n_features_to_select
         self.step = step
+        self.C = C
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
@@ -30,7 +31,7 @@ class SVM_RFE():
 
             # Declare and train the SVM
             #with time_code('SVM #' + str(np.sum(support_))):
-            estimator = LinearSVC(C=10, max_iter=5000, dual=False)
+            estimator = LinearSVC(C=self.C, max_iter=5000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
@@ -62,10 +63,11 @@ class SVM_RFE():
         return self
 
 class SVM_RFE_SAMPLING():
-    def __init__(self, n_features_to_select = None, step=4, percentage=0.5):
+    def __init__(self, n_features_to_select = None, step=4, percentage=0.5, C=0.1):
         self.n_features_to_select = n_features_to_select
         self.step = step
         self.percentage = percentage
+        self.C = C
 
     def fit(self, X0, y0, test=()):
         self.scores_ = {}
@@ -95,7 +97,7 @@ class SVM_RFE_SAMPLING():
 
             # Declare and train the SVM
             #with time_code('SVM #' + str(np.sum(support_))):
-            estimator = LinearSVC(C=10, max_iter=5000, dual=False)
+            estimator = LinearSVC(C=self.C, max_iter=5000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
