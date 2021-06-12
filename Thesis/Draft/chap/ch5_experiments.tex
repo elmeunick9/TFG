@@ -90,7 +90,7 @@ That is, the amount of features eliminated "$r$" at $j$-th iteration is the summ
     r = \sum_{i = 1}^{j}{(np^i)} 
 \end{equation}
 
-It may be more interesting to see complexity as in the amount of iterations re\-quired to eliminate $r$ features, it can be derived from equation \ref{eq:dynamicStep1} as follows:
+It may be more interesting to see complexity as in the amount of iterations re\-quired to eliminate $r$ features. Assuming $r$ and $p$ to be constants, it can be derived from equation \ref{eq:dynamicStep1} as follows:
 
 \begin{align*}
     r &= n \sum_{i = 1}^{j}{p^i} = n \sum_{i = 0}^{j-1}{(p^i)} - n + np^j \\
@@ -102,8 +102,8 @@ It may be more interesting to see complexity as in the amount of iterations re\-
     - \frac{(1-p)r}{n} + p &= p^{j+1}\\
     \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= \log_{p} (p^{j+1})\\
     \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= j + 1\\
-    \log_{1/p} \left( - \frac{n}{(1-p)r} + 1/p \right) &= j + 1\\
-\end{align*}
+    \log_{1/p} \left( - \frac{n}{(1-p)r} + 1/p \right) &= j + 1 \implies O(\log_{1/p} n)
+\end{align*}\\
 %\fi
 
 We assume that, the bigger the step each iteration, the worse the performance of the ranking. This is consistent with what we've seen in figure \ref{fig:ch4.dynamicStep.vanilla.comp}. However, since we're eliminating the worst variables first, eliminating more of them at once shouldn't affect performance because it is likely they would've been eliminated in the next iterations anyway. The fewer the iterations remaining, the riskier it becomes to eliminate multiple variables at once, and thus a smaller step is beneficial.
@@ -1155,7 +1155,7 @@ Non-lineal kernels also involve more hyper-parameters, thus increasing the im\-p
     \centering
     \begin{tabular}{l | c c c | c c c}
         \toprule
-         & \multicolumn{3}{c}{\textbf{Optimized}} & \multicolumn{3}{c}{\textbf{Non-optimized}} \\
+         & \multicolumn{3}{c}{\textbf{Optimized}} & \multicolumn{3}{c}{\textbf{Not optimized}} \\
         %\cline{2-4}\cline{5-7}\cline{8-10}
         \midrule
         \textbf{$C$/Deg.}&\textbf{1}&\textbf{2}&\textbf{3}&\textbf{1}&\textbf{2}&\textbf{3} \\
@@ -1392,7 +1392,59 @@ Tables \ref{fig:ch5.combo.art.table} and \ref{fig:ch5.combo.art.tabletime} summa
 
 By comparing this results to Table \ref{fig:ch5.kernel.art.tabletime} we calculate an approximate speed-up of x2 compared to the optimized non-linear kernel version.
 
+We have also tried using a Gaussian kernel (Table \ref{fig:ch5.combo.art.tablerbf}). Although using it we can obtain grater values of accuracy, the amount of features it selects also increase significatively. Overall the RBF kernel doesn't perform as good as the polynomial for this dataset. Note that RBF kernel results for the \emph{Non-lineal kernel} extension are the same and have been omitted. The time table has also been omitted.
+
+\begin{table}[H]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{$\gamma$} & \multicolumn{3}{c}{\textbf{0.00036}} & \multicolumn{3}{c}{\textbf{0.00046}} & \multicolumn{3}{c}{\textbf{0.00056}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{1e+00} &   161 & 88.41\% & 0.200 &   132 & 85.39\% & 0.205 &   102 & 79.82\% & 0.229 \\
+        \textbf{1e+01} &   157 & 91.39\% & 0.174 &   134 & 88.60\% & 0.181 &   104 & 83.01\% & 0.205 \\
+        \textbf{1e+02} &   145 & 89.81\% & 0.178 &   134 & 89.01\% & 0.177 &   110 & 86.99\% & 0.177 \\
+        \textbf{1e+03} &   \mrk{157} & \mrk{91.59\%} & \mrk{0.172} &   132 & 87.80\% & 0.186 &   102 & 85.79\% & 0.182 \\
+        \textbf{1e+04} &   149 & 89.22\% & 0.186 &   134 & 87.39\% & 0.190 &   106 & 81.59\% & 0.218 \\
+        \textbf{1e+05} &   161 & 90.01\% & 0.187 &   132 & 87.80\% & 0.186 &   106 & 82.20\% & 0.213 \\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with RBF kernel.}
+    \label{fig:ch5.combo.art.tablerbf}
+\end{table}
+
 \subsubsection*{Analysis with MADELON}
+
+For this experiment we've used a dynamic reflective step with a percentage of 8\%, a minimum step of 3 and centered at 20 features. We've also used internal sampling of 20\%. Figure \ref{fig:ch5.combo.madelon.one} corresponds to the feature ranking accuracy with the best pa\-ram\-e\-ters found in the model selection phase.  
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.4\linewidth]{img/ch5/combo/once.png}
+    \caption{Poly-7, $C=0.6$}
+    \label{fig:ch5.combo.madelon.one}
+\end{figure}
+
+Tables \ref{fig:ch5.combo.madelon.table} and \ref{fig:ch5.combo.madelon.timetable} summarize the results. We note that although we were not able to improve the accuracy compared with the version only with non-polynomial kernels, we've achieved a speed-up of x6.
+
+The following figure (Figure \ref{fig:ch5.combo.art.comp2}) illustrates what happens if we remove either \emph{Dynamic Step} or \emph{Sampling} from our \emph{Combo} extension. Removing internal sampling significatively reduces the accuracy. Using a constant step instead of dynamic also performs worse, either by increasing the elapsed time when a small step is used, or decreasing the accuracy when the value of the step is large. Although the accuracy reduced by using a large step (e.g. 50) is small (3\% drop), it may produce an im\-por\-tant speed up of the SVM-RFE phase. However, the validation phase still requires using dynamic step or a very small constant step to avoid the accuracy performance drop\-ping considerably. 
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/combo/twice-2.png}
+        \subcaption*{Preprocessed sampling of $20\%$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/combo/twice-3.png}
+        \subcaption*{Constant step of 10}
+    \end{subfigure}
+    \caption{Performance comparison of SVM-RFE (Combo) feature rankings with some extension removed. Poly-7, $C=0.6$}
+    \label{fig:ch5.combo.art.comp2}
+\end{figure}
 
 \begin{table}[h]
     \centering
@@ -1441,7 +1493,7 @@ By comparing this results to Table \ref{fig:ch5.kernel.art.tabletime} we calcula
         \textbf{0.3} &     7 & 69.00\% & 0.219 $\pm$ 0.026 &     7 & 60.44\% & 0.280 $\pm$ 0.023 &    10 & 58.35\% & 0.318 $\pm$ 0.010\\
         \textbf{0.4} &    10 & 77.60\% & 0.176 $\pm$ 0.023 &     7 & 62.50\% & 0.276 $\pm$ 0.029 &     7 & 62.25\% & 0.284 $\pm$ 0.022\\
         \textbf{0.5} &    13 & 85.65\% & 0.117 $\pm$ 0.012 &    10 & 69.14\% & 0.212 $\pm$ 0.029 &     7 & 65.61\% & 0.258 $\pm$ 0.031\\
-        \textbf{0.6} &    16 & 88.25\% & 0.098 $\pm$ 0.004 &    10 & 72.20\% & 0.195 $\pm$ 0.025 &    10 & 70.94\% & 0.214 $\pm$ 0.030\\
+        \textbf{0.6} &    \mrk{16} & \mrk{88.25\%} & \mrk{0.098 $\pm$ 0.004} &    10 & 72.20\% & 0.195 $\pm$ 0.025 &    10 & 70.94\% & 0.214 $\pm$ 0.030\\
         \textbf{0.7} &    19 & 87.35\% & 0.105 $\pm$ 0.009 &    13 & 85.50\% & 0.116 $\pm$ 0.008 &    10 & 70.95\% & 0.215 $\pm$ 0.037\\
         \textbf{0.8} &    19 & 87.90\% & 0.104 $\pm$ 0.005 &    16 & 87.05\% & 0.102 $\pm$ 0.005 &    10 & 81.16\% & 0.135 $\pm$ 0.010\\
         \textbf{0.9} &    19 & 87.45\% & 0.106 $\pm$ 0.006 &    19 & 87.05\% & 0.105 $\pm$ 0.004 &    16 & 84.75\% & 0.115 $\pm$ 0.009\\
@@ -1465,7 +1517,7 @@ By comparing this results to Table \ref{fig:ch5.kernel.art.tabletime} we calcula
         \textbf{0.3} & 0:21.37 & 0:20.61 & 0:20.76 & 0:22.29 & 0:21.52 & 0:21.93 & 0:21.98 & 0:22.16 & 0:21.79\\
         \textbf{0.4} & 0:19.71 & 0:21.18 & 0:20.76 & 0:21.30 & 0:22.64 & 0:21.73 & 0:21.62 & 0:21.83 & 0:22.00\\
         \textbf{0.5} & 0:19.89 & 0:20.43 & 0:21.56 & 0:21.47 & 0:21.46 & 0:21.54 & 0:21.61 & 0:21.87 & 0:22.03\\
-        \textbf{0.6} & 0:19.09 & 0:20.13 & 0:20.42 & 0:21.08 & 0:21.39 & 0:21.83 & 0:21.82 & 0:22.03 & 0:22.24\\
+        \textbf{0.6} & 0:19.09 & 0:20.13 & 0:20.42 & 0:21.08 & 0:21.39 & 0:21.83 & \mrk{0:21.82} & 0:22.03 & 0:22.24\\
         \textbf{0.7} & 0:19.19 & 0:20.02 & 0:20.83 & 0:21.64 & 0:21.06 & 0:21.61 & 0:21.79 & 0:22.34 & 0:22.05\\
         \textbf{0.8} & 0:19.49 & 0:19.76 & 0:20.97 & 0:21.09 & 0:21.26 & 0:21.62 & 0:21.33 & 0:21.73 & 0:21.92\\
         \textbf{0.9} & 0:19.49 & 0:19.73 & 0:20.39 & 0:21.22 & 0:21.49 & 0:22.12 & 0:21.39 & 0:22.16 & 0:23.06\\
@@ -1475,3 +1527,63 @@ By comparing this results to Table \ref{fig:ch5.kernel.art.tabletime} we calcula
     \caption{Execution time (min:sec) of SVM-RFE (combo) with Polynomial Kernel optimized.}
     \label{fig:ch5.combo.madelon.timetable}
 \end{table}
+
+We have also tried using a Gaussian kernel (Table \ref{fig:ch5.combo.madelon.table-rbf}). The results are not as good as using a polynomial, but it produces smaller feature subsets. The timetable has been omitted.
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{$\gamma$} & \multicolumn{3}{c}{\textbf{0.010}} & \multicolumn{3}{c}{\textbf{0.025}} & \multicolumn{3}{c}{\textbf{0.050}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    13 & 61.70\% & 0.308 $\pm$ 0.010 &    19 & 69.05\% & 0.251 $\pm$ 0.009 &    16 & 71.60\% & 0.225 $\pm$ 0.009\\
+        \textbf{0.2} &    22 & 63.50\% & 0.295 $\pm$ 0.011 &    22 & 73.05\% & 0.220 $\pm$ 0.009 &    16 & 76.15\% & 0.191 $\pm$ 0.009\\
+        \textbf{0.3} &    22 & 65.75\% & 0.271 $\pm$ 0.009 &    22 & 74.50\% & 0.209 $\pm$ 0.006 &    16 & 77.10\% & 0.187 $\pm$ 0.012\\
+        \textbf{0.4} &    28 & 68.05\% & 0.264 $\pm$ 0.007 &    22 & 76.40\% & 0.195 $\pm$ 0.003 &    16 & 76.20\% & 0.186 $\pm$ 0.010\\
+        \textbf{0.5} &    22 & 68.95\% & 0.251 $\pm$ 0.007 &    22 & 76.70\% & 0.190 $\pm$ 0.006 &    16 & 80.75\% & 0.157 $\pm$ 0.011\\
+        \textbf{0.6} &    25 & 69.60\% & 0.243 $\pm$ 0.008 &    19 & 77.50\% & 0.186 $\pm$ 0.007 &    16 & 79.70\% & 0.165 $\pm$ 0.014\\
+        \textbf{0.7} &    28 & 71.05\% & 0.239 $\pm$ 0.008 &    22 & 78.35\% & 0.176 $\pm$ 0.007 &    16 & 80.90\% & 0.153 $\pm$ 0.009\\
+        \textbf{0.8} &    19 & 69.30\% & 0.244 $\pm$ 0.005 &    22 & 78.45\% & 0.177 $\pm$ 0.010 &    16 & 79.35\% & 0.169 $\pm$ 0.014\\
+        \textbf{0.9} &    22 & 70.90\% & 0.235 $\pm$ 0.006 &    22 & 78.75\% & 0.176 $\pm$ 0.008 &    16 & 79.70\% & 0.164 $\pm$ 0.014\\
+        \textbf{1.0} &    25 & 71.70\% & 0.228 $\pm$ 0.008 &    19 & 79.60\% & 0.168 $\pm$ 0.010 &    16 & 81.40\% & 0.153 $\pm$ 0.010\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{$\gamma$} & \multicolumn{3}{c}{\textbf{0.1}} & \multicolumn{3}{c}{\textbf{0.2}} & \multicolumn{3}{c}{\textbf{0.3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    16 & 76.10\% & 0.196 $\pm$ 0.012 &     7 & 67.75\% & 0.260 $\pm$ 0.012 &     4 & 57.95\% & 0.333 $\pm$ 0.018\\
+        \textbf{0.2} &    13 & 78.30\% & 0.167 $\pm$ 0.009 &     7 & 68.00\% & 0.248 $\pm$ 0.020 &     4 & 58.15\% & 0.324 $\pm$ 0.023\\
+        \textbf{0.3} &    13 & 79.90\% & 0.159 $\pm$ 0.012 &     7 & 67.10\% & 0.250 $\pm$ 0.022 &     4 & 60.45\% & 0.310 $\pm$ 0.020\\
+        \textbf{0.4} &    13 & 78.95\% & 0.166 $\pm$ 0.010 &     7 & 75.30\% & 0.199 $\pm$ 0.011 &    10 & 56.54\% & 0.337 $\pm$ 0.025\\
+        \textbf{0.5} &    13 & 82.60\% & 0.143 $\pm$ 0.005 &     7 & 72.75\% & 0.211 $\pm$ 0.024 &     4 & 60.55\% & 0.310 $\pm$ 0.015\\
+        \textbf{0.6} &    13 & 82.95\% & 0.137 $\pm$ 0.012 &     7 & 73.65\% & 0.202 $\pm$ 0.018 &     4 & 64.50\% & 0.276 $\pm$ 0.020\\
+        \textbf{0.7} &    13 & 82.15\% & 0.141 $\pm$ 0.009 &     7 & 72.75\% & 0.209 $\pm$ 0.027 &     4 & 56.30\% & 0.330 $\pm$ 0.017\\
+        \textbf{0.8} &    13 & 82.40\% & 0.139 $\pm$ 0.007 &     7 & 77.30\% & 0.182 $\pm$ 0.016 &     4 & 62.30\% & 0.299 $\pm$ 0.017\\
+        \textbf{0.9} &    13 & 82.75\% & 0.139 $\pm$ 0.010 &     7 & 79.25\% & 0.158 $\pm$ 0.011 &     7 & 55.05\% & 0.343 $\pm$ 0.018\\
+        \textbf{1.0} &    13 & 84.50\% & 0.124 $\pm$ 0.011 &     7 & 79.80\% & 0.164 $\pm$ 0.012 &     4 & 58.40\% & 0.314 $\pm$ 0.029\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE (combo) with RBF kernel.}
+    \label{fig:ch5.combo.madelon.table-rbf}
+\end{table}
+
+\subsection{Conclusions}
+
+This is a summary of the results for this extension:
+
+\begin{itemize}
+    \item As expected, this combo produces a substantial speed-up.
+    \item Accuracy is not negatively effected by the new method.
+    \item Finding the correct parameters for \emph{Dynamic Step} and \emph{Sampling} requires knowl\-edge on the data. 
+\end{itemize}
+
+Although this method requires extra parameters, these have well-defined ranges and are not very sensitive to changes. This makes it possible to find adequate values with a simple initial exploratory analysis without requiring more complex model selection algorithms. 
+
+In general, we recommend using this combo approach whenever the data is not linearly separable and the approximate amount of informative features is known. A previous exploration of the data set may be required.

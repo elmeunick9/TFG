@@ -376,8 +376,8 @@ class SVM_RFE_COMBO():
             # Calculate t (step)
             t = max(int(self.dstep_percentage * np.abs(np.sum(support_) - self.dstop)), self.step)
             if np.sum(support_) - t < 1:
-                t = 1
-                n_features_to_select = np.sum(support_)
+                t = max(np.sum(support_) - 1, 1)
+                #n_features_to_select = np.sum(support_)
 
             # Eliminate the worse feature
             for i in range(0, t):

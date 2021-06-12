@@ -71,7 +71,7 @@ class DSMethods:
         test_scores = {}
         test_selection = np.argsort(rfe.ranking_)
 
-        for i in range(1, self.n_features, int(self.n_features/500)):
+        for i in range(1, self.n_features, 20):
             features = test_selection[:i]
 
             if self.kernel == 'liblinear':
@@ -219,4 +219,4 @@ class DSMethods:
             sampling_percentage=self.sampling_percentagee,
             dstep_percentage = self.dstep_percentage,
             dstop = self.dstop)
-        return self._svm_rfe_almost(rfe, XT, yT, Xt, yt)
+        return self._svm_rfe(rfe, XT, yT, Xt, yt)
