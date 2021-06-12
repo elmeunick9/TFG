@@ -207,8 +207,12 @@ class SVM_RFE_KERNEL():
             #H_i = np.empty((X.shape[0], X.shape[0]))
             for i in flist:
                 self.updatedKernelMatrix(X, i, List(estimator.support_))
+
+                #X_i = X[:, np.delete(flist, i)]
+                #K_i = self.computeKernelMatrix(X_i, X_i)
                 #H_i = self.computeHessianMatrix(K_i)
-                aH_ia = np.dot(np.dot(a, K), a) 
+
+                aH_ia = np.dot(np.dot(a, K), a) # K is alias of self._H_K
                 importances[i] = (1/2) * (aHa - aH_ia)
            
             elapsed_time += time.time() - start_time

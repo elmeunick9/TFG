@@ -13,10 +13,11 @@ import logging
 import time
 
 class SVM_RFE_MULTI():
-    def __init__(self, n_features_to_select, step=4, C=1):
+    def __init__(self, n_features_to_select, step=4, C=1, mode='l1'):
         self.n_features_to_select = n_features_to_select
         self.step = step
         self.C = C
+        self.mode = mode
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
@@ -46,11 +47,19 @@ class SVM_RFE_MULTI():
 
             # Get importance and rank them
             importances = estimator.coef_ ** 2
-            importances = preprocessing.normalize(importances, axis=1, norm='l2')
-            #importances = importances ** 0.5
-            #importances = np.sum(importances, axis=0)
-            importances = np.divide(np.mean(importances, axis=0), np.std(importances, ddof=0, axis=0))
-            #raise Exception(importances.shape)
+            #importances = preprocessing.normalize(importances, axis=1, norm='l2')
+            if self.mode == 'l1':
+                importances = importances ** 0.3
+            if self.mode == 'l3':
+                importances = importances  ** 3
+            if self.mode == 'lx':
+                importances = importances ** self.C
+            if self.mode != 'coef':
+                importances = np.sum(importances, axis=0)
+            if self.mode == 'coef':
+                importances = np.divide(np.mean(importances, axis=0), np.std(importances, ddof=0, axis=0))
+                #raise Exception(importances.shape)
+            
             ranks = np.argsort(importances)
 
             # Flatten ranks, required for Multi-Class Classification.

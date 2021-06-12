@@ -325,14 +325,15 @@ class SVM_RFE_COMBO():
 
             # Remaining features, represented with a list of indices.
             features = np.arange(n_features)[support_]
-            if self.sampling_percentage < 1.0 and self.dstop < np.sum(support_):
+            if True or (self.sampling_percentage < 1.0 and self.dstop < np.sum(support_)):
                 X = X0[idx]
                 X = X[:, features]
-                X = preprocessing.scale(X)
+                #X = preprocessing.scale(X)
                 y = y0[idx]
             else:
                 X = X0[:, features]
                 y = y0
+            
             self._H_y = np.multiply.outer(y, y)
 
             # Precompute Hessian Matrix
@@ -373,11 +374,13 @@ class SVM_RFE_COMBO():
             ranks = np.ravel(ranks)
 
             # Calculate t (step)
-            min_threshold = np.sum(support_) - self.dstop
-            threshold = max(int(self.dstep_percentage * min_threshold), 1)
+            t = max(int(self.dstep_percentage * np.abs(np.sum(support_) - self.dstop)), self.step)
+            if np.sum(support_) - t < 1:
+                t = 1
+                n_features_to_select = np.sum(support_)
 
             # Eliminate the worse feature
-            for i in range(0, threshold):
+            for i in range(0, t):
                 selected_feature = features[ranks[i]]
                 support_[selected_feature] = False
                 ranking_[np.logical_not(support_)] += 1

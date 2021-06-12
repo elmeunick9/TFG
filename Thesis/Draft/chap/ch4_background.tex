@@ -522,6 +522,7 @@ Another advantage of using kernels is that, since they don't restrict the input 
 Continuing our discussion on section \ref{sec:ch1.feature_selection}, SVM-RFE is an embedded feature se\-lec\-tion algorithm. In this section we shall explore in more detail how and why this algorithm works.
 
 \subsection{Ranking criteria}
+\label{sec:ch4.rfe.criteria}
 
 One basic idea of feature selection is to use a feature ranking and then select a number $r$ of the best ranking features as the final selection. For classification prob\-lems, one possible way to produce such a ranking is to evaluate how well a single feature contributes to the separation of the classes, these are called \emph{correlation filter methods} and the evaluation function \emph{correlation coefficients}, e.g:
 \begin{align*}

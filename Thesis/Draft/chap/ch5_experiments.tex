@@ -83,7 +83,7 @@ The percentage is a hyper-parameter. It is used within every iteration to elimin
 
 Other similar modifications are also found in the literature, including using the square root of the remaining features \texttt{SQRT-RFE}, an entropy based function \texttt{E-RFE}, or \texttt{RFE-Annealing} which sets the step at $|\vt{s}| \frac{1}{i+1}$, thus, changing the percentage each iteration (\cite{ding_improving_2006}).
 
-\iffalse
+%\iffalse
 That is, the amount of features eliminated "$r$" at $j$-th iteration is the summation of the amount of features eliminated each iteration, i.e. $np^i$:
 
 \begin{equation}\label{eq:dynamicStep1}
@@ -104,7 +104,7 @@ It may be more interesting to see complexity as in the amount of iterations re\-
     \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= j + 1\\
     \log_{1/p} \left( - \frac{n}{(1-p)r} + 1/p \right) &= j + 1\\
 \end{align*}
-\fi
+%\fi
 
 We assume that, the bigger the step each iteration, the worse the performance of the ranking. This is consistent with what we've seen in figure \ref{fig:ch4.dynamicStep.vanilla.comp}. However, since we're eliminating the worst variables first, eliminating more of them at once shouldn't affect performance because it is likely they would've been eliminated in the next iterations anyway. The fewer the iterations remaining, the riskier it becomes to eliminate multiple variables at once, and thus a smaller step is beneficial.
 
@@ -377,7 +377,8 @@ This is a summary of the pros and cons that we've found for this extension:
 
 In general, we recommend using dynamic step whenever possible, after the initial exploration of the data and if possible after the execution with the associated filter method.
 
-% -----------------------------------------------------------------------------------------
+% --------------------------------------------------------------------------------------------------------------------------------------------
+% --------------------------------------------------------------------------------------------------------------------------------------------
 
 \section{Sampling}
 
@@ -632,9 +633,107 @@ This is a summary of the pros and cons we've found for this extension:
 
 In general, we recommend using SVM-RFE with sampling whenever possible, specially to improve the speed of the algorithm.
 
+% --------------------------------------------------------------------------------------------------------------------------------------------
+% --------------------------------------------------------------------------------------------------------------------------------------------
+
 \section{Stop Condition}
 
-% -----------------------------------------------------------------------------------------
+This modification intends to find the optimal number of features that still performs reasonably well in terms of accuracy, within the SVM-RFE phase, thus avoiding the need for the validation phase. 
+
+\subsection{Description and reasoning}
+\label{sec:ch5.stopcond.desc}
+
+Often, we either run the whole RFE computation, or stop early based on a stopping point constant. 
+
+If no information is known about the dataset, it is required to do a simplified run (e.g. using sampling, or as filter method) before the stopping point can be known and used. One problem with this approx is that oversimplifying may lead to distributions significatively different form the one we are really tying to optimize, yet, not simplifying enough may be very computationally expensive, since the whole process has to be run twice. Another problem is that for this to work the verification phase must necessarily be done with a small step, which leaves sampling as the only option for simplified the computation. It is possible however to use different parameters for the SVM-RFE and validation phase, for example using a filter method for generating the feature ranking, and then sampling for validation.
+
+For this extension we take a different approx. We'll approximate the stopping based on information we already have within SVM-RFE. Specifically we want to use the feature importance calculated with the ranking criteria as a heuristic. This has the advantage that the whole validation phase can be skipped while still retaining a good approximation. It is also important that the same scalarization trade-off can be used here as well.
+
+\subsection{Pseudocode formalization}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t, t_0$ \tcp*{$t$ = step, $t_0$ = threshold, $0 \le t_0$}}
+      \KwOutput{$\vt{r}, \vt{q}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranking list}
+      $\vt{q} = []$ \tcp*{accuracy estimators}
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+
+            \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
+            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Iterate over the feature subset}\\
+            \For{$f_i \in \vt{f}$}{
+                \tcc*[h]{Append importance of the feature to be eliminated}\\
+                $\vt{q} = [\vt{c}(f_i), ...\vt{q}]$\VS
+    
+                \tcc*[h]{Update the feature ranking list}\\
+                $\vt{r} = [\vt{s}(f_i), ...\vt{r}]$\VS
+    
+                \tcc*[h]{Eliminate the feature selected}\\
+                $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
+            }
+        }
+    \caption{SVM-RFE with Stop Condition}
+    \label{alg:svmrfe.stopcond}
+\end{algorithm}\VS\VS
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$\vt{q}, min, max, w_1, w_2$ \tcp*{$\vt{q}$ = importance estimators \\ $w_0, w_1$ = scalarization coef.}}
+      \KwOutput{$\text{arg} \min \vt{c}$}
+      $\vt{c} = []$ \tcp*{list of cost of every feature subset}
+      $\vt{s}$ \quad s.t. \quad $s_i = \sum_{i = 1}^k q_k$\VS
+      
+      \For{$e_i \in \vt{s}$}
+        {
+            \tcc*[h]{Estimate the accuracy from the cumulative importance}\\
+            $\texttt{Acc} = 1 - (e / \max(\vt{s})) / (max - min) + min$\VS
+
+            \tcc*[h]{Scalarization}\\
+            $c_i = w_1 (1 - \texttt{Acc}) + w_2 (i / |\vt{s}|)$
+        }
+    \caption{Stop Point Extraction}
+    \label{alg:svmrfe.stopcond.extract}
+\end{algorithm}
+
+\subsection{Results}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/main.png}
+        \subcaption*{Projection}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/main-dual.png}
+        \subcaption*{Actual minimization}
+    \end{subfigure}
+    \caption{Accuracy estimation (green).}
+    \label{fig:ch5.stopcond.main}
+\end{figure}
+
+\begin{verbatim}
+    TODO
+\end{verbatim}
+
+% --------------------------------------------------------------------------------------------------------------------------------------------
+% --------------------------------------------------------------------------------------------------------------------------------------------
+
 
 \section{Multi-Class}
 
@@ -643,45 +742,41 @@ In this section we extend SVM-RFE to the multi-class classification problem.
 \subsection{Description and reasoning}
 \label{sec:stopCond.desc}
 
-When it comes to extending SVM to handle a multi-class problems two common methods exists, OvR (One-vs-Rest) and OvO (One-vs-One). In both cases the idea is to divide the problem in a set of binary classification problems and use a joint decision function that operates on the results of each of these. Because we're not really making any predictions during the SVM-RFE procedure, we can not use this joint decision function. Instead, we must find a way to merge the ranking criteria obtained form each problem to find a joint ranking criteria.
+When it comes to extending SVM to handle a multi-class problem two common methods exists, OvR (One-vs-Rest) and OvO (One-vs-One). In both cases the idea is to divide the problem in a set of binary classification problems. Then we use a joint decision function that operates on the results of each pair of problems. Because we're not really making any predictions during the SVM-RFE phase, we can not use this joint decision function. Instead, we must find a way to merge the feature rankings obtained from each problem, i.e. find a joint ranking criteria.
 
-We know that the ranking criteria is an estimator of the importance of some feature for a given binary decision problem. It can be the case that a feature is very useful to distinguish between two classes but useless for the rest. In this case a joint ranking criteria formed by taking the mean, the median or the sum will result in poor selections. A better idea would be to take the maximum. However, it may also be desirable to estimate the joint importance a feature has by considering its individual importance in more than one problem, that is, a feature that is important in more than one binary classification problem is more important than another that is only important in one such classification problem even if the second feature has a greater individual importance. A way to perform such ranking would be, for instance, the sum of the squares. For both methods proposed a normalization of all feature rankings is probably adequate.
+We know that the ranking criteria is an estimator of the importance of some feature for a given binary decision problem. It can be the case that a feature is very useful to distinguish between two classes but useless for the rest. In this case a joint ranking criteria formed by taking the mean, the median or the sum will result in poor selections. A better idea would be to take the maximum. However, it may also be desirable to estimate the joint importance a feature has. For that we may want to consider its individual importance in more than one problem. That is, a feature that is important in more than one pair is more relevant than another that is only important in one such pair, even when the second importance value is greater. A way to perform such ranking would be, for instance, the sum of the squares.
 
 Note that \texttt{sklearn} only supports OvO, and is therefore the option we will use.
 
 \subsection{Pseudocode formalization}
 
-\textbf{Definitions:}
-
-\begin{itemize}
-    \item $X_0 = [\vt{x_0}, \vt{x_1}, \dotsc, \vt{x_k}]^T$ list of observations.
-    \item $\vt{y} = [y_1, y_2, \dotsc, y_k]^T$ list of labels.
-\end{itemize}
-
 \begin{algorithm}[H]
     \DontPrintSemicolon
-      \KwInput{$t$ \tcp*{$t$ = step}}
+      \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = degree}}
       \KwOutput{$\vt{r}$}
-      \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, n]$ \tcp*{subset of surviving features}
-      $\vt{r} = []$ \tcp*{feature ranked list}
+      \KwData{$\chi_0,\vt{\psi}$}
+      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranking list}
       \While{$|\vt{s}| > 0$}
         {
             \tcc*[h]{Restrict training examples to good feature indices}\\
-            $X=X_0(:,\vt{s})$\VS
+            $\chi = \chi_0(:,\vt{s})$\VS
 
             \tcc*[h]{Compute the joint ranking criteria}\\
-            $\vt{c} = [0, 0, \dots, ]$\\
-            \For{$\vt{Xl} \subseteq \vt{X}$, $\vt{yl} \subseteq \vt{y}$ with $\vt{Xl}$ and $\vt{yl}$ being an instance of OvO}{
+            $C = [[], ...]$\\
+            \For{$X \subseteq \chi$, $\vt{y} \subseteq \vt{\psi}$ with $X$ and $\vt{y}$ being an instance of OvO}{
                 \tcc*[h]{Train the classifier}\\
-                $\vt{\alpha} = \texttt{SVM-train(} \vt{Xl}, \vt{yl} \texttt{)}$\VS
+                $\vt{\alpha} = \texttt{SVM-train(} X, \vt{y} \texttt{)}$\VS
 
                 \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-                $\vt{w} = \sum_k{\vt{\alpha_k} \vt{yl_k} \vt{Xl_k}}$\VS
+                $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} X_k}$\VS
     
-                \tcc*[h]{Compute the joint ranking criteria}\\
-                $\vt{c} = [\max(c_i, (w_i)^2) \text{ for all $i$}]$\VS
+                \tcc*[h]{Append feature importance list}\\
+                $C = [...C, [(w_i)^2 \text{ for all } i ]]$\VS
             }\VS
+
+            \tcc*[h]{Join feature importances}\\
+            $\vt{c} = \underset{j}{\sum} C_{i,j}^k \text{ for all } i$\VS
 
             \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
             $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
@@ -696,21 +791,687 @@ Note that \texttt{sklearn} only supports OvO, and is therefore the option we wil
             }
         }
     \caption{SVM-RFE for multi-class classification problems}
-    \label{alg:svmrfe-stopcond}
+    \label{alg:multi}
+\end{algorithm}\VS
+
+Note that although now the SVM taring is done within an extra loop, each in\-stance is only a sample of the original. The total amount of samples sum to $n$ and thus the complexity remains roughly the same. 
+
+\subsection{Results}
+
+\subsubsection*{Artificially generated data}
+
+We generate a 10 class dataset with the following code.  The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. All results are mean values extracted form a 7-fold cross-validation procedure.
+
+\begin{verbatim}
+    X, y = make_classification(
+        n_classes=10,
+        n_samples = 4000, n_clusters_per_class = 1, n_features = 100, 
+        n_informative = 20, random_state=8, flip_y= 0.01
+    )
+\end{verbatim}
+
+As usual when it comes to a new dataset, we start by plotting the accuracy of a random ranking. (Figure \ref{fig:ch5.multi.random}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\linewidth]{img/ch5/multi/random.png}
+    \caption{Random}
+    \label{fig:ch5.multi.random}
+\end{figure}
+
+We have designed four configurations that we will use for model selection. Three of them fix the parameter $k$ in line 11 of algorithm \ref{alg:multi}. The fourth one replaces the whole line with the calculation of the coefficient of variance, which can be defined as $c_v = \frac{\sigma}{\mu}$. Note that for the case where $k = 1.0$ our implementation matches that of \texttt{sklearn}, and for values of $K$ approaching infinity this formulation is equivalent to calculating the maximum.
+
+Figure \ref{fig:ch5.multi.plot1} illustrates the performances of the four experiments. Table \ref{fig:ch5.multi.table} holds the specific values for comparison. Note how the best parameter for $k$ is not always 1.0 but shifts to this value as $C$ decreases.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l1.png}
+        \subcaption*{$k=0.3$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l2.png}
+        \subcaption*{$k=1.0$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l3.png}
+        \subcaption*{$k=3$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-coef.png}
+        \subcaption*{Coef. of var.}
+    \end{subfigure}
+    \caption{SVM-RFE ranking performance with C=0.5 for the multi-class problem.}
+    \label{fig:ch5.multi.plot1}
+\end{figure}
+
+For this experiment we've calculated the standard error of the cost. In this thesis the cost is usually calculated over the mean of the accuracies and only one value is obtained. In order to provide a standard error, this time we've calculated the cost independently and performed the mean of the costs. Note that due to scalarization both results are not equivalent.
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{k} & \multicolumn{3}{c}{\textbf{0.3}} & \multicolumn{3}{c}{\textbf{1.0}} & \multicolumn{3}{c}{\textbf{3.0}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.05} &    21 & 62.50\% & 0.324 $\pm$ 0.009 &    \mrk{19} & \mrk{62.40\%} & \mrk{0.316} $\pm$ 0.009 &    19 & 62.60\% & 0.322 $\pm$ 0.010\\
+        \textbf{0.10} &    21 & 61.81\% & 0.329 $\pm$ 0.011 &    21 & 62.48\% & 0.321 $\pm$ 0.012 &    23 & 62.50\% & 0.320 $\pm$ 0.012\\
+        \textbf{0.20} &    21 & 62.49\% & 0.328 $\pm$ 0.009 &    23 & 61.89\% & 0.327 $\pm$ 0.013 &    23 & 60.02\% & 0.347 $\pm$ 0.010\\
+        \textbf{0.50} &    23 & 59.48\% & 0.336 $\pm$ 0.011 &    25 & 58.92\% & 0.345 $\pm$ 0.012 &    29 & 53.59\% & 0.390 $\pm$ 0.008\\
+        \textbf{1.00} &    23 & 59.22\% & 0.345 $\pm$ 0.013 &    35 & 60.39\% & 0.367 $\pm$ 0.009 &    33 & 53.38\% & 0.395 $\pm$ 0.011\\
+        \textbf{2.00} &    29 & 59.40\% & 0.342 $\pm$ 0.013 &    37 & 58.81\% & 0.381 $\pm$ 0.012 &    43 & 56.48\% & 0.402 $\pm$ 0.012\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \label{fig:ch5.multi.table}
+\end{table}
+
+\subsubsection*{Digits dataset}
+
+We start with the accuracy of a random ranking (Figure \ref{fig:ch5.multi.digi.random}) to use as a baseline. Then proceed to plot the same four configurations as in the last experiment (Figure \ref{fig:ch5.multi.digit.plot}).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\linewidth]{img/ch5/multi/dig-random.png}
+    \caption{Random}
+    \label{fig:ch5.multi.digi.random}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l1.png}
+        \subcaption*{$k=0.3$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l2.png}
+        \subcaption*{$k=1.0$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-l3.png}
+        \subcaption*{$k=3$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/multi/w-coef.png}
+        \subcaption*{Coef. of var.}
+    \end{subfigure}
+    \caption{SVM-RFE ranking performance with C=0.5 for the digits problem.}
+    \label{fig:ch5.multi.digit.plot}
+\end{figure}
+
+Table \ref{fig:ch5.multi.digit.table} summarizes the results. We observe that there is not enough difference between cases $k = 0.3$ and $k = 1.0$ to determine if one is better than the other with certainty. 
+
+\begin{table}[H]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{k} & \multicolumn{3}{c}{\textbf{0.3}} & \multicolumn{3}{c}{\textbf{1.0}} & \multicolumn{3}{c}{\textbf{3.0}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.02} &    17 & 93.17\% & 0.097 $\pm$ 0.005 &    17 & 93.30\% & 0.096 $\pm$ 0.004 &    19 & 93.71\% & 0.095 $\pm$ 0.004\\
+        \textbf{0.05} &    15 & 91.18\% & 0.101 $\pm$ 0.005 &    19 & 93.24\% & 0.103 $\pm$ 0.004 &    19 & 93.29\% & 0.102 $\pm$ 0.006\\
+        \textbf{0.10} &    17 & 92.18\% & 0.102 $\pm$ 0.005 &    \mrk{19} & \mrk{94.29\%} & \mrk{0.094} $\pm$ 0.003 &    19 & 93.65\% & 0.099 $\pm$ 0.003\\
+        \textbf{0.20} &    19 & 93.82\% & 0.100 $\pm$ 0.004 &    17 & 92.87\% & 0.098 $\pm$ 0.004 &    19 & 93.00\% & 0.100 $\pm$ 0.003\\
+        \textbf{0.50} &    19 & 94.29\% & 0.098 $\pm$ 0.004 &    17 & 92.41\% & 0.099 $\pm$ 0.005 &    19 & 92.83\% & 0.103 $\pm$ 0.005\\
+        \textbf{1.00} &    17 & 92.88\% & 0.099 $\pm$ 0.003 &    21 & 94.48\% & 0.098 $\pm$ 0.003 &    19 & 92.88\% & 0.105 $\pm$ 0.004\\
+        \textbf{2.00} &    17 & 92.59\% & 0.102 $\pm$ 0.003 &    19 & 93.29\% & 0.103 $\pm$ 0.003 &    19 & 93.47\% & 0.101 $\pm$ 0.004\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \label{fig:ch5.multi.digit.table}
+\end{table}
+
+\subsection{Conclusions}
+
+This is a summary of the results for this extension:
+
+\begin{itemize}
+    \item Multi-class can be easily implemented in SVM-RFE by using a \emph{sum}.
+    \item Using the coefficient of variance produces consistently worse results than the \emph{sum}.
+    \item Using a degree $k \neq 1.0$ may reduce the error when the value of $C$ is big, but the results are inconclusive. 
+    \item Using a \emph{max} results in worse performance.
+\end{itemize}
+
+In general, we recommend using a simple \emph{sum}. Try $k \neq 1.0$ may be a good option when $C \ge 0.5$, but it is not recommended as a first try. 
+
+% --------------------------------------------------------------------------------------------------------------------------------------------
+% --------------------------------------------------------------------------------------------------------------------------------------------
+
+\section{Non-linear Kernels}
+
+This extension intends to apply the required modifications in the calculation of the ranking criteria so that non-linear kernels can be used in the SVM.
+
+\subsection{Description and reasoning}
+\label{sec:ch5.kernel.desc}
+
+When a problem is not linearly separable, we know that a hard-margin SVM will not be able to correctly place a decision boundary. In this case a soft-margin SVM may be used, but it only works to some extent and if the underlying distribution is near linearly separable. If it is not the case, much better results can be achieved by using non-linear kernels.
+
+To use this method within SVM-RFE we must first be able to compute the ranking coefficient from a non-linear kernel. In contrast with the linear kernel case, where the ranking coefficient can be simplified to $(w_i)^2$, for non-linear kernels, however, since it is a more general case, no simplification can be performed. Instead, we use the general ranking coefficient for SVM (Equation \ref{eq:ch4.grankingcoeff}), which we restate here:
+\begin{align*}
+    DJ(i) = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha})
+\end{align*}
+
+Note that the \emph{hessian} matrix $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$ needs be computed each iteration (since the dimension of $\vb{x_i}$ and $\vb{x_j}$ will change), and also for each feature removed in each iteration. This is slow. Specifically, since we do have to do an extra loop within RFE for each feature, and require at least $O(dn^2)$ for calculating the Hessian, we know that the complexity will be of $O(d^3n^2)$. However, various optimizations exist, as discussed in the last parts of Section \ref{sec:ch4.rfe.criteria}. The optimizations we are going to implement are:
+
+\subsubsection*{Updating the hessian matrix only for the support vectors}
+
+We know that an observation $i$ that is not a support vector will cause $\alpha_i = 0$. These values are then multiplied by the hessian matrix, but because they are zero they make no contribution to the overall importance calculation. Since we know that they will make no contribution anyway we can also skip recomputing the rows and columns on the Hessian matrix that we know will get multiplied by non-support vectors.
+
+Using a sparse Hessian matrix that only includes support vectors would also work and have the additional benefit of taking less memory to store. However, due to limitations in the \texttt{precomputed} mode of \texttt{sklearn} SVC implementation, we can not do that.
+
+This optimization does not change the overall complexity but may still cause a sig\-ni\-fica\-tive reduction on time in cases where $C$ is small and few support vectors are chosen.
+
+\subsubsection*{Caching previous results}
+
+Depending on the kernel function we may be able to precompute some parts of it if all we want to do is update it for the case where one feature is removed.
+
+Specifically for polynomial kernels we are going to use the following property, which allows us to precompute $\ip{\vb{a}, \vb{b}}$:
+
+\begin{align*}
+    \ip{\vb{a}(-i), \vb{b}(-i)} &= \ip{\vb{a}, \vb{b}} - \vb{a}_i \vb{b}_i\\
+\end{align*}
+
+And for Gaussian kernels we are going to use the following property, for which we instead need to precompute $\ip{\vb{a} - \vb{b}, \vb{a} - \vb{b}}$:
+\begin{align*}
+    ||\vb{a}(-i) - \vb{b}(-i)||^2 &= \ip{\vb{a}(-i) - \vb{b}(-i), \vb{a}(-i) - \vb{b}(-i)} \\
+    &= \ip{\vb{a} - \vb{b}, \vb{a} - \vb{b}} - (\vb{a}_i - \vb{b}_j )^2
+\end{align*}
+
+This optimization allows us to update the Hessian matrix where only one feature is removed in $O(n^2)$, therefore the overall complexity of SVM-RFE becomes $O(d^2n^2)$.
+
+\subsection{Pseudocode formalization}
+
+\begin{algorithm}[H]
+    \DontPrintSemicolon
+      \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = kernel function}}
+      \KwOutput{$\vt{r}$}
+      \KwData{$X_0,\vt{y}$}
+      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{r} = []$ \tcp*{feature ranking list}
+      \While{$|\vt{s}| > 0$}
+        {
+            \tcc*[h]{Restrict training examples to good feature indices}\\
+            $X=X_0(:,\vt{s})$\VS
+
+            \tcc*[h]{Precompute hessian matrix}\\
+            $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j}) \qquad \text{for all} \qquad \vb{x_i}, \vb{x_j} \in X$\VS
+
+            \tcc*[h]{Train the classifier}\\
+            $\vt{\alpha} = \texttt{SVM-train(} X, y, k \texttt{)}$\VS
+
+            \tcc*[h]{Compute the ranking criteria}\\
+            $\vt{c} = [c_1, c_2, \dots, c_{|\vt{s}|}]$ \\
+            \For{$c_l \in \vt{c}$}{
+                \tcc*[h]{Compute new hessian with the feature $l$ removed}\\
+                $\vb{H_{i,j}}(-l) = y_iy_jk(\vb{x_i}, \vb{x_j}) \qquad \text{for all} \qquad \vb{x_i}, \vb{x_j} \in X(-l)$\VS
+    
+                \tcc*[h]{Calculate ranking coefficient}\\
+                $c_l = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-l) \boldsymbol{\alpha})$
+            }\VS
+
+            \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
+            $\vt{f} = \texttt{argsort}(\vt{c})(\ :t)$\VS
+
+            \tcc*[h]{Iterate over the feature subset}\\
+            \For{$f_i \in \vt{f}$}{
+                \tcc*[h]{Update the feature ranking list}\\
+                $\vt{r} = [\vt{s}(f_i), ...\vt{r}]$\VS
+    
+                \tcc*[h]{Eliminate the feature selected}\\
+                $\vt{s} = [...\vt{s}(1:f_i - 1), ...\vt{s}(f_i + 1:|\vt{s}|)]$
+            }
+        }
+    \caption{SVM-RFE with general Kernel}
+    \label{alg:ch5.pseudo.kernel}
 \end{algorithm}
 
 \subsection{Results}
 
-\section{Non-linear Kernels}
+\subsubsection*{Notes on the implementation}
+
+Using non-linear kernels requires a change in the underlying implementation we've been using for SVM. Until now, we've been relying on the \texttt{LinearSVC} class pro\-vid\-ed by \texttt{Sklearn}, this implementation is in turn based on the \texttt{LIBLINEAR} im\-ple\-men\-ta\-tion for SVM written by the \emph{National Taiwan University}. The authors state that this solver is much faster than the more general version, thus the reason we've been using it, but it can only handle linear kernels. The general version, \texttt{LIBSVM}, created by the same team, is the alternative we're going to use instead. Because now we need to switch, it is interesting to see what will be the increase in computational cost, shown in the table \ref{ch5.kernels.tc1}.
+
+For this first test we've generated artificial datasets with 100 features each, 20 which are informative. Because we want to test the differences with the linear kernel we've used 6 clusters per class, this makes the problem more difficult for lineal separators. 
+
+The following table makes a time comparison using different amount of samples. These are the elapsed times that take completing a validation round using a random ranking. This is similar to RFE without the ranking criteria computations. We've not used SVM-RFE here because we want to demonstrate how the change on the underlying implementation, and not the change in our algorithm, is already a cause for slow down.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{l c c c}
+        \toprule
+        Obs. & \texttt{LIBLINEAR} & \texttt{LIBSVM} \emph{Linear} & \texttt{LIBSVM} \emph{Precomputed} \\
+        \midrule
+        500 & 02.67s & 08.17s — x0.32 & 12.04s — x0.22 \\
+        1000 & 02.94s & 17.30s — x0.17 & 23.84s — x0.12 \\
+        2000 & 04.28s & 43.96s — x0.10 & 50.36s — x0.08 \\
+        \bottomrule
+        \end{tabular}
+    \caption{Cost in time and speedup of a random selection under different implementations and sample sizes.}
+    \label{ch5.kernels.tc1}
+\end{table}
+
+Note that the sample size increases the cost more than linearly, this may suggest that methods such as dynamic sampling can perform even better than with the \texttt{LIBLINEAR} implementation.
+
+We also note that passing a precomputed kernel matrix (\emph{Gramm} matrix) instead of letting \texttt{sklearn} compute it internally, also increases the time. This is likely an implementation detail, and it is not significant enough to require further in\-ves\-ti\-ga\-tion.
+
+We now plot some examples to compare differences in accuracy (Figure \ref{fig:ch5.kernel.cmp1}). Note that the precomputed kernel, which is a degree-3 polynomial kernel, performs much better at the start. Thus, we can expect it to also perform significantly better with SVM-RFE. 
+
+We can appreciate some differences between the two linear kernels, but they're still clearly following the same curve, which indicates that both implementations are equivalent.  
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/random_liblinarl.png}
+        \subcaption*{\texttt{LIBLINEAR}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/random_linar.png}
+        \subcaption*{\texttt{LIBSVM} \emph{Linear}}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/random_precomputed.png}
+        \subcaption*{\texttt{LIBSVM} \emph{Precomputed}}
+    \end{subfigure}
+    \caption{Comparison of random selection with 2000 observations.}
+    \label{fig:ch5.kernel.cmp1}
+\end{figure}
+
+\subsubsection*{Analysis with artificially generated data}
+\label{sec:ch5.kernel.art}
+
+We generate a 2 class dataset with the following code.  The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. All results are mean values extracted form a 7-fold cross-validation procedure. We've used a constant step of 10 for SVM-RFE and X for validation.
+
+\begin{verbatim}
+    X, y = make_classification(
+        n_samples = 500, n_clusters_per_class = 10, n_features = 300, 
+        n_informative = 100, n_redundant = 100, n_repeated = 0,
+        random_state=2, flip_y= 0.01, class_sep = 3
+    )
+\end{verbatim}
+
+As usual, we start by plotting the accuracy performance for a random ranking. Note that for this plot the validation is still a SVM with a linear kernel.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.4\linewidth]{img/ch5/kernel/art_random.png}
+    \caption{Random}
+    \label{fig:ch5.kernel.random}
+\end{figure}
+
+We observe experimentally in figure \ref{fig:ch5.kernel.cmp2} that, for this dataset, using a non-lineal kernel improves the accuracy of SVM-RFE. Table \ref{fig:ch5.kernel.art.table} summarizes the results from the model selection phase.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/art_linear.png}
+        \subcaption*{Linear. $C = 0.001$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/art_poly.png}
+        \subcaption*{Poly-2. $C = 10^{-6}$}
+    \end{subfigure}
+    \caption{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and polynomial kernels.}
+    \label{fig:ch5.kernel.cmp2}
+\end{figure}
+
+Non-lineal kernels also involve more hyper-parameters, thus increasing the im\-por\-tance of model selection. The choice of kernel is in itself a hyper-parameter. If a polynomial kernel is chosen then the \emph{degree} and \emph{coefficient} are also hyper-parameters, if a Gaussian kernel is chosen then \emph{gamma}.
+
+\begin{table}[H]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{deg.} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{1e-10} &     1 & 42.40\% & 0.461 &     1 & 46.60\% & 0.428 &    55 & 66.73\% & 0.303\\
+        \textbf{1e-09} &     1 & 43.41\% & 0.453 &     1 & 48.80\% & 0.410 &   127 & 79.99\% & 0.245\\
+        \textbf{1e-08} &    13 & 54.15\% & 0.375 &     1 & 55.40\% & 0.357 &   115 & 84.39\% & 0.202\\
+        \textbf{1e-07} &     1 & 47.20\% & 0.423 &    67 & 82.21\% & 0.187 &    97 & 79.20\% & 0.231\\
+        \textbf{1e-06} &     1 & 47.41\% & 0.421 &    \mrk{85} & \mrk{87.81\%} & \mrk{0.154} &   127 & 83.00\% & 0.221\\
+        \textbf{1e-05} &     7 & 61.59\% & 0.312 &    79 & 86.82\% & 0.158 &   145 & 84.98\% & 0.217\\
+        \textbf{1e-04} &    43 & 76.22\% & 0.219 &    79 & 86.19\% & 0.163 &   151 & 85.19\% & 0.219\\
+        \textbf{1e-03} &    67 & 80.81\% & 0.198 &    73 & 85.18\% & 0.167 &   109 & 81.98\% & 0.217\\
+        \textbf{1e-02} &    55 & 79.58\% & 0.200 &    85 & 87.60\% & 0.156 &   175 & 87.59\% & 0.216\\
+        \textbf{1e-01} &    85 & 82.39\% & 0.198 &    73 & 86.18\% & 0.159 &   109 & 83.39\% & 0.206\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with polynomial kernel.}
+    \label{fig:ch5.kernel.art.table}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c | c c c}
+        \toprule
+         & \multicolumn{3}{c}{\textbf{Optimized}} & \multicolumn{3}{c}{\textbf{Non-optimized}} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$/Deg.}&\textbf{1}&\textbf{2}&\textbf{3}&\textbf{1}&\textbf{2}&\textbf{3} \\
+        \midrule
+        \textbf{1e-10} & 0:19.509 & 0:21.968 & 0:22.364     & 0:47.609 & 0:48.374 & 1:16.220\\
+        \textbf{1e-09} & 0:21.554 & 0:22.573 & 0:22.636     & 0:51.182 & 0:48.316 & 1:13.988\\
+        \textbf{1e-08} & 0:21.617 & 0:22.506 & 0:22.221     & 0:49.338 & 0:53.185 & 1:15.945\\
+        \textbf{1e-07} & 0:21.705 & 0:22.073 & 0:21.914     & 0:49.022 & 0:52.526 & 1:08.661\\
+        \textbf{1e-06} & 0:21.588 & \mrk{0:20.976} & 0:21.411     & 0:51.579 & \mrk{0:54.387} & 1:07.181\\
+        \textbf{1e-05} & 0:21.426 & 0:18.521 & 0:21.937     & 0:53.271 & 0:53.834 & 1:06.723\\
+        \textbf{1e-04} & 0:21.513 & 0:19.455 & 0:21.622     & 0:49.130 & 0:50.594 & 1:07.257\\
+        \textbf{1e-03} & 0:16.416 & 0:19.160 & 0:22.190     & 0:50.915 & 0:50.858 & 1:06.532\\
+        \textbf{1e-02} & 0:13.730 & 0:19.116 & 0:21.048     & 0:48.972 & 0:48.041 & 1:06.149\\
+        \textbf{1e-01} & 0:14.009 & 0:18.330 & 0:21.039     & 0:52.361 & 0:47.305 & 1:06.022\\
+        \bottomrule
+        \end{tabular}
+    \caption{Execution time of SVM-RFE with non-linear kernels.}
+    \label{fig:ch5.kernel.art.tabletime}
+\end{table}
+
+Table \ref{fig:ch5.kernel.art.tabletime} allows us to get an idea of what is the reduction in time we can get with the optimizations described in section \ref{sec:ch5.kernel.desc}. With this information we calculate a speed-up of roughly x3. For the implementation of the optimizations we've used the \texttt{numba} library. This library seamlessly compiles Python functions and allows our optimized Python implementation to compete in speed with the low-level, but not optimized, implementation used by \texttt{sklearn}. We suspect that this automatic Python compilation is not as good as a low-level implementation, therefore it is expected that a low-level implementation of SVM-RFE would be able to produce even more time reduction. 
+
+\subsubsection*{Analysis with MADELON}
+
+The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. All results are mean values extracted form a 7-fold cross-validation procedure. We're using a constant step of 20 for SVM-RFE and 2 for the validation phase. We've normalized the data as a preprocessing step.
+
+Figure \ref{fig:ch5.kernel.cmp3} compares the accuracy performance when a non-linear kernel is used within SVM-RFE versus only in the validation phase. For a comparison with a linear SVM validation phase go back to Figure \ref{fig:ch5.dstep.madelon.rand}.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/mad-t-poly.png}
+        \subcaption*{SVM-RFE and validation.}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/mad-t-poly2.png}
+        \subcaption*{Only validation.}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.32\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/madelon-random-c_1}
+        \subcaption*{All linear.}
+    \end{subfigure}
+    \caption{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and poly-7 kernels. Non-linear validation phases consist of SVM with a Poly-7 kernel.}
+    \label{fig:ch5.kernel.cmp3}
+\end{figure}
+
+Tables \ref{fig:ch5.kernel.madelon.table} and \ref{fig:ch5.kernel.madelon.timetable} describe the model selection phase for polynomial kernels.
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{deg.} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &   123 & 56.83\% & 0.349 $\pm$ 0.013 &    21 & 69.67\% & 0.242 $\pm$ 0.010 &    21 & 74.26\% & 0.211 $\pm$ 0.014\\
+        \textbf{0.2} &    67 & 55.75\% & 0.344 $\pm$ 0.014 &    21 & 69.58\% & 0.241 $\pm$ 0.011 &    21 & 76.50\% & 0.192 $\pm$ 0.008\\
+        \textbf{0.3} &    49 & 54.66\% & 0.334 $\pm$ 0.013 &    21 & 70.58\% & 0.238 $\pm$ 0.020 &    21 & 77.41\% & 0.183 $\pm$ 0.010\\
+        \textbf{0.4} &    31 & 54.67\% & 0.343 $\pm$ 0.015 &    19 & 71.17\% & 0.231 $\pm$ 0.007 &    19 & 77.67\% & 0.175 $\pm$ 0.013\\
+        \textbf{0.5} &    11 & 54.24\% & 0.338 $\pm$ 0.018 &    19 & 70.67\% & 0.231 $\pm$ 0.010 &    21 & 77.91\% & 0.183 $\pm$ 0.017\\
+        \textbf{0.6} &    57 & 55.51\% & 0.346 $\pm$ 0.012 &    21 & 71.75\% & 0.225 $\pm$ 0.011 &    21 & 78.42\% & 0.170 $\pm$ 0.007\\
+        \textbf{0.7} &    59 & 53.42\% & 0.355 $\pm$ 0.013 &    21 & 72.08\% & 0.225 $\pm$ 0.009 &    21 & 78.42\% & 0.174 $\pm$ 0.007\\
+        \textbf{0.8} &    27 & 56.25\% & 0.338 $\pm$ 0.011 &    17 & 70.50\% & 0.226 $\pm$ 0.011 &    21 & 77.59\% & 0.177 $\pm$ 0.010\\
+        \textbf{0.9} &    25 & 53.76\% & 0.356 $\pm$ 0.006 &    19 & 71.33\% & 0.223 $\pm$ 0.010 &    19 & 78.25\% & 0.178 $\pm$ 0.005\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{4}} & \multicolumn{3}{c}{\textbf{5}} & \multicolumn{3}{c}{\textbf{6}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    21 & 74.25\% & 0.212 $\pm$ 0.013 &    19 & 74.34\% & 0.212 $\pm$ 0.013 &    19 & 71.00\% & 0.235 $\pm$ 0.011\\
+        \textbf{0.2} &    21 & 80.91\% & 0.159 $\pm$ 0.006 &    19 & 81.16\% & 0.154 $\pm$ 0.006 &    19 & 79.75\% & 0.170 $\pm$ 0.014\\
+        \textbf{0.3} &    19 & 82.75\% & 0.141 $\pm$ 0.010 &    19 & 84.66\% & 0.128 $\pm$ 0.011 &    21 & 83.08\% & 0.137 $\pm$ 0.014\\
+        \textbf{0.4} &    19 & 83.67\% & 0.133 $\pm$ 0.004 &    21 & 86.42\% & 0.113 $\pm$ 0.007 &    19 & 85.41\% & 0.121 $\pm$ 0.007\\
+        \textbf{0.5} &    21 & 84.17\% & 0.131 $\pm$ 0.010 &    21 & 86.25\% & 0.116 $\pm$ 0.011 &    19 & 86.49\% & 0.112 $\pm$ 0.008\\
+        \textbf{0.6} &    19 & 84.08\% & 0.135 $\pm$ 0.012 &    19 & 85.67\% & 0.117 $\pm$ 0.009 &    19 & 86.76\% & 0.105 $\pm$ 0.009\\
+        \textbf{0.7} &    19 & 84.50\% & 0.129 $\pm$ 0.004 &    19 & 86.67\% & 0.111 $\pm$ 0.009 &    19 & 87.00\% & 0.110 $\pm$ 0.010\\
+        \textbf{0.8} &    19 & 84.33\% & 0.130 $\pm$ 0.007 &    17 & 85.50\% & 0.113 $\pm$ 0.005 &    19 & 86.75\% & 0.107 $\pm$ 0.006\\
+        \textbf{0.9} &    19 & 84.84\% & 0.127 $\pm$ 0.008 &    19 & 85.76\% & 0.117 $\pm$ 0.010 &    19 & 86.58\% & 0.109 $\pm$ 0.003\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{7}} & \multicolumn{3}{c}{\textbf{8}} & \multicolumn{3}{c}{\textbf{9}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    19 & 69.17\% & 0.240 $\pm$ 0.011 &    17 & 66.84\% & 0.258 $\pm$ 0.010 &    15 & 64.90\% & 0.261 $\pm$ 0.025\\
+        \textbf{0.2} &    15 & 70.58\% & 0.218 $\pm$ 0.009 &     7 & 60.93\% & 0.295 $\pm$ 0.026 &     7 & 55.66\% & 0.332 $\pm$ 0.011\\
+        \textbf{0.3} &    11 & 72.00\% & 0.205 $\pm$ 0.022 &     7 & 65.09\% & 0.265 $\pm$ 0.031 &     7 & 55.76\% & 0.321 $\pm$ 0.018\\
+        \textbf{0.4} &    19 & 86.09\% & 0.116 $\pm$ 0.005 &     9 & 69.19\% & 0.232 $\pm$ 0.032 &     5 & 66.08\% & 0.262 $\pm$ 0.018\\
+        \textbf{0.5} &    \mrk{19} & \mrk{88.41\%} & \mrk{0.100 $\pm$ 0.004} &    19 & 86.16\% & 0.113 $\pm$ 0.011 &     7 & 66.68\% & 0.240 $\pm$ 0.014\\
+        \textbf{0.6} &    19 & 87.58\% & 0.106 $\pm$ 0.005 &    19 & 87.34\% & 0.104 $\pm$ 0.006 &    17 & 82.08\% & 0.129 $\pm$ 0.013\\
+        \textbf{0.7} &    19 & 87.00\% & 0.104 $\pm$ 0.007 &    19 & 87.26\% & 0.107 $\pm$ 0.007 &    19 & 87.08\% & 0.107 $\pm$ 0.010\\
+        \textbf{0.8} &    19 & 86.92\% & 0.106 $\pm$ 0.004 &    19 & 86.17\% & 0.109 $\pm$ 0.008 &    19 & 85.92\% & 0.113 $\pm$ 0.004\\
+        \textbf{0.9} &    19 & 86.16\% & 0.111 $\pm$ 0.008 &    19 & 85.75\% & 0.110 $\pm$ 0.011 &    19 & 85.75\% & 0.117 $\pm$ 0.006\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with polynomial kernel.}
+    \label{fig:ch5.kernel.madelon.table}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{\textbf{C/deg.}} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{0.1} & 2:06.42 & 2:05.38 & 2:06.95 & 2:12.24 & 2:13.10 & 2:14.76 & 2:11.08 & 2:17.51 & 2:17.33\\
+        \textbf{0.2} & 2:07.59 & 2:04.58 & 2:06.57 & 2:12.31 & 2:12.88 & 2:12.93 & 2:12.17 & 2:17.10 & 2:24.43\\
+        \textbf{0.3} & 1:55.10 & 2:04.76 & 2:07.29 & 2:11.48 & 2:12.93 & 2:12.88 & 2:11.95 & 2:16.58 & 2:17.76\\
+        \textbf{0.4} & 1:55.69 & 2:01.94 & 2:07.51 & 2:13.60 & 2:12.26 & 2:13.43 & 2:10.84 & 2:16.53 & 2:17.77\\
+        \textbf{0.5} & 1:52.74 & 2:01.71 & 2:07.26 & 2:11.87 & 2:13.73 & 2:13.98 & \mrk{2:11.35} & 2:17.51 & 2:17.31\\
+        \textbf{0.6} & 1:52.05 & 2:01.22 & 2:06.24 & 2:11.54 & 2:12.87 & 2:13.46 & 2:10.76 & 2:17.58 & 2:16.56\\
+        \textbf{0.7} & 1:51.70 & 1:59.91 & 2:05.55 & 2:11.61 & 2:12.28 & 2:13.21 & 2:11.43 & 2:16.34 & 2:16.19\\
+        \textbf{0.8} & 1:50.38 & 1:57.42 & 2:05.32 & 2:12.67 & 2:12.39 & 2:15.10 & 2:09.23 & 2:17.35 & 2:18.27\\
+        \textbf{0.9} & 1:48.50 & 1:58.06 & 2:03.74 & 2:11.86 & 2:11.66 & 2:12.94 & 2:11.02 & 2:17.79 & 2:16.37\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Execution time (min:sec) of SVM-RFE with Polynomial Kernel optimized.}
+    \label{fig:ch5.kernel.madelon.timetable}
+\end{table}
+
+\subsection{Conclusions}
+
+This is a summary of the results for this extension:
+
+\begin{itemize}
+    \item For datasets that are fundamentally not linearly separable, using non-linear kernels produces a huge improvement in accuracy.
+    \item Using non-linear kernels is slow, it makes the ranking criteria calculation re\-quire an extra loop and become the bottleneck.
+    \item Optimizations improve the cost of the ranking criteria calculation.
+    \item Calculations could be potentially made even faster by using a compiled im\-ple\-men\-ta\-tion. 
+\end{itemize}
+
+In general, we recommend using non-linear kernels whenever there is suspicion of the data not being linearly separable. If used, we always recommend im\-ple\-ment\-ing the optimizations described in this section.
 
 \section{Combo}
 
+This extension is a combination of the \emph{Non-linear Kernel}, the \emph{Dynamic Step} and the \emph{Sampling} extensions. Because it is straightforward to combine them, we do not provide here the pseudocode.
 
-----
+\subsection{Description and reasoning}
 
-In this section 
+The three extensions have been selected on the hypothesis that they do not interfere with each other, given that they optimize different parts of the algorithm. We've not included the \emph{Multi-class} extension here because we wanted to test the combination specifically on the Madelon dataset. The \emph{Stop Condition} extension is also not include because it optimizes the validation phase, rather than SVM-RFE itself.
 
-\begin{itemize}
-    \item Importance of scaling preprocessing
-    \item Complexity analysis and pseudocode.
-\end{itemize}
+One possible incompatibility of the \emph{Sampling} combined with \emph{Dynamic Step} is that the extra time required to resample is increased on the later iterations due to the shrinking of the step. To avoid this, and other similar inconvenient we've slightly modified the \emph{Dynamic Step} implementation with an extra parameter \emph{dstop}. These parameters design a feature subset size that will be the target of dynamic step (instead of 0), and after which point no resampling will be done (the whole dataset will be used).
+
+\subsection{Results}
+
+\subsubsection*{Analysis with artificially generated data}
+
+We reuse the artificial dataset generated in section \ref{sec:ch5.kernel.art}, as a remainder, this is a 2 class dataset made with the following code.  The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. All results are mean values extracted form a 7-fold cross-validation procedure.
+
+\begin{verbatim}
+    X, y = make_classification(
+        n_samples = 500, n_clusters_per_class = 10, n_features = 300, 
+        n_informative = 100, n_redundant = 100, n_repeated = 0,
+        random_state=2, flip_y= 0.01, class_sep = 3
+    )
+\end{verbatim}
+
+For this experiment we've used a dynamic reflective step with a percentage of 20\%, a minimum step of 5 and centered at 100 features. We've also used internal sampling of 70\%. Figure \ref{fig:ch5.combo.art.comp} compares two rankings with the same parameter set, the left one corresponds to a result from the \emph{Non-linear kernel} extension, the right one from this extension.  
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/kernel/art_poly.png}
+        \subcaption*{Poly-2. $C = 10^{-6}$}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/combo/twice.png}
+        \subcaption*{Poly-2. $C = 10^{-6}$}
+    \end{subfigure}
+    \caption{Performance comparison of SVM-RFE feature rankings. Both show similar accuracy, but the one in the right is twice as fast.}
+    \label{fig:ch5.combo.art.comp}
+\end{figure}
+
+Tables \ref{fig:ch5.combo.art.table} and \ref{fig:ch5.combo.art.tabletime} summarize the results from this experiment.
+
+\begin{table}[H]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{deg.} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{1e-10} &    11 & 45.01\% & 0.447 &    11 & 46.81\% & 0.433 &    47 & 70.63\% & 0.266\\
+        \textbf{1e-09} &    11 & 44.40\% & 0.452 &    11 & 47.00\% & 0.431 &   108 & 82.20\% & 0.214\\
+        \textbf{1e-08} &    11 & 45.97\% & 0.440 &    37 & 52.16\% & 0.407 &   113 & 81.79\% & 0.221\\
+        \textbf{1e-07} &    11 & 45.40\% & 0.444 &    83 & 82.41\% & 0.196 &   108 & 82.80\% & 0.210\\
+        \textbf{1e-06} &    11 & 49.17\% & 0.414 &    98 & 88.01\% & 0.161 &   113 & 82.02\% & 0.219\\
+        \textbf{1e-05} &    11 & 66.20\% & 0.278 &    88 & 86.79\% & 0.164 &   108 & 82.20\% & 0.214\\
+        \textbf{1e-04} &    37 & 75.61\% & 0.220 &    88 & 86.01\% & 0.171 &   108 & 82.82\% & 0.209\\
+        \textbf{1e-03} &    55 & 77.58\% & 0.216 &    83 & 86.59\% & 0.163 &   108 & 81.81\% & 0.218\\
+        \textbf{1e-02} &    78 & 82.20\% & 0.194 &    \mrk{83} & \mrk{88.60\%} & \mrk{0.147} &   123 & 82.79\% & 0.220\\
+        \textbf{1e-01} &    62 & 77.20\% & 0.224 &    88 & 88.41\% & 0.151 &   143 & 83.81\% & 0.225\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with polynomial kernel.}
+    \label{fig:ch5.combo.art.table}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c}
+        \toprule
+        \textbf{$C$/Deg.}&\textbf{1}&\textbf{2}&\textbf{3} \\
+        \midrule
+        \textbf{1e-10} & 0:08.003 & 0:08.314 & 0:08.781\\
+        \textbf{1e-09} & 0:07.922 & 0:08.231 & 0:08.670\\
+        \textbf{1e-08} & 0:07.928 & 0:08.341 & 0:08.646\\
+        \textbf{1e-07} & 0:08.075 & 0:08.506 & 0:08.523\\
+        \textbf{1e-06} & 0:08.035 & 0:07.961 & 0:08.453\\
+        \textbf{1e-05} & 0:08.198 & 0:07.834 & 0:08.525\\
+        \textbf{1e-04} & 0:07.956 & 0:07.739 & 0:08.571\\
+        \textbf{1e-03} & 0:06.849 & 0:07.851 & 0:08.461\\
+        \textbf{1e-02} & 0:06.134 & \mrk{0:08.189} & 0:08.510\\
+        \textbf{1e-01} & 0:05.541 & 0:08.097 & 0:08.582\\
+        \bottomrule
+        \end{tabular}
+    \caption{Execution time of SVM-RFE with non-linear kernels.}
+    \label{fig:ch5.combo.art.tabletime}
+\end{table}
+
+By comparing this results to Table \ref{fig:ch5.kernel.art.tabletime} we calculate an approximate speed-up of x2 compared to the optimized non-linear kernel version.
+
+\subsubsection*{Analysis with MADELON}
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{deg.} & \multicolumn{3}{c}{\textbf{1}} & \multicolumn{3}{c}{\textbf{2}} & \multicolumn{3}{c}{\textbf{3}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    22 & 55.45\% & 0.335 $\pm$ 0.004 &    19 & 69.65\% & 0.245 $\pm$ 0.009 &    19 & 75.40\% & 0.200 $\pm$ 0.011\\
+        \textbf{0.2} &    61 & 55.60\% & 0.345 $\pm$ 0.008 &    19 & 71.05\% & 0.235 $\pm$ 0.007 &    19 & 78.50\% & 0.177 $\pm$ 0.008\\
+        \textbf{0.3} &    31 & 58.95\% & 0.323 $\pm$ 0.011 &    19 & 71.05\% & 0.228 $\pm$ 0.009 &    19 & 78.15\% & 0.178 $\pm$ 0.005\\
+        \textbf{0.4} &    13 & 58.25\% & 0.319 $\pm$ 0.010 &    19 & 71.50\% & 0.232 $\pm$ 0.010 &    22 & 78.20\% & 0.177 $\pm$ 0.008\\
+        \textbf{0.5} &    49 & 56.15\% & 0.342 $\pm$ 0.010 &    19 & 71.75\% & 0.222 $\pm$ 0.004 &    19 & 78.65\% & 0.176 $\pm$ 0.006\\
+        \textbf{0.6} &    28 & 57.25\% & 0.334 $\pm$ 0.011 &    19 & 71.65\% & 0.227 $\pm$ 0.009 &    19 & 78.65\% & 0.174 $\pm$ 0.007\\
+        \textbf{0.7} &    49 & 56.55\% & 0.336 $\pm$ 0.013 &    19 & 71.40\% & 0.228 $\pm$ 0.005 &    19 & 78.85\% & 0.174 $\pm$ 0.008\\
+        \textbf{0.8} &    34 & 56.05\% & 0.346 $\pm$ 0.011 &    16 & 71.40\% & 0.229 $\pm$ 0.006 &    19 & 79.10\% & 0.172 $\pm$ 0.005\\
+        \textbf{0.9} &    28 & 56.90\% & 0.342 $\pm$ 0.011 &    22 & 70.90\% & 0.234 $\pm$ 0.008 &    19 & 79.60\% & 0.168 $\pm$ 0.011\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{4}} & \multicolumn{3}{c}{\textbf{5}} & \multicolumn{3}{c}{\textbf{6}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    19 & 77.24\% & 0.183 $\pm$ 0.014 &    16 & 73.60\% & 0.198 $\pm$ 0.021 &    16 & 77.54\% & 0.185 $\pm$ 0.016\\
+        \textbf{0.2} &    19 & 83.90\% & 0.135 $\pm$ 0.005 &    19 & 84.15\% & 0.129 $\pm$ 0.009 &    16 & 79.55\% & 0.146 $\pm$ 0.010\\
+        \textbf{0.3} &    19 & 84.25\% & 0.130 $\pm$ 0.005 &    19 & 85.55\% & 0.116 $\pm$ 0.008 &    16 & 81.00\% & 0.142 $\pm$ 0.017\\
+        \textbf{0.4} &    19 & 83.75\% & 0.135 $\pm$ 0.005 &    19 & 86.85\% & 0.113 $\pm$ 0.006 &    19 & 86.50\% & 0.113 $\pm$ 0.008\\
+        \textbf{0.5} &    19 & 84.45\% & 0.130 $\pm$ 0.004 &    19 & 86.75\% & 0.113 $\pm$ 0.007 &    16 & 85.35\% & 0.116 $\pm$ 0.006\\
+        \textbf{0.6} &    19 & 84.15\% & 0.132 $\pm$ 0.005 &    19 & 86.90\% & 0.108 $\pm$ 0.008 &    19 & 87.80\% & 0.103 $\pm$ 0.004\\
+        \textbf{0.7} &    19 & 84.65\% & 0.130 $\pm$ 0.005 &    19 & 86.65\% & 0.111 $\pm$ 0.005 &    19 & 86.45\% & 0.110 $\pm$ 0.005\\
+        \textbf{0.8} &    19 & 84.35\% & 0.132 $\pm$ 0.010 &    19 & 86.85\% & 0.112 $\pm$ 0.007 &    19 & 87.20\% & 0.104 $\pm$ 0.006\\
+        \textbf{0.9} &    22 & 85.10\% & 0.123 $\pm$ 0.005 &    19 & 86.65\% & 0.113 $\pm$ 0.006 &    19 & 86.30\% & 0.109 $\pm$ 0.004\\
+        \bottomrule
+        \toprule
+        \multicolumn{1}{c}{\textbf{deg.}} & \multicolumn{3}{c}{\textbf{7}} & \multicolumn{3}{c}{\textbf{8}} & \multicolumn{3}{c}{\textbf{9}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{C}&Feat.&Acc.&Cost&Feat.&Acc.&Cost&Feat.&Acc.&Cost \\
+        \midrule
+        \textbf{0.1} &    16 & 72.45\% & 0.189 $\pm$ 0.012 &    16 & 73.26\% & 0.190 $\pm$ 0.020 &    13 & 71.15\% & 0.223 $\pm$ 0.024\\
+        \textbf{0.2} &    13 & 77.80\% & 0.174 $\pm$ 0.027 &    10 & 71.00\% & 0.206 $\pm$ 0.024 &    10 & 65.40\% & 0.258 $\pm$ 0.027\\
+        \textbf{0.3} &     7 & 69.00\% & 0.219 $\pm$ 0.026 &     7 & 60.44\% & 0.280 $\pm$ 0.023 &    10 & 58.35\% & 0.318 $\pm$ 0.010\\
+        \textbf{0.4} &    10 & 77.60\% & 0.176 $\pm$ 0.023 &     7 & 62.50\% & 0.276 $\pm$ 0.029 &     7 & 62.25\% & 0.284 $\pm$ 0.022\\
+        \textbf{0.5} &    13 & 85.65\% & 0.117 $\pm$ 0.012 &    10 & 69.14\% & 0.212 $\pm$ 0.029 &     7 & 65.61\% & 0.258 $\pm$ 0.031\\
+        \textbf{0.6} &    16 & 88.25\% & 0.098 $\pm$ 0.004 &    10 & 72.20\% & 0.195 $\pm$ 0.025 &    10 & 70.94\% & 0.214 $\pm$ 0.030\\
+        \textbf{0.7} &    19 & 87.35\% & 0.105 $\pm$ 0.009 &    13 & 85.50\% & 0.116 $\pm$ 0.008 &    10 & 70.95\% & 0.215 $\pm$ 0.037\\
+        \textbf{0.8} &    19 & 87.90\% & 0.104 $\pm$ 0.005 &    16 & 87.05\% & 0.102 $\pm$ 0.005 &    10 & 81.16\% & 0.135 $\pm$ 0.010\\
+        \textbf{0.9} &    19 & 87.45\% & 0.106 $\pm$ 0.006 &    19 & 87.05\% & 0.105 $\pm$ 0.004 &    16 & 84.75\% & 0.115 $\pm$ 0.009\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE (combo) with polynomial kernel.}
+    \label{fig:ch5.combo.madelon.table}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{\textbf{C/deg.}} & \textbf{1} & \textbf{2} & \textbf{3} & \textbf{4} & \textbf{5} & \textbf{6} & \textbf{7} & \textbf{8} & \textbf{9} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{0.1} & 0:20.24 & 0:20.80 & 0:20.75 & 0:24.10 & 0:21.58 & 0:21.40 & 0:21.68 & 0:21.64 & 0:20.16\\
+        \textbf{0.2} & 0:20.66 & 0:20.78 & 0:20.65 & 0:24.01 & 0:21.97 & 0:21.31 & 0:21.44 & 0:22.25 & 0:20.15\\
+        \textbf{0.3} & 0:21.37 & 0:20.61 & 0:20.76 & 0:22.29 & 0:21.52 & 0:21.93 & 0:21.98 & 0:22.16 & 0:21.79\\
+        \textbf{0.4} & 0:19.71 & 0:21.18 & 0:20.76 & 0:21.30 & 0:22.64 & 0:21.73 & 0:21.62 & 0:21.83 & 0:22.00\\
+        \textbf{0.5} & 0:19.89 & 0:20.43 & 0:21.56 & 0:21.47 & 0:21.46 & 0:21.54 & 0:21.61 & 0:21.87 & 0:22.03\\
+        \textbf{0.6} & 0:19.09 & 0:20.13 & 0:20.42 & 0:21.08 & 0:21.39 & 0:21.83 & 0:21.82 & 0:22.03 & 0:22.24\\
+        \textbf{0.7} & 0:19.19 & 0:20.02 & 0:20.83 & 0:21.64 & 0:21.06 & 0:21.61 & 0:21.79 & 0:22.34 & 0:22.05\\
+        \textbf{0.8} & 0:19.49 & 0:19.76 & 0:20.97 & 0:21.09 & 0:21.26 & 0:21.62 & 0:21.33 & 0:21.73 & 0:21.92\\
+        \textbf{0.9} & 0:19.49 & 0:19.73 & 0:20.39 & 0:21.22 & 0:21.49 & 0:22.12 & 0:21.39 & 0:22.16 & 0:23.06\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Execution time (min:sec) of SVM-RFE (combo) with Polynomial Kernel optimized.}
+    \label{fig:ch5.combo.madelon.timetable}
+\end{table}

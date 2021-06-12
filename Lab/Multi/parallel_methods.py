@@ -25,6 +25,7 @@ class DSMethods:
         self.sampling_percentagee = 0.5
         self.dstep_percentage = 0.1
         self.dstop = 1
+        self.mode = 'l1'
 
     def computeKernelMatrix(self, X, Y):
         if self.kernel_matrix == 'linear': return pairwise.polynomial_kernel(X, Y, coef0=self.C, degree=1)
@@ -74,7 +75,7 @@ class DSMethods:
         test_scores = {}
         test_selection = np.argsort(rfe.ranking_)
 
-        for i in range(1, self.n_features, int(self.n_features/50)):
+        for i in range(1, self.n_features, 2):
             features = test_selection[:i]
 
             if self.kernel == 'liblinear':
@@ -228,7 +229,7 @@ class DSMethods:
         train_index, test_index, step = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_MULTI(n_features_to_select=1, step=step, C=self.C)
+        rfe = SVM_RFE_MULTI(n_features_to_select=1, step=step, C=self.C, mode=self.mode)
         return self._svm_rfe(rfe, XT, yT, Xt, yt)
 
     def svm_rfe_vanilla(self, args):

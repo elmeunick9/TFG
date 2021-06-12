@@ -29,7 +29,7 @@ Focus on reducing the computational cost.
 | ~~Avoid CV~~ | X | | | |
 | ~~Historic of weights~~ | X | | | |
 | Multi-class criteria | | | X | |
-| Sampling | | | X | |
+| Sampling | | | | X |
 | Dynamic Step | |  | | X |
 | Stop condition | |  | X | |
 | Combo | | | X |

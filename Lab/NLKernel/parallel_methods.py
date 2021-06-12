@@ -68,7 +68,7 @@ class DSMethods:
         test_scores = {}
         test_selection = np.argsort(rfe.ranking_)
 
-        for i in range(1, self.n_features, int(self.n_features/50)):
+        for i in range(1, self.n_features, 2):
             features = test_selection[:i]
 
             if self.kernel == 'liblinear':
