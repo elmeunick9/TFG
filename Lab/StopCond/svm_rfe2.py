@@ -62,15 +62,13 @@ class SVM_RFE():
         return self
 
 class SVM_RFE_STOPCOND():
-    def __init__(self, step=4, percentage=[0.8, 0.2], C=0.1):
+    def __init__(self, step=4, percentage=[0.8, 0.2]):
         self.step = step
         self.percentage = percentage
-        self.C = C
 
     def fit(self, X0, y, test=()):
         self.scores_ = {}
         self.wscores_ = {}
-        self.ascores_ = {}
         self.test_scores_ = {}
         
         n_features = X0.shape[1]
@@ -91,7 +89,7 @@ class SVM_RFE_STOPCOND():
 
             # Declare and train the SVM
             #with time_code('SVM #' + str(np.sum(support_))):
-            estimator = LinearSVC(C=self.C, max_iter=5000, dual=False)
+            estimator = LinearSVC(C=10, max_iter=5000, dual=False)
             estimator.fit(X, y)
 
             # Get importance and rank them
@@ -102,9 +100,8 @@ class SVM_RFE_STOPCOND():
             ranks = np.ravel(ranks)
 
             # Record score
-            cfs = np.sum(support_) - 1
-            self.scores_[cfs]  = estimator.score(X,y)
-            if test: self.test_scores_[cfs] = estimator.score(test[0][:, features], test[1])
+            self.scores_[np.sum(support_) - 1]  = estimator.score(X,y)
+            if test: self.test_scores_[np.sum(support_) - 1] = estimator.score(test[0][:, features], test[1])
 
             # Eliminate the worse feature
             threshold = min(self.step, np.sum(support_))
@@ -112,45 +109,21 @@ class SVM_RFE_STOPCOND():
                 selected_feature = features[ranks[i]]
                 support_[selected_feature] = False
                 ranking_[np.logical_not(support_)] += 1
-
-            self.wscores_[cfs] = np.ravel(np.sort(importances))
+                if not q_max: q_max = np.max(np.ravel(importances))
+                q = np.ravel(importances)[ranks[i]] / q_max
+                self.wscores_[np.sum(support_)] = 1 - q
+                
+            # Scalarization and exit condition
+            i = np.sum(support_)
+            scal_q = self.percentage[0] * q + self.percentage[1] * (i / n_features)
+            if not prev_scal_q < scal_q - 0.001:
+                prev_scal_q = scal_q
+                self.selected_i = i
+                # break
 
         # Set final attributes
         self.n_features_ = support_.sum()
         self.support_ = support_
         self.ranking_ = ranking_
-        self.ascores_ = self.cost(self.wscores_, self.scores_, self.percentage[0], self.percentage[1], n_features)
 
         return self
-
-    def cost(self, wscores, scores, w1, w2, n_features):
-        def extract(q, q_max):
-            #print('MINMAX (Q)', np.min(q), np.max(q))
-            rf = len(q)
-            s = [q[0]]
-            for i in range(1, len(q)):
-                s += [s[i - 1] + q[i]]
-
-            s_max = np.max(s)
-            #print(s)
-            c = []
-            for e in s:
-                acc = (1 - e / s_max) * (q_max - 0.5) + 0.5
-                #c += [w1 * (1 - acc) + w2 * (rf - len(c)) / n_features]
-                c += [acc]
-
-            return {rf - i: e for i, e in enumerate(c)}
-
-        C = {}
-        for i in scores.keys():
-            C[i] = extract(wscores[i], scores[i])
-
-        keys = list(C.keys())
-        c = {}
-        for i in range(0, len(keys)):
-            a = keys[i]
-            b = keys[i + 1] if len(keys) < i + 1 else 0
-            c.update({k: v for k, v in C[a].items() if a > k and k > b})
-
-        return c
-

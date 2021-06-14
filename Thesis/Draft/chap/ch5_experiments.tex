@@ -638,16 +638,53 @@ In general, we recommend using SVM-RFE with sampling whenever possible, speciall
 
 \section{Stop Condition}
 
-This modification intends to find the optimal number of features that still performs reasonably well in terms of accuracy, within the SVM-RFE phase, thus avoiding the need for the validation phase. 
+This modification intends to find an approximation to the optimal feature subset size within the SVM-RFE phase. This information allows using dynamic step more effectively. Using this extension we don't require a validation phase, which makes it very computationally efficient.
 
 \subsection{Description and reasoning}
 \label{sec:ch5.stopcond.desc}
 
-Often, we either run the whole RFE computation, or stop early based on a stopping point constant. 
+\subsubsection*{Relationship with \emph{Dynamic Step}}
 
-If no information is known about the dataset, it is required to do a simplified run (e.g. using sampling, or as filter method) before the stopping point can be known and used. One problem with this approx is that oversimplifying may lead to distributions significatively different form the one we are really tying to optimize, yet, not simplifying enough may be very computationally expensive, since the whole process has to be run twice. Another problem is that for this to work the verification phase must necessarily be done with a small step, which leaves sampling as the only option for simplified the computation. It is possible however to use different parameters for the SVM-RFE and validation phase, for example using a filter method for generating the feature ranking, and then sampling for validation.
+We had some previous success with the \emph{dynamic step} extension. One problem with that extension, however, is that it functions better when the number of informative features is known. By default, \emph{dynamic step} reduces the step size the fewer features are left remaining. This generally improves performance since bigger steps (i.e. fewer iterations) are used in the more computationally expensive parts of the al\-go\-rithm and smaller steps are used on a less expensive region. 
 
-For this extension we take a different approx. We'll approximate the stopping based on information we already have within SVM-RFE. Specifically we want to use the feature importance calculated with the ranking criteria as a heuristic. This has the advantage that the whole validation phase can be skipped while still retaining a good approximation. It is also important that the same scalarization trade-off can be used here as well.
+Because smaller steps also imply an improvement in accuracy, we would want to concentrate them on the most critical region of our feature subset space, that is, around the optimal feature subset size. We can easily modify our implementation of \emph{Dynamic Step} so that it is centered at this point by applying our percentage on the distance to that point instead of the amount of remaining features. This time, since this point may be in a region that is more computationally expensive, we may also want to specify a minimum step parameter. Equation \ref{eq:ch5.stopcond.dyns} combines these ideas. Where $p$ is the percentage, $m$ is the minimum step, $c$ is the optimal feature subset size and $i$ is the amount of remaining features.
+\begin{align}
+    t = \max(p|c-i|, m)
+    \label{eq:ch5.stopcond.dyns}
+\end{align}
+
+Figure \ref{fig:ch5.stopcond.lines} adds the new method to the dynamic step formulations described in the \emph{Dynamic Step} extension (Figure \ref{fig:ch5.dstep.comparetime}). Note that for the left plot the slope of the curve corresponds with the step used in that iteration. The area under the curve is an approximation of the computational cost. For the left plot, the areas below the constant step line correspond to regions where, due to a smaller step, an increase in accuracy for that feature subset is possible. This, however, will only be useful in practice if that region is within the optimal feature subset size (red doted line).
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/lines.png}
+        \subcaption*{Features remaining (vertical axis) at each iteration (horizontal axis).}
+    \end{subfigure}
+    \hspace{0.05\linewidth}
+    \begin{subfigure}[b]{0.4\linewidth}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/lines2.png}
+        \subcaption*{Step (vertical axis) for each feature subset size (horizontal axis).}
+    \end{subfigure}
+    \caption{ The new method “Percentage2” has a much smaller slope/step at the optimal feature subset size (1000).}
+    \label{fig:ch5.stopcond.lines}
+\end{figure}
+
+\subsubsection*{Estimating the optimal feature subset size}
+
+There are multiple ways to estimate this point. Of course, running a whole cycle of SVM-RFE and validation (refer to figure \ref{fig:ch5.diag}) and calculating the optimal feature subset size is always an option. However, doing this previously to the SVM-RFE phase for every hyper-parameter set would be very expensive and completely defeat the purpose (since it would be more expensive than using constant step). Another option is to use the amount of informative features as an approximation (this is what we do in the \emph{Combo} experiments), however this information is not always available.
+
+If we're running a model selection process, it may be good enough to simply run a whole cycle once (with constant step), extract the optimal feature subset size for that hyper-parameter configuration and use it as an estimate for the rest. This, however, requires to make an initial run while guessing the hyper-parmaters, and it needs to perform reasonably well. 
+
+We may have better luck by doing an initial grid search under simplified datasets (such as with sampling or a big constant step on SVM-RFE). This, however, may still take a con\-sid\-er\-able amount of time (due to validation requiring a small step) and the results can still not extrapolate well to the full version (since an extreme reduction in sample size may induce shifts on the accuracy distribution of feature subsets).
+
+\subsubsection*{Approximating accuracy by feature importance}
+
+The idea is to approximate the optimal feature subset size based on information we already have within SVM-RFE. Specifically, we want to use the feature importance calculated with the ranking criteria as an estimator of accuracy. This has the ad\-van\-tage that the whole validation phase can be skipped while hopefully still retaining a good approximation. It is also important that the same scalarization trade-off can be used here as well.
+
+We assume that the importance of a feature is directly correlated with the error that is generated when the feature is removed. The total error generated for some feature subset can then be calculated as the commutative sum of the im\-por\-tances for all removed features up to that point. We then scale this result to be between 0.5 and 1.0.
+
+Instead of scaling between two fix values we can get a better approximation by making use of RFE iterations. Each iteration we perform a small testing round (only with training data) to get a true training accuracy. We can then scale our approximation within the bounds of these values. Note that we could also linearly interpolate between this known values and get similar results, without a validation phase. This would however require small values for the step. The beauty of this method is that it still works even when the step used is large (or even equal to the amount of features).
 
 \subsection{Pseudocode formalization}
 
@@ -692,7 +729,7 @@ For this extension we take a different approx. We'll approximate the stopping ba
     \label{alg:svmrfe.stopcond}
 \end{algorithm}\VS\VS
 
-\begin{algorithm}[H]
+\begin{algorithm}
     \DontPrintSemicolon
       \KwInput{$\vt{q}, min, max, w_1, w_2$ \tcp*{$\vt{q}$ = importance estimators \\ $w_0, w_1$ = scalarization coef.}}
       \KwOutput{$\text{arg} \min \vt{c}$}
@@ -702,7 +739,7 @@ For this extension we take a different approx. We'll approximate the stopping ba
       \For{$e_i \in \vt{s}$}
         {
             \tcc*[h]{Estimate the accuracy from the cumulative importance}\\
-            $\texttt{Acc} = 1 - (e / \max(\vt{s})) / (max - min) + min$\VS
+            $\texttt{Acc} = (1 - e / \max(\vt{s})) / (max - min) + min$\VS
 
             \tcc*[h]{Scalarization}\\
             $c_i = w_1 (1 - \texttt{Acc}) + w_2 (i / |\vt{s}|)$
@@ -713,23 +750,97 @@ For this extension we take a different approx. We'll approximate the stopping ba
 
 \subsection{Results}
 
+\subsubsection*{Analysis with artificially generated data}
+
+We reuse the 2 class dataset from the \emph{Dynamic Step} extension. The scalarization trade-off used is 80\% accuracy, 20\% feature subset size. All results are mean values extracted form a 7-fold cross-validation procedure.
+
+\begin{verbatim}
+    X, y = make_classification(
+        n_samples = 1000, n_clusters_per_class = 3, n_features = 300, 
+        n_informative = 100, n_redundant=100, n_repeated=20,
+        flip_y= 0.05, random_state=2, class_sep = 2.0
+    )
+\end{verbatim}\VS
+
+Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is our (train) accuracy estimate. We estimate the optimal feature subset size (green dot) and compare it to the true optimal (red dot) found by doing a full SVM-RFE and validation cycle using a much smaller step.
+
 \begin{figure}[h]
     \centering
     \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{img/ch5/stopcond/main.png}
-        \subcaption*{Projection}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/aprox-good.png}
+        \subcaption*{Step = 150. Good.}
     \end{subfigure}
     \begin{subfigure}[b]{0.4\linewidth}
-        \includegraphics[width=\linewidth]{img/ch5/stopcond/main-dual.png}
-        \subcaption*{Actual minimization}
+        \includegraphics[width=\linewidth]{img/ch5/stopcond/aprox-bad.png}
+        \subcaption*{Step = 300. Bad.}
     \end{subfigure}
-    \caption{Accuracy estimation (green).}
+    \caption{Accuracy estimation (green) for feature ranking generated with SVM-RFE with a step of 10.}
     \label{fig:ch5.stopcond.main}
 \end{figure}
 
-\begin{verbatim}
-    TODO
-\end{verbatim}
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{Step} & \multicolumn{3}{c}{\textbf{300}} & \multicolumn{3}{c}{\textbf{150}} & \multicolumn{3}{c}{\textbf{60}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Opt.&Est.&Diff.&Opt.&Est.&Diff.&Opt.&Est.&Diff. \\
+        \midrule
+        \textbf{0.00001} &   43 & 104 & 61 &   31 & 105 & 74 &   43 & 58 & 15\\
+        \textbf{0.00010} &   49 & 133 & 84 &   37 & 108 & 71 &   55 & 50 & 5\\
+        \textbf{0.00100} &   97 & 123 & 26 &   73 & 93 & 20 &   67 & 80 & 13\\
+        \textbf{0.01000} &   73 & 66 & 7 &   97 & 80 & 17 &   103 & 119 & 16\\
+        \textbf{0.10000} &   73 & 60 & 13 &   79 & 71 & 8 &   73 & 119 & 46\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \label{fig:ch5.stopcond.table}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \makebox[0cm]{
+    \begin{tabular}{l | c c c|c c c|c c c}
+        \toprule
+        \multicolumn{1}{c}{Step} & \multicolumn{3}{c}{\textbf{300}} & \multicolumn{3}{c}{\textbf{150}} & \multicolumn{3}{c}{\textbf{60}}\\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$}&Opt.&Est.&Diff.&Opt.&Est.&Diff.&Opt.&Est.&Diff. \\
+        \midrule
+        \textbf{0.00001} &   14.3\% & 34.7\% & 20.3\% &   10.3\% & 35.0\% & 24.7\% &   14.3\% & 19.3\% & 5.0\%\\
+        \textbf{0.00010} &   16.3\% & 44.3\% & 28.0\% &   12.3\% & 36.0\% & 23.7\% &   18.3\% & 16.7\% & 1.7\%\\
+        \textbf{0.00100} &   32.3\% & 41.0\% & 8.7\% &   24.3\% & 31.0\% & 6.7\% &   22.3\% & 26.7\% & 4.3\%\\
+        \textbf{0.01000} &   24.3\% & 22.0\% & 2.3\% &   32.3\% & 26.7\% & 5.7\% &   34.3\% & 39.7\% & 5.3\%\\
+        \textbf{0.10000} &   24.3\% & 20.0\% & 4.3\% &   26.3\% & 23.7\% & 2.7\% &   24.3\% & 39.7\% & 15.3\%\\
+        \bottomrule
+    \end{tabular}
+    }
+    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \label{fig:ch5.stopcond.table2}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{l | c c c | c c c}
+        \toprule
+         & \multicolumn{3}{c}{\textbf{Estimate}} & \multicolumn{3}{c}{\textbf{SVM-RFE (Step = 10)}} \\
+        %\cline{2-4}\cline{5-7}\cline{8-10}
+        \midrule
+        \textbf{$C$/Step.}&\textbf{1.0}&\textbf{0.5}&\textbf{0.2}&\textbf{1.0}&\textbf{0.5}&\textbf{0.2} \\
+        \midrule
+        \textbf{0.00001} & 0:00.095 & 0:00.098 & 0:00.211 &     0:02.276 & 0:02.070 & 0:02.222\\
+        \textbf{0.00010} & 0:00.112 & 0:00.143 & 0:00.275 &     0:02.907 & 0:02.897 & 0:02.870\\
+        \textbf{0.00100} & 0:00.118 & 0:00.173 & 0:00.350 &     0:03.069 & 0:03.156 & 0:03.329\\
+        \textbf{0.01000} & 0:00.213 & 0:00.300 & 0:00.520 &     0:04.428 & 0:05.253 & 0:05.015\\
+        \textbf{0.10000} & 0:01.068 & 0:01.173 & 0:02.380 &     0:16.667 & 0:20.553 & 0:21.317\\
+        \bottomrule
+        \end{tabular}
+    \caption{Execution time of SVM-RFE with non-linear kernels.}
+    \label{fig:ch5.stopcond.art.tabletime}
+\end{table}
 
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.svm import LinearSVC
 from multiprocessing import Pool
 import random
+import math
 
 from svm_rfe import SVM_RFE, SVM_RFE_STOPCOND
 
@@ -14,6 +15,8 @@ class DSMethods:
         self.y_train = y_train
         self.y_test = y_test
         self.n_features = n_features
+        self.C = 0.1
+        self.prevstep = 0.2
 
     def randomSelection(self, CVal=10):
         start_time = time.time()
@@ -41,7 +44,7 @@ class DSMethods:
         test_scores = {}
         test_selection = np.argsort(rfe.ranking_)
 
-        for i in range(1, self.n_features, int(self.n_features/50)):
+        for i in range(1, self.n_features, 2):
             features = test_selection[:i]
 
             svm = LinearSVC(C=10, max_iter=5000, dual=False)
@@ -59,10 +62,16 @@ class DSMethods:
 
         return rfe.scores_, rfe.test_scores_, rfe.scores_, elapsed_time
 
-    def _svm_rfe_stopcond(self, rfe, XT, yT, Xt, yt):
+    def _svm_rfe_stopcond(self, rfe, prev, XT, yT, Xt, yt):
+        start_time_prev = time.time()
+        prev.fit(XT, yT)
+        elapsed_time_prev = time.time() - start_time_prev
+
         start_time = time.time()
         rfe.fit(XT, yT)
         elapsed_time = time.time() - start_time
+
+        # -------- VALIDATION ---------
 
         train_scores = {}
         test_scores = {}
@@ -71,13 +80,13 @@ class DSMethods:
         for i in range(1, self.n_features, int(self.n_features/50)):
             features = test_selection[:i]
 
-            svm = LinearSVC(C=10, max_iter=5000, dual=False)
+            svm = LinearSVC(C=self.C, max_iter=5000, dual=False)
             svm.fit(XT[:,features], yT)
 
             train_scores[i] = svm.score(XT[:,features], yT)
             test_scores[i] = svm.score(Xt[:,features], yt)
 
-        return train_scores, test_scores, rfe.scores_, elapsed_time, rfe.wscores_, rfe.selected_i
+        return train_scores, test_scores, rfe.scores_, elapsed_time, prev.ascores_, elapsed_time_prev
 
     def svm_rfe(self, args):
         train_index, test_index, step = args
@@ -113,5 +122,6 @@ class DSMethods:
         train_index, test_index, step, percentage = args
         XT, Xt = self.X_train[train_index], self.X_train[test_index]
         yT, yt = self.y_train[train_index], self.y_train[test_index]
-        rfe = SVM_RFE_STOPCOND(step=step, percentage=percentage)
-        return self._svm_rfe_stopcond(rfe, XT, yT, Xt, yt)
+        rfe =       SVM_RFE_STOPCOND(step=step, percentage=percentage, C=self.C)
+        rfe_prev =  SVM_RFE_STOPCOND(step=max(1, math.ceil(self.n_features * self.prevstep)), percentage=percentage, C=self.C)
+        return self._svm_rfe_stopcond(rfe, rfe_prev, XT, yT, Xt, yt)
