@@ -44,12 +44,12 @@ Mathematically, the set of observations is defined as $X = \{\vt{x_1}, \vt{x_2},
 
 Although we've used strings to represent classes, part of the preparation process of the dataset involves turning all values into numerical scalars, so our classes would actually be some natural numbers. Also notice that every $\vt{x_i}$ is a vector containing a single numerical value for each feature excluding the label. 
 
-We make a distinction between two-class problems (or binary) and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially, in fact some learning machines such as the SVM can only work with two-class problems, and use different methods to extend to the multi-class version.
+We make a distinction between two-class problems (or binary) and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially. In fact some learning machines, such as the SVM, can only work with two-class problems, and use different methods to extend to the multi-class version.
 
 \subsection{Visualization}
 \label{sec:ch4.visualization}
 
-A visualization of the problem in some euclidean space is required to understand how most classification algorithms work, and in particular SVM. Typically, clas\-si\-fi\-cation models divide the input vector space\footnote{The euclidean space of minimum dimension containing all possible input vectors $\vt{x}$.} into \emph{decision regions}. The boundaries of such regions are called \emph{decision boundaries} or \emph{decision surfaces}. If the decision boundary is in the form of some hyperplane of dimension $(D - 1)$, with $D$ being the dimension of the space, then we say that it's a linear model. A dataset whose classes can be completely separated by such linear decision boundary is said to be \emph{linearly separable}.
+A visualization of the problem in some euclidean space is useful to understand how most classification algorithms work, and in particular SVM. Typically, clas\-si\-fi\-cation models divide the input vector space\footnote{The euclidean space of minimum dimension containing all possible input vectors $\vt{x}$.} into \emph{decision regions}. The boundaries of such regions are called \emph{decision boundaries} or \emph{decision surfaces}. If the decision boundary is in the form of some hyperplane of dimension $(m - 1)$, with $m$ being the dimension of the space, then we say that it's a linear model. A dataset whose classes can be completely separated by such linear decision boundary is said to be \emph{linearly separable}.
 
 \begin{figure}[H]
     \centering
@@ -79,7 +79,7 @@ Where $m$ is the \emph{slope} or \emph{gradient}, $x$ is the independent variabl
     ax + by = c
 \end{align}
 
-This is an equivalent form, this one however is not representable by a function $f: \mathbb{R} \rightarrow \mathbb{R}$, instead it is often represented as a set $L = \{(x, y) \st ax + by = c\}$. This allows representing vertical lines and also features the useful property that $(a, b)$ is the normal vector\footnote{A vector that is perpendicular to the surface.} of the line.
+This is an equivalent form. This one however is not representable by a function $f: \mathbb{R} \rightarrow \mathbb{R}$, instead it is often represented as a set $L = \{(x, y) \st ax + by = c\}$. This allows representing vertical lines and also features the useful property that $(a, b)$ is the normal vector\footnote{A vector that is perpendicular to the surface.} of the line.
 
 \subsubsection*{Equation of a line (general form)}
 \begin{align}
@@ -100,14 +100,14 @@ We can extend the general form of a line with one more dimension, it only requir
     w_1x_1 + \dots + w_nx_n + w_0 = 0
 \end{align}
 
-This is a generalization of the equation of a 3-D plane for $n$ dimensions. It also happens to be the definition of a \emph{linear equation}. The variables $w_1, \dots, w_n$ are called \emph{coefficients}, \emph{parameters} or \emph{weights}, and the variable $w_0$ is the constant term. It is important to avoid confusing $x_i$ with $\vt{x_i}$, the first is the one the coordinates of a point in some dimension, and the other is an observation of a dataset (a point). In particular, it may be the case that $\vt{x_j} = (x_1, x_2, \dots, x_n)$.
+This is a generalization of the equation of a 3-D plane for $n$ dimensions. It also happens to be the definition of a \emph{linear equation}. The variables $w_1, \dots, w_n$ are called \emph{coefficients}, \emph{parameters} or \emph{weights}, and the variable $w_0$ is the constant term. It is important to avoid confusing $x_i$ with $\vt{x_i}$, the first one is the coordinates of a point in some dimension, and the other is an observation of a dataset (a point). In particular, it may be the case that $\vt{x_i} = (x_1, x_2, \dots, x_i, \dots, x_n)$.
 
 We may want to compact this expression more by using vectors. So, another form for representing the equation of a hyperplane is:
 \begin{align}
     \vb{w}^{\T}\vb{x} + w_0 = 0
 \end{align}
 
-Where $\vb{w}$ is called the \emph{vector weight} and $w_0$ the \emph{bias}. We can turn this equation into a discriminant function for two classes by simply considering what happens with points that are not in the hyperplane. By definition such points meet one of the two inequations:
+Where $\vb{w}$ is called the \emph{weight vector} and $w_0$ the \emph{bias}. We can turn this equation into a discriminant function for two classes by simply considering what happens with points that are not in the hyperplane. By definition such points meet one of the two inequations:
 \begin{align*}
     \vb{w}^{\T}\vb{x} + w_0 > 0 \\
     \vb{w}^{\T}\vb{x} + w_0 < 0
@@ -125,7 +125,7 @@ A linear binary classification learning machine is thus an algorithm that given 
 
 Usually models produced by a learning machine do not always make correct pre\-dict\-ions, instead we consider them good enough if they can classify new data correctly most of the time. In order to quantize how good of a predictor some model is we can use various performance metrics.
 
-The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions versus the total number of predictions made. The inverse to the accuracy is defined as the \emph{error}. Notice that the classification accuracy will always be some percentage above 50\%. This is because a classifier performing consistently worse than that can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
+The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions versus the total number of predictions made. The inverse to the accuracy ($1.0 - accuracy$) is defined as the \emph{error}. Note that the classification accuracy for a binary problem will always be some percentage above 50\%. This is because a classifier performing consistently worse, can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
 
 In some problems a distinction is made between misclassifications depending on which class is misclassified. An example of this is how misclassifying a patient with cancer with a healthy diagnosis is worse than misclassifying a healthy patient with a cancer diagnosis, the consequence of one is potentially death due to lack of treatment while the other is simply more investigation. For these problems a quadratic amount of cases appears. For the binary classification the standard nomenclature is to name the classes \emph{positive} and \emph{negative} and then prefix them with \emph{true} or \emph{false} depending on whether the prediction was correct or not. In this way a matrix called \emph{confusion matrix} is created, with the diagonal containing all the correct predictions.
 
@@ -170,7 +170,7 @@ As it has been discussed in section \ref{sec:ch4.visualization}, the decision bo
         \subcaption*{Good boundary}
     \end{subfigure}
     \caption{Showing how one decision boundary may be better than another. \texttt{X} filled in blue represents new data.}
-    \label{fig:ch4.sep}
+    \label{fig:ch4.sep1}
 \end{figure}
 
 There exist various learning machines that accomplish this separation, e.g. the \emph{Fisher’s linear discriminant}. Another such machine is the Support Vector Machine (SVM), which is based on the idea of finding the biggest margin between the extreme points of each class and setting the decision boundary in the center of such margin. For this reason SVM machines are said to be \emph{Maximum Margin Classifiers}.
@@ -186,7 +186,7 @@ There exist various learning machines that accomplish this separation, e.g. the 
         \subcaption*{Quite good margin}
     \end{subfigure}
     \caption{Two quite good decision boundaries with a margin, a maximum margin classifier would choose the left one.}
-    \label{fig:ch4.sep}
+    \label{fig:ch4.sep2}
 \end{figure}
 
 The \emph{margin} is defined as the perpendicular distance (i.e. in the direction of the normal) between the decision bound\-ary and the closest of the examples. There is only one decision boundary that maximizes the margin. Only a limited amount of examples, defined by the number of dimensions, will reach the limits of that margin (and thus be the closest), these are called the \emph{support vectors}.
@@ -195,9 +195,9 @@ The \emph{margin} is defined as the perpendicular distance (i.e. in the directio
 
 We've already seen how to we can build a discriminant function from the equation of the hyperplane. Here we will explore this in a bit more depth and take a different approx. 
 
-Given a vector of unknown length $\vt{w}$ that is perpendicular to the hyperplane (thus the normal) such that its origin is at the origin of the coordinate system. And given another vector $\vt{x}$ also with origin at the origin of the coordinate system. Notice that, by how we are defining them, they are actually points, but we may want to think of them as vectors for now. We are interested in knowing in which decision region the point $\vt{x}$ is placed.
+Given a vector of unknown length $\vt{w}$ that is perpendicular to the hyperplane (thus the normal) such that its origin is at the origin of the coordinate system. And given another vector $\vt{x}$ also with origin at the origin of the coordinate system. Note that, by how we are defining them, they are actually points, but we may want to think of them as vectors for now. We are interested in knowing in which decision region the point $\vt{x}$ is placed.
 
-To do so, we make the dot product between $\vt{w}$ and $\vt{x}$, which, in particular, will give us a scalar corresponding to the length of the projection of $\vt{x}$ over $\vt{w}$. Notice that for points within the hyperplane that length will be some constant value $c$. Thus, we can know if point $\vt{x}$ is in one region or another by comparing it with $c$. This can be expressed with the inequality $\vt{w} \cdot \vt{x} \ge c$. By making a variable $b = -c$ and expressing the dot product as a product of matrices, we can conveniently rearrange this equation as the decision rule:
+To do so, we make the dot product between $\vt{w}$ and $\vt{x}$, which, in particular, will give us a scalar corresponding to the length of the projection of $\vt{x}$ over $\vt{w}$. Note that for points within the hyperplane, that length will be some constant value $c$. Thus, we can know if point $\vt{x}$ is in one region or another by comparing it with $c$. This can be expressed with the inequality $\vt{w} \cdot \vt{x} \ge c$. By making a variable $b = -c$ and expressing the dot product as a product of matrices, we can conveniently rearrange this equation as the decision rule:
 \begin{align}\label{eq:drule}
     \vb{w}^\T \vb{x} + b \ge 0
 \end{align}
@@ -256,7 +256,7 @@ This is a constrained quadratic optimization problem. There are various known al
 
 \subsubsection*{Lagrangian}
 
-Imagine we had an easier optimization problem. E.g. a maximization pro\-blem such that its optimization function $f : \R^{D-1} \rightarrow \R$ is a function $f(\vt{x})$ of $D$ dimensions, and it has a single equality constrain $g(\vt{x}) = 0$ of $D - 1$ dimensions. Notice how the constraint is “projected” on top of $f(\vt{x})$. Then the Lagrangian method consists on optimizing a new function (equation \ref{eq:lagrangian_base}), via introducing a new pa\-ram\-e\-ter $\lambda$ called the \emph{Lagrangian multiplier}. 
+Imagine we had an easier optimization problem. E.g. a maximization pro\-blem such that its optimization function $f : \R^{m-1} \rightarrow \R$ is a function $f(\vt{x})$ of $m$ dimensions, and it has a single equality constrain $g(\vt{x}) = 0$ of $D - 1$ dimensions. Notice how the constraint is “projected” on top of $f(\vt{x})$. Then the Lagrangian method consists on optimizing a new function (equation \ref{eq:lagrangian_base}), via introducing a new pa\-ram\-e\-ter $\lambda$ called the \emph{Lagrangian multiplier}. 
 \begin{align}\label{eq:lagrangian_base} 
     L(\vt{x}, \lambda) = f(x) - \lambda g(x)
 \end{align}
@@ -336,7 +336,7 @@ For this dual formulation, instead of directly finding the values of $\vt{w}$ we
 
 Until now, we've seen how it is desirable to maximize the margin, but we've pur\-pose\-ly ignored the common situation where examples are not linearly separable. It could simply be that classes follow a distribution that is not separable using a hyperplane, in which case we would use kernels. But it could also be the case that although classes are close to be linearly separable there is some overlapping in their distributions.  
 
-We can solve this problem by redefining our margin as a \emph{soft margin}, such that we allow some amount of observations to be incorrectly classified, thus falling within the margin or in the wrong side of the decision boundary, but with a penalty that increases with the distance to correct side of the margin. To do so we introduce \emph{slack variables}, one for each example, such that $\xi_i = 0$ if the example $i$ is correctly classified, $0 < \xi_i < 1$ if within the margin, and $\xi_i \ge 1$ if it's in the wrong side of the margin.
+We can solve this problem by redefining our margin as a \emph{soft margin}, such that we allow some amount of observations to be incorrectly classified, thus falling within the margin or in the wrong side of the decision boundary, but with a penalty that increases with the distance to the correct side of the margin. To do so we introduce \emph{slack variables}, one for each example, such that $\xi_i = 0$ if the example $i$ is correctly classified, $0 < \xi_i < 1$ if within the margin, and $\xi_i \ge 1$ if it's in the wrong side of the margin.
 
 Now we can reformulate our \emph{primal} with this new variables, penalizing the sum of misclassifications and also introducing a \emph{regularization parameter} $C$ that allows to specify the desired trade-off strength between correct classification and slack.
 
@@ -392,7 +392,7 @@ The use of kernel functions enables learning machines such as SVM to have non-li
 
 \subsection{Feature map}
 
-A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, or projects, vectors in some space $D$ (typically $\mathbb{R}^D$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
+A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, or projects, vectors in some space $D$ (typically $\mathbb{R}^m$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
 
 For the sake of using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that defines an inner product and also is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
 
@@ -449,7 +449,7 @@ Remember that the inner product in an euclidean space $\mathbb{R}^n$ is defined 
 
 Notice how a kernel function may actually simplify the computation and reduce the required amount of operations compared to actually transforming the points and then applying the inner product. In this case, for in\-stance, we see that although the feature mapping is doubling the amount of di\-men\-sions, the kernel function that uses it can be simplified to an inner product in the domain. Thus, we can also define a kernel function without defining the feature map explicitly, e.g. $k(\vb{a}, \vb{b}) = \ip{\vb{a}, \vb{b}}^2$. Also note that there may be multiple feature maps that result in the same kernel. 
 
-One powerful alternative technique to construct kernels implicitly is to build them out of simpler kernels as building blocks. This can be done using a set of known properties. Given valid kernels $k_1(\vb{a}, \vb{b})$ and $k_2(\vb{a}, \vb{b})$, with $\vb{a}, \vb{b} \in \mathcal{X}$, the following kernels are also valid:
+One powerful alternative technique to construct kernels implicitly is to build them out of simpler kernels, like building blocks. This can be done using a set of known properties. Given valid kernels $k_1(\vb{a}, \vb{b})$ and $k_2(\vb{a}, \vb{b})$, with $\vb{a}, \vb{b} \in \mathcal{X}$, the following kernels are also valid:
 \begin{align}
     k(\vb{a}, \vb{b}) &= c k_1(\vb{a}, \vb{b})\\
     k(\vb{a}, \vb{b}) &= f(\vb{a}) k_1(\vb{a}, \vb{b}) f(\vb{b})\\
@@ -513,7 +513,7 @@ With this new version we also have the possibility to precompute all values of t
 
 In the context of image processing, a convolution between a kernel matrix (also called \emph{convolution matrix}) and an image is used to do all kinds of filtering, including blurring, sharpening, embossing, edge detection, and more. This specific kernel matrix is generated using all discrete points representing pixel positions (the center of cells in a grid) with an origin in the center of the grid.
 
-Sometimes the dual SVM formulation will be expressed in terms of the kernel matrix directly. Another matrix formulation can be done by using the \emph{Hessian} matrix, which for SVM is defined as $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$. This allows expressing equation \ref{eq:svm_dual_kernel} as a cost function (to be minimized) with the formula $(1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$, where $\vb{1}$ (in bold) is a vector of 1.
+Sometimes the dual SVM formulation will be expressed in terms of the kernel matrix directly. Another matrix formulation can be done by using the \emph{Hessian}\footnote{A Hessian matrix is a square matrix of second-order partial derivatives of a function. In our case, the function used is the dual formulation of SVM. However, we only use this matrix here for convenience, we don't use its mathematical properties. (\cite{sontag_kernel_2013})} matrix, which for SVM is defined as $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$. This allows expressing equation \ref{eq:svm_dual_kernel} as a cost function (to be minimized) with the formula $(1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$, where $\vb{1}$ (in bold) is a vector of 1.
 
 Another advantage of using kernels is that, since they don't restrict the input space to real numbers, you can now use SVM to classify between all kind of objects, e.g. sets, sequences, strings, graphs and distributions.
 
@@ -537,7 +537,7 @@ Note that a feature that is correlated to some class is by itself a class predic
 
 The opposite is also true, given a wight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
 
-An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the wight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the wight vector produced by an SVM.
+An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the wight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest absolute weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest absolute weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the wight vector produced by an SVM.
 
 One problem of this interpretation is that it only works when the decision bound\-ary is lineal. However, it gives us a hint on how to make a generalization for non-linear decision boundaries: We can use the change in objective function (or cost function) when a feature is removed as a ranking criterion. Let $J$ be the SVM cost function $J = (1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$. First, we train the machine and compute the $\boldsymbol{\alpha}$ parameters. Then, to compute the change in cost function $DJ(i)$ caused by removing the feature $i$, we leave the $\boldsymbol{\alpha}$ unchanged (for performance reasons) and recompute the matrix $\vb{H}$, yielding $\vb{H}(-i)$ where the notation $(-i)$ means that the component $i$ has been removed. The resulting ranking coefficient is:
 \begin{align*}
@@ -573,7 +573,9 @@ Particularly, one method that also returns a ranking coefficient $(w_i)^2$ for t
 
 The criteria $DJ(i)$ estimates the effect of removing one feature at a time on the objective function. It doesn't perform particularly well when several features are removed. This problem can be overcome by using an iterative procedure, called RFE (Recursive Feature Elimination), where we eliminate one feature and retrain the learning machine each iteration.
 
-This is an instance of backward feature elimination, and since we're using the wight vector of the learning machine in order to compute the feature ranking, we're performing an embedded method. For performance reasons it may be more efficient to remove multiple features at a time, thus we can introduce a \emph{step} parameter $t$ to indicate how many features to do at a time. In this case the method produces a feature subset ranking, a nested set of the form $F_1 \subset F_2 \subset \dots \subset F$. This feature subset ranking may better be represented as a list of vectors, such that when flat\-tened produces the final feature ranking.
+This is an instance of backward feature elimination. For performance reasons it may be more efficient to remove multiple features at a time. We introduce a step parameter $t$ for that. In this case the method produces a feature subset ranking, a nested set of the form $F_1 \subset F_2 \subset \dots \subset F$. This feature subset ranking may better be represented as a list of vectors, such that when flat\-tened produces the final feature ranking.
+
+Since the ranking criteria only considers the removal of one feature, while RFE fixes this problem by applying the ranking criteria at each feature subset size, we conclude that RFE will generate better feature rankings the smaller the step.
 
 Note that with this method, top ranked features are not necessarily the most relevant when taken individually, it is when taken together that features of a subset $F_m$ are relevant in some sense.
 
@@ -618,17 +620,19 @@ In the following figure we present a pseudocode implementation of the SVM-RFE al
 
 Note that, although we're using vectors to store the feature ranking, by using another structure (like a dictionary in \texttt{Python}) we could store the specific feature subsets, this is actually done in our implementation. 
 
+We assume that the complexity of solving the quadratic problem of an SVM using LIBSVM is $O(dn^2)$ (\cite{abdiansah_time_2015}). In practice, it depends on the im\-ple\-men\-ta\-tion\footnote{Some of these algorithms include SMO (Sequential Minimal Optimization) and SGD (Stochastic Gradient Descent).} and optimizations used therein. This complexity may also change whether kernels are used or not and whether the primal or the dual form is used. 
+
 Given that the complexity of solving the dual quadratic problem of an SVM is $O(dn^2)$, this procedure requires $O(d^2n^2)$ time to finish. Note that the whole loop of line 9 can be done in constant time with the appropriate data structures.
 
 \subsection{Assessing performance}
 
-Since learning machines will produce different levels of performance depending on the dataset, a baseline feature selection method is required in order to make proper comparisons. We can use a \emph{random feature selection} as the baseline method. This method is a good baseline because we expect that no method should perform worse than a purely uninformed one. It simply consists in making a random feature ranking and testing the accuracy of SVM with multiple feature subsets, specifically we make each feature subset by removing $t$ features each time based on the ranking order. For numerical stability we may also use cross-validation and take the mean of the results. Note that, although with this method the feature ranking is made at no cost, evaluating the accuracy at each step is just as computationally expensive as SVM-RFE itself, since one SVM training has to be performed each iteration. It is expected that this method will return acceptable results when all features are used, and decrease linearly in accuracy as features are removed.
+Since learning machines will produce different levels of performance depending on the dataset, a baseline feature selection method is required in order to make proper comparisons. We can use a \emph{random feature selection} as the baseline method. This method is a good baseline because we expect that no method should perform worse than a purely uninformed one. It simply consists in making a random feature ranking and testing the accuracy of SVM with multiple feature subsets, specifically we make each feature subset by removing $t$ features each time based on the ranking order. For numerical stability we may also use cross-validation and take the mean of the results. 
 
-When using SVM-RFE we actually have two different methods for evaluating the performance of the selection. As an embedded method, we can evaluate the accuracy at each iteration of the algorithm, by first passing a validation set to it. If the feature subsets evaluated are of the same size as in the random selection, i.e. the same step is used, this will make a fair comparison. Another option is to use SVM-RFE purely for generating the ranking and, after that, take the same approx we've used for random selection, fit and test at each iteration. This second approx will be as computationally expensive as running SVM-RFE twice, but it allows producing performance metrics at the same intervals as the baseline method, even when the SVM-RFE algorithm uses different ones, thus making a fair comparison. In this case SVM-RFE is actually acting like a wrapper method instead of an embedded one.
+Although with this method the feature ranking is made at no cost, evaluating the accuracy at each step (which we later call the “validation phase”) is just as computationally expensive as SVM-RFE itself. This is because one SVM training has to be performed each iteration. It is expected that this method will perform well when all features are used, and decrease linearly in accuracy as features are removed.
 
-The following comparison (Figure \ref{fig:ch4.dynamicStep.vanilla.comp}) has been made with an artificial dataset of 300 features, only 50 of which informative. Note that we provide both train and test accuracy, only the second is a valid metric of the expected accuracy on new samples, however, plotting the train accuracy is also useful to determine the overfitting as well as provide clues on the behavior of the selection algorithm.
+When using SVM-RFE we actually have two different methods for evaluating the performance of the feature ranking. One method is to evaluate the accuracy at each iteration of the algorithm, by first passing a validation set to it. This, however, requires to use the same hyper-parameters, including step, for training and val\-i\-da\-tion. A better solution may be to decouple both phases, a ranking (SVM-RFE) phase and a validation phase. That is, we use SVM-RFE (or any other algorithm) purely for generating the ranking. After that, we fit and test at various feature subset sizes. This allows producing performance metrics with the same step regardless of the method used to create the ranking, including filter methods or a random ranking.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \begin{subfigure}[b]{0.4\linewidth}
         \includegraphics[width=\linewidth]{img/ch4/vanilla300-random.png}
@@ -650,11 +654,13 @@ The following comparison (Figure \ref{fig:ch4.dynamicStep.vanilla.comp}) has bee
     \label{fig:ch4.dynamicStep.vanilla.comp}
 \end{figure}
 
+Figure \ref{fig:ch4.dynamicStep.vanilla.comp} has been made with an artificial dataset of 300 features, only 50 of which informative. Note that we provide both train and test accuracy, only the second is a valid metric of the expected accuracy on new samples, however, plotting the train accuracy is also useful to determine the overfitting as well as provide clues on the behavior of the selection algorithm.
+
 As expected, random selection (plot \textbf{A}) performs significatively worse than any other method. We also verify, by comparing plots \textbf{B} and \textbf{C}, our previous assumption that the more iterations (smaller step) the better the accuracy. This relationship, however, doesn't seem to be lineal, as the same effect can not be appreciated when comparing plots \textbf{C} and \textbf{D}.
 
-Notice that when evaluating the performance of a feature selection algorithm two variables must be considered, one is accuracy performance and the other is amount of features. A selection with a great accuracy but a lot of features may not be as good as a section with a decent accuracy and only a handful of features. That is, we want to maximize accuracy while minimizing amount of features. These two variables do not operate on the same range, and it can even be the case that the importance of one over the other is problem-dependent. This makes comparing multiple instances hard, this is why we are comparing pairs of plots instead of simply a pair of values.
+When evaluating the performance of a feature selection algorithm two variables must be considered, one is accuracy performance and the other is amount of features. A selection with a great accuracy but a lot of features may not be as good as a section with a decent accuracy and only a handful of features. That is, we want to maximize accuracy while minimizing amount of features. Thus, to get an idea of what the actual performance, we will use plots whenever possible.
 
-Formally this is known as a multi-objective optimization problem. In this kind of problems a solution is not necessary unique, instead it is a set of \emph{Pareto optimal}\footnote{A concept more commonly used in game theory, decision theory or economics.} solutions, i.e. solutions such that no other solution in the set of feasible so\-lu\-tions is better. Of course this also means that all Pareto optimal solutions are just as good. To score the solutions a \emph{scalarization function} is used, such that the multi-objective problem becomes a single objective optimization problem. This function establishes a trade-off between the different objectives and must be chosen based on expert criteria, i.e. the user decides what is more important for the specific problem at hand.
+Formally this is known as a multi-objective optimization problem. In this kind of problems a solution is not necessary unique, instead it is a set of \emph{Pareto optimal}\footnote{A concept more commonly used in game theory, decision theory or economics.} solutions, i.e. solutions such that no other solution in the set of feasible so\-lu\-tions is better. Of course this also means that all Pareto optimal solutions are just as good. To score the solutions a \emph{scalarization function} is used, such that the multi-objective problem becomes a single objective optimization problem. This function establishes a trade-off between the different objectives and must be chosen based on expert criteria, i.e. an expert decides what is more important for the specific problem at hand.
 
 If the criteria is known beforehand, it can be used to guide the optimization problem. In our case, for example, it could be used to guide model selection, see (Section \ref{sec:ch4.performance}). This is known as an a priori method. If all feasible solutions (or a rep\-re\-sen\-ta\-tive subset) are first computed, this is known as a posteriori method. One typical scalar\-iza\-tion function is the weighted sum, also called \emph{linear scalarization}.
 
@@ -662,12 +668,12 @@ If the criteria is known beforehand, it can be used to guide the optimization pr
 \begin{align} 
     \underset{\vb{x} \in \vb{X}}{\text{arg} \min}\ \sum_{i=1}^k w_i f_i(\vb{x})
 \end{align}
-where each $w_i$ is a weight and each $f_i(\vb{x})$ is a cost function (\cite{vasumathi_scalarizing_2019}). In our case we would only have two objective functions, the accuracy at each feature subset $\texttt{Acc}(F_i)$, and the percentage of features selected $|F_i| / |F|$. Thus, the scalar\-iza\-tion function will be of the form:
+where each $w_i$ is a weight and each $f_i(\vb{x})$ is a cost function (\cite{vasumathi_scalarizing_2019}). In our case we would only have two cost functions, the error at each feature subset $1 - \texttt{Acc}(F_i)$, and the percentage of features selected $|F_i| / |F|$. Thus, the scalar\-iza\-tion function will be of the form:
 \begin{align*} 
     \underset{F_i \in F}{\text{arg} \min}\ w_1 (1 - \texttt{Acc}(F_i)) + w_2 (|F_i| / |F|)
 \end{align*}
 
-Using the wrapper form of SVM-RFE we can calculate the optimum on the val\-i\-da\-tion set and plot it. This is an a posteriori method.
+Calculating all feature subset costs allows us to find and plot the optimal feature subset size, as shown in figure \ref{fig:ch4.tradeoff}.
 
 \begin{figure}[H]
     \centering
@@ -679,6 +685,6 @@ Using the wrapper form of SVM-RFE we can calculate the optimum on the val\-i\-da
         \includegraphics[width=\linewidth]{img/ch4/vanilla200-tradeoffB.png}
         \subcaption*{$w = (0.6, 0.4)$}
     \end{subfigure}
-    \caption{Different optimums caused by changing the criteria for the linear scalarization function, projected as a red line.}
+    \caption{Different optimums caused by changing the trade-off for the linear scalarization function, projected as a red line.}
     \label{fig:ch4.tradeoff}
 \end{figure}

@@ -1,0 +1,73 @@
+% Chapter 1
+
+\chapter{Conclusions} % Main chapter title
+
+This chapter is a general review on the problems, solutions, and achievements related to the development of this project. 
+
+\section{Problems encountered during development}
+
+\subsection{Changes to the planning}
+
+Although the writing of the theory section of this thesis was planned for the final phase, it has been switched to the first phase together with research. This has was needed because, in order to have a clear understanding of the ongoing research, it was useful to write it down. Having a written version of the research helps clarify ideas and have an immediate source of truth for the problems encountered while designing the experiments.
+
+This was specially important for the theory on kernels of SVM and the theory of ranking criteria of SVM-RFE. Without a clear understanding of it, the non-linear kernel extension (a cornerstone experiment) would not been possible to implement.
+
+Some delays also occurred due to unforeseen circumstances. These forced some meetups to be pushed to a later date and the development to stop partially or totally. The specific circumstances where:
+
+\begin{itemize}
+    \item 2 week delay caused by medical problems.
+    \item 1 week delay caused by ransomware infection on a managed (family business) server. 
+\end{itemize}
+
+\subsection{Cancelled extensions}
+
+\subsubsection*{Avoid CV}
+Our definition consisted in using other classifier algorithms, such as LDA (Linear Discriminant Analysis) or Logistic Regression. These however fall too much outside the scope of this project. If they were to be introduced, the theory for both would also need to be written. The theory about the specific characteristics that may make them more suitable, or not, for the RFE procedure would need to be researched as well.
+
+Not only a lot of work would have to be put on researching classifiers that do not really have a direct connection with the SVM-RFE algorithm itself, but this work would also be incompatible with non-linear kernels (due not direct application of the general ranking criteria formula), thus creating two disjoint research.
+
+\subsubsection*{Historic of weight}
+This was dropped soon after realizing how the ranking criteria of SVM-RFE works. It is stated in the theory that weights of previous iterations will necessarily be worse estimators of feature importance compared to the current iteration. Therefore, doing a mean, or a similar average, will inevitably lead to worse performance.
+
+Two alternatives have been proposed but also dropped:
+
+\begin{enumerate}
+    \item Utilize the variance accumulated in all previous iterations in some sensible manner.
+    \item Instead of using the weight, use the alpha values of the last iteration to init\-ialize the SVM optimization problem. This is expected to reduce the comput\-ational cost required to reach a solution.
+\end{enumerate}
+
+The first alternative lacks any kind of theoretical background, and is likely to not perform any better. Is thus, simply not attractive enough of an experiment to pursue (high chance of failing to produce any improvement at all).
+
+The second alternative is more interesting but has one major flaw. In our current framework we're not implementing the quadratic solver program required to solve SVM, instead we're using the C++ implementation LIBSVM/LIBLINEAR. We're not using C++, we're using Python. This means that in order to use this implementation we're limited to a Python API that performs the binding. This API does not expose the alpha values on initialization, only as a final result. In order to make these aviable we would need to make changes to the C++ implementation, recompile, bind, and then modify the Python API. This is way too much outside the scope of this project and will take much more time than that allocated for correcting bugs in the initial plan.
+
+\subsubsection*{Stop condition}
+
+Initially this extension was planed as a standalone method to reduce the cost in time of the RFE algorithm. Although the experiment itself was a success, that is, the implementation worked as expected, the resulting gain in performance was minimal due to the fact that the stop point (optional feature subset size) is often in the last iterations, and these are precisely the ones that are less computationally expensive.
+
+We reformulated the experiment as method whose objective was merely to find an approximation to of the optional feature subset size, and then use that in\-for\-ma\-tion to improve on the dynamic step extension.
+
+\subsection{Non-linear Kernel}
+
+This has clearly become the bulk of the project as it required the most effort for both the research and the implementation. Various problems where found during the implementation phase:
+
+\subsubsection*{No API for retrieving the Kernel Matrix}
+\texttt{Sklearn} does not provide an API that allows retrieving the kernel matrix. Usually it computes the kernel internally based on its name and parameters, and hides it from the user. Fortunately, \texttt{sklearn} does provide a precomputed mode that allows computing the kernel matrix yourself and pass it to the solver. This mode is poorly documented, and it was necessary to read to source code to find how to handle it.
+
+Using this mode also slightly increased the computational cost of SVM-RFE, even though \texttt{sklearn} own functions where being used to generate the kernel matrix.
+
+\subsubsection*{Slow optimizations}
+Experimentally we found that computing the ranking criteria took about 90\% of the time on each run of SVM-RFE with the naive implement\-ation. This is grounds for applying the known (but not formalized) optimizations mentioned on the original research paper. This consists on caching results from previous computations and restricting the comput\-ation to support vectors.
+
+To apply these optimizations we had to drop the \texttt{sklearn} kernel function im\-ple\-men\-ta\-tion and made our own. This proved immediately problematic because we could not use \texttt{numpy} for most computations and had to rely on explicitly declaring a double loop. \texttt{Numpy} speeds up computations by relying on a low level compiled implementation of its functions. By not using it, our equivalent implementation in pure Python performed much slower (in the order of 70 times slower).
+
+We mitigated this problem by using a library called \texttt{numba}. This library compiles selected Python functions so that we can get similar speeds to what we would get with an implementation made in a compiled language. Still, our implementation in \texttt{numba} was about 3 times slower than with \texttt{sklearn}.
+
+Applying the optimizations we managed to get a speed increase by a factor of 3. Although the code is slower, the complexity is one degree faster, from $O(dn^2)$ for the \texttt{sklearn} version to $O(n^2)$ for ours.
+
+\section{Closing thoughts}
+
+We believe to have found some useful techniques to improve the computational cost of SVM-RFE, as shown in the \emph{Combo} extension. Each of these techniques, however, has their own limits. It remains to be seen how useful these techniques would be in practice as an off-the-shelf method.
+
+Other extensions, such as \emph{Multi-class}, didn't have much success compared with already well known solutions, and it is doubtful that any application for them may be found.
+
+We've implemented SVM-RFE for non-linear kernels, and some optimizations that where not widely known. This may prove useful to future developers. We've also shown, although already known, that non-lineal kernels may drastically improve the performance of SVM-RFE.

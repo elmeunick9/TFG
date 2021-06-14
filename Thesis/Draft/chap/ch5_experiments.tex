@@ -1,9 +1,7 @@
 \chapter{Experiments}
 \label{Chapter5}
 
-This chapter is organized in sections corresponding to each of the extensions we've outlined in section \ref{sec:ch1.objective}. For each extension we provide a general description of the idea with the rationale behind it, a brief complexity analysis, a pseudocode, and a detailed analysis of the experimental results.
-
-The first section of this chapter does not correspond to any extension and is instead an introductory block.
+This chapter is organized in sections corresponding to each of the extensions we've outlined in section \ref{sec:ch1.objective}. For each extension we provide a general description of the idea, the rationale behind it, a pseudocode, a brief complexity analysis, and the experimental results. The first section of this chapter does not correspond to any extension and is instead an introductory block.
 
 \section{Introduction}
 
@@ -20,13 +18,11 @@ The general workflow for testing the extensions is summarized in the following d
 
 \texttt{Sklearn}, being a general machine learning library, has its own implementation of the base \texttt{RFE} algorithm. Given that it is open source, we were able to base our own implementation on it. After pruning the code to its bare minimum (no dep\-en\-den\-cies), we began to add our own extensions. We organized each extension in its own folder, isolated from the rest, and copied the base implementation there.
 
-For the actual experiments we've used \texttt{Jupiter Notebooks} (integrated in \texttt{Visual Studio Code}). Each experiment may use different notebooks depending on what is being tested exactly. Some code that is common to all notebooks, such a code for plotting, has been placed at the beginning (for convenience). The implementation of SVM-RFE and associated usability methods has been moved to separate Python files. This is both a convenient software pattern and a requirement of the parallelization library on Windows.
+For the actual experiments we've used \texttt{Jupyter Notebooks} (integrated in \texttt{Visual Studio Code}). Each experiment may use different notebooks depending on what is being tested exactly. Some code that is common to all notebooks, such a code for plotting, has been placed at the beginning (for convenience). The implementation of SVM-RFE and associated usability methods has been moved to separate \texttt{Python} files. This is both a convenient software pattern and a requirement of the parallelization library of our operating system.
 
-We use \emph{k-fold cross-validation} to perform the experiments multiple times with different folds, as explained in section \ref{sec:ch4.performance}. For the same experiment, the same amount of folds is used, but different amounts may be used in different experiments. We've parallelized this procedure with the standard \texttt{multiprocessing.pool} library. Given that our CPU has 8 cores, for the most computationally expensive experiments we're using 6 or 7-fold cross-validation in order to be able to finish the experiment in a single round (with one or two spare cores to be able to keep working in the machine). The execution time is always calculated as the mean of the elapsed times in every SVM-RFE execution (single core).
+We use \emph{k-fold cross-validation} to perform the experiments multiple times with different folds, as explained in section \ref{sec:ch4.performance}. For the same experiment, the same amount of folds is used, but different amounts may be used in different experiments. We've parallelized this procedure with the standard \texttt{multiprocessing.pool} library. Given that our CPU has 8 cores, for the most computationally expensive experiments we're using 6 or 7-fold cross-validation in order to be able to finish the experiment in a single round (with one or two spare cores to be able to keep working in the machine). The execution time is always calculated as the mean of the elapsed times of every SVM-RFE execution (single core).
 
-A limitation of Python parallelization when using Jupiter is that standard output gets suppressed. In order to debug (since debugging tools also don't work in this context) we raised exceptions, which are not suppressed because they reach the main thread. In some situations we've used other methods such a file logging or temporally running the code without parallelization.
-
-For plotting we've used the \texttt{Mathplotlib} library. We have made a custom plot function that includes all relevant information for SVM-RFE. Having a standard plot design allows for easy comparison as shown in Figure \ref{fig:ch4.tradeoff}. This plot displays the accuracy (vertical axis) of each feature subset (by size, horizontal axis) selected by the SVM-RFE algorithm. We calculate and display both the train accuracy and the test accuracy (which is that of the va\-lid\-ation set when cross-validation is used). We also show where the optimal is based on the linear scalarization method. Furthermore, we also show what the minimum accuracy is, based on the amount of classes, with a doted red horizontal line. And finally we show with an overlay scatter plot of small vertical lines what the actual feature selection subset sizes where and what accuracy they had during the execution of SVM-RFE (training accuracy). It is important not to confuse this plot with plots describing an iterative optimization process or model selection.
+For plotting we've used the \texttt{Mathplotlib} library. We have made a custom plot function that includes all relevant information for SVM-RFE. Having a standard plot design allows for easy comparison as shown in Figure \ref{fig:ch4.tradeoff}. This plot displays the accuracy (vertical axis) of each feature subset (by size, horizontal axis) based on some feature ranking. We display both the train accuracy and the test accuracy calculated in the validation phase. We also show where the optimal is based on the linear scalarization method. Furthermore, we also show what the minimum accuracy is, based on the amount of classes, with a doted red horizontal line. And finally, we show with an overlay scatter plot of small vertical blue lines, what the actual feature subsets sizes are and what accuracy they had during the execution of SVM-RFE (training accuracy). We can also deduce the step used and the amount of iterations from this information. It is important not to confuse this plot with plots describing an iterative optimization process or model selection.
 
 \subsection{The data}
 
@@ -111,7 +107,7 @@ We assume that, the bigger the step each iteration, the worse the performance of
 \subsubsection*{Our expectations for this extension are:}
 
 \begin{itemize}
-    \item \textbf{Improvement in time complexity:} Given that SVM complexity $O(dn^2)$ is lin\-ear\-ly dependent on the amount of dimensions $d$, we know that each iteration is faster than the one before it. By increasing the step in the first iterations we should drastically reduce the time it takes to complete, even if then we decide to reduce the step in later, less time-consuming, iterations.
+    \item \textbf{Improvement in time complexity:} Given that SVM complexity $O(mn^2)$ is lin\-ear\-ly dependent on the amount of dimensions $d$, we know that each iteration is faster than the one before it. By increasing the step in the first iterations we should drastically reduce the time it takes to complete, even if then we decide to reduce the step in later, less time-consuming, iterations.
     \item \textbf{Improvement in accuracy performance:} Using dynamic step, compared to a constant step $t > 1$, can also improve the accuracy. This is because the last iterations may be performed with a step $t \ge i \ge 1$.
 \end{itemize}
 
@@ -124,7 +120,7 @@ Note that by adjusting the percentage you can decide for which of these two obje
       \KwInput{$p$ \tcp*{p = percentage, $0 \le p \le 1$}}
       \KwOutput{$\vt{r}$}
       \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranking list} 
       \While{$|\vt{s}| > 0$}
         {
@@ -402,7 +398,7 @@ The reasoning for this last statement is that, although the algorithm only uses 
       \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = number of samples, $0 < k \le |X_0|$}}
       \KwOutput{$\vt{r}$}
       \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranked list}
       \While{$|\vt{s}| > 0$}
         {
@@ -647,9 +643,9 @@ This modification intends to find an approximation to the optimal feature subset
 
 We had some previous success with the \emph{dynamic step} extension. One problem with that extension, however, is that it functions better when the number of informative features is known. By default, \emph{dynamic step} reduces the step size the fewer features are left remaining. This generally improves performance since bigger steps (i.e. fewer iterations) are used in the more computationally expensive parts of the al\-go\-rithm and smaller steps are used on a less expensive region. 
 
-Because smaller steps also imply an improvement in accuracy, we would want to concentrate them on the most critical region of our feature subset space, that is, around the optimal feature subset size. We can easily modify our implementation of \emph{Dynamic Step} so that it is centered at this point by applying our percentage on the distance to that point instead of the amount of remaining features. This time, since this point may be in a region that is more computationally expensive, we may also want to specify a minimum step parameter. Equation \ref{eq:ch5.stopcond.dyns} combines these ideas. Where $p$ is the percentage, $m$ is the minimum step, $c$ is the optimal feature subset size and $i$ is the amount of remaining features.
+Because smaller steps also imply an improvement in accuracy, we would want to concentrate them on the most critical region of our feature subset space, that is, around the optimal feature subset size. We can easily modify our implementation of \emph{Dynamic Step} so that it is centered at this point by applying our percentage on the distance to that point instead of the amount of remaining features. This time, since this point may be in a region that is more computationally expensive, we may also want to specify a minimum step parameter. Equation \ref{eq:ch5.stopcond.dyns} combines these ideas. Where $p$ is the percentage, $min$ is the minimum step, $c$ is the optimal feature subset size and $i$ is the amount of remaining features.
 \begin{align}
-    t = \max(p|c-i|, m)
+    t = \max(p|c-i|, min)
     \label{eq:ch5.stopcond.dyns}
 \end{align}
 
@@ -693,7 +689,7 @@ Instead of scaling between two fix values we can get a better approximation by m
       \KwInput{$t, t_0$ \tcp*{$t$ = step, $t_0$ = threshold, $0 \le t_0$}}
       \KwOutput{$\vt{r}, \vt{q}$}
       \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranking list}
       $\vt{q} = []$ \tcp*{accuracy estimators}
       \While{$|\vt{s}| > 0$}
@@ -842,6 +838,18 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
     \label{fig:ch5.stopcond.art.tabletime}
 \end{table}
 
+\subsection{Conclusions}
+
+This is a summary of the pros and cons we've found for this extension:
+
+\begin{itemize}
+    \item It often works. Even when we only do one or two iterations the approximation is often quite close (<10\%) the true optimal feature subset size.
+    \item It doesn't always work. Even when we do use five iterations we may still get quite bad (>10\%) approximations for certain parameter configurations.
+    \item It's fast. One run takes roughly only 1/20 of the total time a normal SVM-RFE run would take, and completely skips validation.
+\end{itemize}
+
+In general, we recommend using it when the amount of informative features is not known. We can integrate it with the model selection to automatically find what the optimal feature subset size is and use the extensions that require such information.
+
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -866,7 +874,7 @@ Note that \texttt{sklearn} only supports OvO, and is therefore the option we wil
       \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = degree}}
       \KwOutput{$\vt{r}$}
       \KwData{$\chi_0,\vt{\psi}$}
-      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranking list}
       \While{$|\vt{s}| > 0$}
         {
@@ -1070,7 +1078,7 @@ To use this method within SVM-RFE we must first be able to compute the ranking c
     DJ(i) = (1/2)(\boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \boldsymbol{\alpha}^\T \vb{H}(-i) \boldsymbol{\alpha})
 \end{align*}
 
-Note that the \emph{hessian} matrix $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$ needs be computed each iteration (since the dimension of $\vb{x_i}$ and $\vb{x_j}$ will change), and also for each feature removed in each iteration. This is slow. Specifically, since we do have to do an extra loop within RFE for each feature, and require at least $O(dn^2)$ for calculating the Hessian, we know that the complexity will be of $O(d^3n^2)$. However, various optimizations exist, as discussed in the last parts of Section \ref{sec:ch4.rfe.criteria}. The optimizations we are going to implement are:
+Note that the \emph{hessian} matrix $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$ needs be computed each iteration (since the dimension of $\vb{x_i}$ and $\vb{x_j}$ will change), and also for each feature removed in each iteration. This is slow. Specifically, since we do have to do an extra loop within RFE for each feature, and require at least $O(mn^2)$ for calculating the Hessian, we know that the complexity will be of $O(m^3n^2)$. However, various optimizations exist, as discussed in the last parts of Section \ref{sec:ch4.rfe.criteria}. The optimizations we are going to implement are:
 
 \subsubsection*{Updating the hessian matrix only for the support vectors}
 
@@ -1096,7 +1104,7 @@ And for Gaussian kernels we are going to use the following property, for which w
     &= \ip{\vb{a} - \vb{b}, \vb{a} - \vb{b}} - (\vb{a}_i - \vb{b}_j )^2
 \end{align*}
 
-This optimization allows us to update the Hessian matrix where only one feature is removed in $O(n^2)$, therefore the overall complexity of SVM-RFE becomes $O(d^2n^2)$.
+This optimization allows us to update the Hessian matrix where only one feature is removed in $O(n^2)$, therefore the overall complexity of SVM-RFE becomes $O(m^2n^2)$.
 
 \subsection{Pseudocode formalization}
 
@@ -1105,7 +1113,7 @@ This optimization allows us to update the Hessian matrix where only one feature 
       \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = kernel function}}
       \KwOutput{$\vt{r}$}
       \KwData{$X_0,\vt{y}$}
-      $\vt{s} = [1,2, \dotsc, d]$ \tcp*{subset of surviving features}
+      $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranking list}
       \While{$|\vt{s}| > 0$}
         {

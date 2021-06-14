@@ -52,7 +52,7 @@ table,
 \usepackage[autostyle=true]{csquotes} % Required to generate language-dependent quotes in the bibliography
 \usepackage{eurosym}
 
-\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{amsmath,amsfonts,amssymb,amsthm}
 \usepackage[linesnumbered,ruled]{algorithm2e}
 \SetKwInput{KwInput}{Input}
 \SetKwInput{KwOutput}{Output} 
@@ -161,6 +161,29 @@ table,
 \newcommand{\R}{\mathbb{R}}
 \newcommand{\ip}[1]{\langle#1\rangle}
 \newcommand{\mrk}[1]{\cellcolor{gray!25}#1}
+\newtheorem{lemma}{Lemma}
+
+%----------------------------------------------------------------------------------------
+%	ABSTRACT PAGE
+%----------------------------------------------------------------------------------------
+
+\begin{abstract}
+	%\addchaptertocentry{\abstractname} % Add the abstract to the table of contents
+
+	\centering
+	\parbox{0.8\textwidth}{
+		\textbf{English:} In machine learning, feature selection algorithms such as SVM-RFE are used to find a subset of statistically relevant features. In this project, we propose multiple extensions of this algorithm, to try to improve its performance or computational cost. The extensions we've tried, include non-lineal kernels, internal sampling and dynamic step.
+	}\par
+	\vspace{0.4cm}
+	\parbox{0.8\textwidth}{
+		\textbf{Spanish:} En aprendizaje automatico, algoritmos como SVM-RFE son usados para encontrar subconjuntos de caracteristicas estadisticamente relevantes. En este proyecto proponemos multiples extensiones para este algoritmo, con el objectivo de encontrar mejoras en su acierto o su coste computacional. Las extensiones que hemos provado inlcuyen kernels no lineales, muesteo interno y paso dinamico.
+	}\par
+	\vspace{0.4cm}
+	\parbox{0.8\textwidth}{
+		\textbf{Catalan:} En apranentatge automatic, algoritmes com el SVM-RFE son utilitzats per trobar sunconjunts de carecteristiques estatisticament rellevants. En aquest projecte proponem multiples extensions per aquest algoritme amb l'objectiu de trobar millores en el seu encert o el seu cost computacional. Les extensions que hem probat inclouen kernels no lineals, mostreig intern i pas dinamic.
+	}
+
+\end{abstract}
 
 %----------------------------------------------------------------------------------------
 %	SYMBOLS
@@ -169,7 +192,7 @@ table,
 \begin{symbols}{lll} % Include a list of Symbols (a three column table)
 
 	$n$ & Number of observations & \\
-	$d$ & Number of dimensions & \\
+	$m$ & Number of dimensions & \\
 
 	\addlinespace
 
@@ -220,6 +243,7 @@ table,
 \include{chap/ch3_budget}
 \include{chap/ch4_background}
 \include{chap/ch5_experiments}
+\include{chap/ch6_conclusions}
 
 %----------------------------------------------------------------------------------------
 %	BIBLIOGRAPHY

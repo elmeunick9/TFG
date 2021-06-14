@@ -29,7 +29,7 @@ This project is research focused. Therefore, before starting the practical tasks
     \item \textbf{Research} previous work on the literature on extensions of the algorithm and create a short \textbf{report} with the findings.
     \item Write the algorithm formalization in pseudocode.
     \item Define the expected advantages or disadvantages of this method over the base SVM-RFE.
-    \item Compute the space and time complexities.
+    \item Compute the time complexity.
 \end{itemize}
 
 Once the initial research is done the algorithm must be codified and tested. This group is composed of the following tasks:
@@ -37,10 +37,10 @@ Once the initial research is done the algorithm must be codified and tested. Thi
 \begin{itemize}
     \item \textbf{Program the base SVM-RFE algorithm.} For this we will use a library for the SVM. For the RFE part, since we need to be able to extend the algorithm, we will program it from scratch.
     \item \textbf{Program the extensions of the SVM-RFE algorithm} based on the research done and the pseudocode.
-    \item \textbf{Test the new extensions with artificial data.} This requires creating models and testing their performance with artificial data sets.
-    \item \textbf{Obtain data sets with real data.} Multiple papers refer to publically available data-sets, we could use those and compare our results.
+    \item \textbf{Test the new extensions with artificial data.} This requires creating models and testing their performance with artificially generated data sets.
+    \item \textbf{Obtain data sets with real data.} We will use publically available data-sets, such a \emph{Madelon} or \emph{Digits}. We can then compare our results with those of other studies.
     \item \textbf{Test the new extensions with real data.} This requires creating models and testing their performance with real data sets.
-    \item \textbf{Analyze the results} obtained in the experiments and draw conclusions. A report will be made for reference during the final documentation.
+    \item \textbf{Analyze the results} obtained in the experiments and draw conclusions. A report will be made for reference during the final documentation phase.
 \end{itemize}
 
 Related to testing and analyzing the results, if we want to draw fair conclusions, comparing our results with the state of the art is important. However, the start of the art is bast and fluid, and making a fair comparison with all available research papers is a daunting task. Instead, we will use a common ground, in this case the NIPS 2003 feature selection challenge. The results of this challenge, as well as a general analysis of the algorithms used, will serve as a reference point. Thankfully an analysis of these results has already been done (\cite{guyon_result_2004}). This simplifies our problem, now we only need to compare our algorithms per\-for\-mance with those already pre\-sent\-ed in the challenge.

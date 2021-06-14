@@ -36,7 +36,7 @@ Feature selection methods may be classified by how they are constructed in three
     \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the trained model itself to make feature selection. Because they don't use the score, they can also skip testing the model.
 \end{itemize}
 
-In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination, it starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criteria to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criteria is to take the variable with the smallest weight in each iteration, where the wights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
+In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination. It starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criteria to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criteria is to take the variable with the smallest weight in each iteration, where the wights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
 
 %----------------------------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ The main objective of this project is to research extensions of the SVM-RFE algo
 These focus on improving the performance of the selection.
 
 \begin{itemize}
-    \item \textbf{Non-linear kernel:} New ranking criteria needs to be found for the kernel used.
+    \item \textbf{Non-linear kernel:} Use a more general ranking criterion and apply it to handle SVM with arbitrary kernels.
     \item \textbf{Multi-class criteria:} Find a ranking criterion that can handle multiple weight vectors in a useful way.
 \end{itemize}
 
@@ -67,15 +67,15 @@ These focus on improving the performance of the selection.
 Focus on reducing the computational cost.
 
 \begin{itemize}
-    \item \textbf{Sampling:} Use a different subset of the observations on each iteration.
-    \item \textbf{Dynamic Step:} Instead of using a constant value in each iteration, calculate it dynamically.
+    \item \textbf{Internal sampling:} Use a different subset of the observations on each iteration.
+    \item \textbf{Dynamic step:} Instead of using a constant value in each iteration, calculate it dynamically.
     \item \textbf{Stop condition:} Determine the amount of features that are relevant (SVM-RFE only provides a ranking) in an effective and inexpensive manner.
 \end{itemize}
 
 \subsubsection*{Combination of various extensions}
 
 \begin{itemize}
-    \item \textbf{Combo:} Mix Sampling, Dynamic Step and Non-linear Kernels into a single implementation.
+    \item \textbf{Combo:} Mix \emph{internal sampling}, \emph{dynamic step} and \emph{non-linear Kernels} into a single implementation.
 \end{itemize}
 
 \subsection{Objective break down}
@@ -91,7 +91,7 @@ To accomplish this objective, the project has been sub\-divided in two parts, ea
         \begin{itemize}
             \item Design the algorithm and write its formalization in pseudocode.
             \item Define the expected advantages or disadvantages of this extension over the base SVM-RFE.
-            \item Compute the space and time complexities.
+            \item Compute the time complexity.
         \end{itemize}
     }
 \end{itemize}
@@ -116,9 +116,9 @@ To accomplish this objective, the project has been sub\-divided in two parts, ea
 
 \subsection{Stakeholders}
 
-This project is intended to be of use for many involved parties. The most directly involved group, is the tutor and the researcher. Luis Antonio Belanche Muñoz is the tutor of this project. Robert Planas Jimenez would be the researcher. Feature selection algorithms is one of the areas of research of the tutor, and he has wanted to explore extensions to the SVM-RFE algorithm. Thus, he will lead and guide the researcher for the correct development of the project. The researcher is responsible for planning, developing and documenting the project, as well as experimenting, analyzing and drawing conclusions.
+This project is intended to be of use for many involved parties. The most directly involved group, is the tutor and the researcher. Luis Antonio Belanche Muñoz is the tutor of this project. Robert Planas Jimenez would be the researcher. Feature selection algorithms is one of the areas of research of the tutor, and he has wanted to explore extensions to the SVM-RFE algorithm. He will lead and guide the researcher for the correct development of the project. The researcher is responsible for planning, developing and documenting the project, as well as experimenting, analyzing and drawing conclusions.
 
-The other group of interested parties would be stakeholders that do not interact with the project directly but still benefit from it. In the first place we have researchers on the fields of bioinformatics and data mining, that use machine learning methods (specifically, SVM-RFE) for micro-array analysis, text analysis, or other of its popular applications. Indirectly companies that make use of their findings will also benefit, and finally the general population may also benefit from better diagnostics and more effective drugs. 
+The other group of interested parties would be stakeholders that do not interact with the project directly but still benefit from it. In the first place we have researchers on the fields of bioinformatics and data mining, that use machine learning methods (specifically, SVM-RFE) for micro-array analysis, text analysis, or other of its popular applications. Indirectly, companies that make use of any findings will also benefit. Finally, the general population may also benefit from better diagnostics and more effective drugs. 
 
 \label{sec:risk}
 \subsection{Potential obstacles and risks}
@@ -128,7 +128,7 @@ Some obstacles and risks identified that could potentially prevent the correct e
 \begin{itemize}
     \item \textbf{Deadline of the project:} There is a deadline for the delivery of the project. This being a research project however, is considerably hard to estimate how much time tasks will take, or even decide whether a task has been finished or not.
     \item \textbf{Bugs on some libraries:} This is considered of low risk, but is still a possibility that errors on the software package used extend to code, making it work in\-correctly.
-    \item \textbf{Insufficient computational power:} Machine learning algorithms in general can be very resource intensive. It could be the case that our hardware can not handle some datasets. 
+    \item \textbf{Insufficient computational power:} Machine learning algorithms, in general, can be very resource intensive. It could be the case that our hardware can not handle some datasets. 
     \item \textbf{Hardware related issues:} A hard drive failure could occur that would end in lost data, or a failure in a router could disconnect us from the internet.
     \item \textbf{Health related issues:} In addition to health issues that can occur at any time without prior notice, we're in the middle of a pandemic.
 \end{itemize}
@@ -138,9 +138,9 @@ Some obstacles and risks identified that could potentially prevent the correct e
 
 \subsection{Framework}
 
-The methodology that I will use for the project is a combination of waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In waterfall tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will be managed like this, one phase will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by a different methodology. That will be Kanban.
+The methodology that I will use for the project is a combination of waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In waterfall tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will be managed like this, one phase will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by the Kanban methodology.
 
-Kanban is much more flexible than waterfall, its principal objective is to manage tasks in a general way, by assigning different status to them. Kanban stands out by its simplicity, and we continue to endorse that simplicity by managing the visual representation of the cards in a simple plain text formatting. Each card will be in a row, with the first column defining its name and the other its status. The statuses I've considered are:
+Kanban is much more flexible than waterfall. Its principal objective is to manage tasks in a general way, by assigning different statuses to them. Kanban stands out by its simplicity, and will continue to endorse that simplicity by managing the visual representation of the cards in a simple, plain, text formatting. Each card will be in a row, with the first column defining its name and the other its status. The statuses we've considered are:
 
 \begin{itemize}
     \item \textbf{To do:} A basic idea of the task is present.
@@ -149,8 +149,10 @@ Kanban is much more flexible than waterfall, its principal objective is to manag
     \item \textbf{Completed:} The task is finished.
 \end{itemize}
 
-An uppercase letter \texttt{"X"} will mark the current state of any given card. If more granular information is required, other marks may be used instead. For example, to indicate that the task is paused a \texttt{"P"} would be used. To indicate the progress within some stage a percentage would be used. This table will be kept within the \texttt{readme.md} file of the \texttt{GitHub} repository of the project, for easy monitoring.
+An uppercase letter \texttt{"X"} will mark the current state of any given card. If more granular information is required, other marks may be used instead. For example, to indicate that the task is paused a \texttt{"P"} would be used. To indicate the progress within some stage a percentage would be used. For easy monitoring, this table will be kept in the \texttt{readme.md} file of our \texttt{GitHub} repository.
 
 \subsection{Validation}
 
-We will use a GitHub repository as a tool for version control, which will allows us to share code easily and the recover from data lose. The repository will contain both the code for the different experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be tested with multiple standard data sets. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each ex\-per\-i\-ment will be done 6 times and the average of the results will be the final result. Lastly, face-to-face meetings will be scheduled once every two weeks with the tutor of the project. In these meetings it will be discussed the project status and the tasks to do during the following two weeks, before the next meeting. In case of problems in the project, extraordinary meetings can be arranged.
+We will use a GitHub repository as a tool for version control, which will allow us to share code easily and recover from data lose. The repository will contain both the code for the experiments, each in one subfolder, and code for the documentation. In order to verify the implemented code, it will be tested with multiple data sets. In the practical part, hyper-parameters will be selected using some model validation technique, such as the cross-validation. Each ex\-per\-i\-ment will be done at least 6 times and the average of the results will be the final result. 
+
+Face-to-face meetings with the tutor of the project will be scheduled once every two weeks. In these meetings the current project status will be discussed, and the tasks to do during the following two weeks will be defined. In case of unexpected problems, extraordinary meetings can be arranged.
