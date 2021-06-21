@@ -75,40 +75,17 @@ This extension is based on the constant step variant of SVM-RFE (Algorithm \ref{
 \subsection{Description and reasoning}
 \label{sec:dynamicStep.desc}
 
-The percentage is a hyper-parameter. It is used within every iteration to eliminate a number of the least ranked features. A constant step has already been used in pract\-ice, but it is expected that this method will be significantly faster without effecting the accuracy performance, or even improving it.
+The percentage is a hyper-parameter. It is used within every iteration to eliminate a number $t$ of the remaining features. A constant step has already been used in pract\-ice, but it is expected that this method will be significantly faster without effecting the accuracy performance, or even improving it.
 
-Other similar modifications are also found in the literature, including using the square root of the remaining features \texttt{SQRT-RFE}, an entropy based function \texttt{E-RFE}, or \texttt{RFE-Annealing} which sets the step at $|\vt{s}| \frac{1}{i+1}$, thus, changing the percentage each iteration (\cite{ding_improving_2006}).
+Other similar modifications are also present in the literature, including using the square root of the remaining features \texttt{SQRT-RFE}, an entropy based function \texttt{E-RFE}, or \texttt{RFE-Annealing} which sets the step at $|\vt{s}| \frac{1}{i+1}$, thus, changing the percentage each iteration (\cite{ding_improving_2006}).
 
-%\iffalse
-That is, the amount of features eliminated "$r$" at $j$-th iteration is the summation of the amount of features eliminated each iteration, i.e. $np^i$:
-
-\begin{equation}\label{eq:dynamicStep1}
-    r = \sum_{i = 1}^{j}{(np^i)} 
-\end{equation}
-
-It may be more interesting to see complexity as in the amount of iterations re\-quired to eliminate $r$ features. Assuming $r$ and $p$ to be constants, it can be derived from equation \ref{eq:dynamicStep1} as follows:
-
-\begin{align*}
-    r &= n \sum_{i = 1}^{j}{p^i} = n \sum_{i = 0}^{j-1}{(p^i)} - n + np^j \\
-    \frac{r}{n} &= \frac{1-p^j}{1-p} - 1 + p^j \\
-    \frac{r}{n} &= \frac{(1-p^j) - (1-p) + (1-p)p^j}{1-p}\\
-    \frac{(1-p)r}{n} &= (1-p^j) - (1-p) + (p^j-p^{j+1})\\
-    \frac{(1-p)r}{n} &= 1 -p^j -1 + p + p^j - p^{j+1}\\
-    \frac{(1-p)r}{n} &= p - p^{j+1}\\
-    - \frac{(1-p)r}{n} + p &= p^{j+1}\\
-    \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= \log_{p} (p^{j+1})\\
-    \log_{p} \left( - \frac{(1-p)r - np}{n} \right) &= j + 1\\
-    \log_{1/p} \left( - \frac{n}{(1-p)r} + 1/p \right) &= j + 1 \implies O(\log_{1/p} n)
-\end{align*}\\
-%\fi
-
-We assume that, the bigger the step each iteration, the worse the performance of the ranking. This is consistent with what we've seen in figure \ref{fig:ch4.dynamicStep.vanilla.comp}. However, since we're eliminating the worst variables first, eliminating more of them at once shouldn't affect performance because it is likely they would've been eliminated in the next iterations anyway. The fewer the iterations remaining, the riskier it becomes to eliminate multiple variables at once, and thus a smaller step is beneficial.
+We assume that, the smaller the step each iteration, the better the performance of the ranking. This is consistent with what we've seen in figure \ref{fig:ch4.dynamicStep.vanilla.comp}. Since we're eliminating the worst variables first, eliminating more of them at once shouldn't affect performance because it is likely they would've been eliminated in the next iterations anyway. The fewer the iterations remaining, the riskier it becomes to eliminate multiple variables at once, and thus a smaller step is beneficial.
 
 \subsubsection*{Our expectations for this extension are:}
 
 \begin{itemize}
-    \item \textbf{Improvement in time complexity:} Given that SVM complexity $O(mn^2)$ is lin\-ear\-ly dependent on the amount of dimensions $d$, we know that each iteration is faster than the one before it. By increasing the step in the first iterations we should drastically reduce the time it takes to complete, even if then we decide to reduce the step in later, less time-consuming, iterations.
-    \item \textbf{Improvement in accuracy performance:} Using dynamic step, compared to a constant step $t > 1$, can also improve the accuracy. This is because the last iterations may be performed with a step $t \ge i \ge 1$.
+    \item \textbf{Improvement in time complexity:} Given that SVM complexity $O(mn^2)$ is lin\-ear\-ly dependent on the amount of dimensions $m$, we know that each iteration is faster than the one before it. By increasing the step in the first iterations we should drastically reduce the time it takes to complete. This is true even if we decide to decrease the step in later iterations. This is because those iterations will use fewer dimensions and therefore be less time-consuming.
+    \item \textbf{Improvement in accuracy performance:} Using dynamic step, compared to a constant step $t > 1$, can also improve the accuracy. This is because the last iterations will be performed with a step $k$ such that $t > k \ge 1$.
 \end{itemize}
 
 Note that by adjusting the percentage you can decide for which of these two objectives you want to optimize, it may also be possible to find a middle case in which both the accuracy and the time are improved.
@@ -154,7 +131,7 @@ Note that by adjusting the percentage you can decide for which of these two obje
     \caption{SVM-RFE with DynamicStep}
 \end{algorithm}
 \VS
-Note that since we do a non-lineal skip focused on the iterations that take more time we can achieve a reduced complexity of $O(\log(d)dn^2)$. This can be illustrated in Figure \ref{fig:ch5.dstep.comparetime}, where we show the relationship between the amount of remaining features and iterations for the different step methods. 
+By using this method we can achieve a reduced complexity. This can be il\-lus\-trat\-ed in Figure \ref{fig:ch5.dstep.comparetime}, where we show the relationship between the amount of remaining features and iterations for the different step methods. 
 
 \begin{figure}[h]
     \centering
@@ -163,8 +140,27 @@ Note that since we do a non-lineal skip focused on the iterations that take more
     \label{fig:ch5.dstep.comparetime}
 \end{figure}
 
-The relative time cost of each method can be estimated as the area under the curve. Note that in this plot the amount of iterations is fixed, however in practice it may make more sense that dynamic step methods perform much more late iterations than constant step.
+The relative time cost of each method can be estimated as the area under the curve. Note that in this plot the amount of iterations is fixed, however in practice it may make more sense that dynamic step methods perform much more late iterations than a constant step.
 
+We can calculate the cost $C$ with the following expression, where $T = O(mn^2)$, $j \in \mathbb{N}$ is the total number of iterations and $p \in \mathbb{R}$ with $0 < p < 1$ is the percentage.
+\begin{align*}
+   C = T + (1 - p)T + (1 - p)^2T + (1 - p)^3T + \dots + (1 - p)^{j - 1} T
+\end{align*}
+
+Note that this is the partial sum of a convergent series\footnote{A sum of an infinite sequence of numbers such that it tends to a limit that is also a number.}. Indeed, we can rewrite this expression in the form:
+\begin{align*}
+    S_j = \sum_{i = 1}^{j} (1 - p)^{i - 1} T
+\end{align*}
+
+This is the partial sum of a geometric series. A geometric series\footnote{A series such that there is a constant ratio between successive terms.} general form is $\sum_{k=0}^{\infty} ar^k$. For example, the series $(a\frac{1}{1} + a\frac{1}{2} + ...)$ is an example of geometric series, and is also the cost of our method when $a = T$ and $p = 1 - r = 0.5$.
+
+It is a well known property of geometric series that when $|r| < 1$, as is the case, the series converge to $a / (1 - r)$. That is, the cost of dynamic step for some constant $p$ is:
+\begin{align*}
+    O(\frac{1}{p} T) = O(T) = O(mn^2)
+\end{align*}
+
+This is an excellent result, and puts the complexity of SVM-RFE with dynamic step at the same level as the complexity of SVM itself. A simpler alternative with the same complexity, albeit without the properties that make dynamic step good, is to simply use a constant step calculated as a percentage of the features.
+ 
 \subsection{Results}
 
 \subsubsection*{Analysis with artificially generated data}
@@ -285,7 +281,7 @@ In the following tables we detail the results of the model selection. The cell c
     \caption{Execution time (min:sec.msec) of SVM-RFE with dynamic step.}
 \end{table}
 
-Note that the three best models for dynamic step are all better than the best model using constant step. This results however have to be taken with a grain of salt, given that variance is present and the difference is only marginal.
+Note that the three best models for dynamic step are all better than the best model using constant step (cost). It is clear that dynamic step tends to select smaller feature subsets at the cost of accuracy. Given our scalarization trade-off this is re\-ward\-ed by lower costs.
 
 A more clear-cut improvement can be seen on the computational cost, which had a speedup of x2.7 even when the model used by dynamic step had a greater value of $C$. (Equation \ref{eq:ch5.dstep.speedup1}).
 \label{eq:ch5.dstep.speedup1}
@@ -367,11 +363,11 @@ This is a summary of the pros and cons that we've found for this extension:
     \item Using some form of dynamic step may improve the accuracy in certain sce\-nar\-ios, specially in situations where there is a benefit from having a small step.
     \item Using a percentage doesn't introduce a new hyper-parameter since it replaces the existing step constant.
     \item Dynamic step is generally much faster than a constant step for the same levels of accuracy, specially when many features are used and the step is small.
-    \item With independence of the accuracy improvement, dynamic step can still be used to speed up considerably the validation phase.
-    \item The percentage and final point are better adjusted when the shape of the data is known.
+    \item Without affecting accuracy, dynamic step can be used to speed up considerably the validation phase when the optimal feature subset size is small.
+    \item The percentage is better adjusted when the shape of the data is known.
 \end{itemize}
 
-In general, we recommend using dynamic step whenever possible, after the initial exploration of the data and if possible after the execution with the associated filter method.
+In general, we recommend using dynamic step whenever possible.
 
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------
@@ -389,9 +385,11 @@ Sampling may also be done, a second time, when preparing the dataset. Clas\-si\-
 
 Because SVM computational cost is directly related to the amount of examples (i.e. samples), using only a subset of observations on each iteration can reduce this cost. In doing that, it is expected that performance will decrease, but we hope that in choosing a different subset each iteration, the performance will increase to levels similar to those we would see while using all data.
 
-The reasoning for this last statement is that, although the algorithm only uses a subset of the data each iteration, by the time the algorithm finishes all data should've been used. Also, it is known that sampling improves generalization, thus we hope that this approx will reduce the gap between test and train error compared to the version with all data.
+The reasoning for this last statement is that, although the algorithm only uses a subset of the data each iteration, by the time the algorithm finishes, all data should've been used. Also, it is known that sampling improves generalization. Hence, we hope that this approach will reduce the gap between test and train error compared to the version with all data.
 
 \subsection{Pseudocode formalization}
+
+This extension only makes a constant improvement each iteration. This means that the complexity of SVM-RFE will be unaffected. A speed-up related to the sampling percentage is expected. The maximum speed-up expected is of $(1/p)^2$, but various factors, including the time required to do the sampling itself and the percentage of support vectors, may reduce this number.
 
 \begin{algorithm}[H]
     \DontPrintSemicolon
@@ -590,7 +588,7 @@ We've recycled the dataset generated for the dynamic step extension (Section \re
         \textbf{0.100000} &    37 & 88.30\% & 0.118 &    55 & 86.70\% & 0.143 &    43 & 85.90\% & 0.141\\
         \bottomrule
         \end{tabular}
-    \caption{Grid search of SVM-RFE with sampling.}
+    \caption{Grid search of SVM-RFE with internal sampling.}
 \end{table}
 
 \begin{table}[H]
@@ -608,7 +606,7 @@ We've recycled the dataset generated for the dynamic step extension (Section \re
         \textbf{0.100000} & 0:00.499 & 0:00.262 & 0:00.170\\
         \bottomrule
         \end{tabular}
-    \caption{Execution time of SVM-RFE with sampling.}
+    \caption{Execution time of SVM-RFE with internal sampling.}
 \end{table}
 
 We see similar results in this experiment, reaching both better performance and time even compared to the version without sampling (percentage of 100\%). We note that the best regularization parameter $C$ is kept the same when using preprocessed sampling, yet it is shifted when using sampling within RFE.
@@ -649,7 +647,7 @@ Because smaller steps also imply an improvement in accuracy, we would want to co
     \label{eq:ch5.stopcond.dyns}
 \end{align}
 
-Figure \ref{fig:ch5.stopcond.lines} adds the new method to the dynamic step formulations described in the \emph{Dynamic Step} extension (Figure \ref{fig:ch5.dstep.comparetime}). Note that for the left plot the slope of the curve corresponds with the step used in that iteration. The area under the curve is an approximation of the computational cost. For the left plot, the areas below the constant step line correspond to regions where, due to a smaller step, an increase in accuracy for that feature subset is possible. This, however, will only be useful in practice if that region is within the optimal feature subset size (red doted line).
+Figure \ref{fig:ch5.stopcond.lines} adds the new method to the dynamic step formulations described in the \emph{Dynamic Step} extension (Figure \ref{fig:ch5.dstep.comparetime}). Note that for the left plot the slope of the curve corresponds with the step used in that iteration. The area under the curve is an approximation of the computational cost. For the right plot, the areas below the constant step line correspond to regions where, due to a smaller step, an increase in accuracy for that feature subset is possible. This, however, will only be useful in practice if that region is within the optimal feature subset size (red doted line).
 
 \begin{figure}[h]
     \centering
@@ -792,7 +790,7 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
         \bottomrule
     \end{tabular}
     }
-    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \caption{Optimal feature subset size extraction. \\(optimal:estimation:difference). Absolute values.}
     \label{fig:ch5.stopcond.table}
 \end{table}
 
@@ -814,7 +812,7 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
         \bottomrule
     \end{tabular}
     }
-    \caption{Grid search of SVM-RFE with multi. The cost includes standard error.}
+    \caption{Optimal feature subset size extraction. \\(optimal:estimation:difference). Percentage over number of features.}
     \label{fig:ch5.stopcond.table2}
 \end{table}
 
@@ -834,7 +832,7 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
         \textbf{0.10000} & 0:01.068 & 0:01.173 & 0:02.380 &     0:16.667 & 0:20.553 & 0:21.317\\
         \bottomrule
         \end{tabular}
-    \caption{Execution time of SVM-RFE with non-linear kernels.}
+    \caption{Optimal feature subset size extraction.\\Extraction time vs full SVM-RFE execution.}
     \label{fig:ch5.stopcond.art.tabletime}
 \end{table}
 
@@ -843,7 +841,7 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
 This is a summary of the pros and cons we've found for this extension:
 
 \begin{itemize}
-    \item It often works. Even when we only do one or two iterations the approximation is often quite close (<10\%) the true optimal feature subset size.
+    \item It often works. Even when we only do one or two iterations the approximation is often quite close (<10\%) to the true optimal feature subset size.
     \item It doesn't always work. Even when we do use five iterations we may still get quite bad (>10\%) approximations for certain parameter configurations.
     \item It's fast. One run takes roughly only 1/20 of the total time a normal SVM-RFE run would take, and completely skips validation.
 \end{itemize}

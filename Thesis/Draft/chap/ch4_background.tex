@@ -5,7 +5,7 @@ In this section we're going to review the concepts required to understand the SV
 
 \section{Machine learning}
 
-Machine learning is a subfield in the broader discipline that is artificial intelligence, with a particular take in statistics. These algorithms, also called learning machines or just machines, use data to learn patterns and make predictions. The data is collected in a separated unrelated process, and structured in the form of a \emph{dataset} (a collection of data). Once the dataset is further cleaned and prepared, the learning machine finally consumes it in a process called \emph{training}. After this process the machine pro\-duces a \emph{model}, which is a function that can be used to make predictions on new data.
+Machine learning is a subfield in the broader discipline that is artificial intelligence, with a particular take in statistics. These algorithms, also called learning machines or just machines, use data to learn patterns and make predictions. Data is collected in a separated unrelated process, and structured in the form of a \emph{dataset} (a collection of data). Once the dataset is further cleaned and prepared, the learning machine finally consumes it in a process called \emph{training}. After this process the machine pro\-duces a \emph{model}, which is a function that can be used to make predictions on new data.
 
 Two canonical problems in machine learning are regression and classification problems.
 
@@ -15,7 +15,7 @@ A dataset is simply a collection of data. In the context of machine learning thi
 
 Most datasets come already in tabular form. Some of the most notable ex\-cep\-tions are datasets involving images. In this case computer vision methods are often used to extract numeric data representing characteristics of the image. Sometimes a more direct transformation can also be made, for example making each feature be the intensity level of a single pixel in the image. This of course produces a high number of features, most of which are redundant or irrelevant (e.g. features representing pixels in the background). 
 
-In a dataset represented as a table, columns describe different \emph{features}, \emph{properties} or \emph{attributes} of some group of objects and rows represent \emph{instances} or \emph{examples} of that group. For example, if objects were vehicles then features could include the brand, power, weight, max\-imum speed, and other such characteristics of various vehicles, each of which would be in a row. Different names are used in different contexts. One of the most typical naming conventions comes from the statistics domain which refers to columns as \emph{variables} and rows as \emph{observations}. Sometimes different nomenclature is used to differentiate features in different stages of the cleaning and preparation process, but in this thesis we use them all instinctively.
+In a dataset represented as a table, columns describe different \emph{features}, \emph{properties} or \emph{attributes} of some group of objects and rows represent \emph{instances} or \emph{examples} of that group. For example, if objects were vehicles then features could include the brand, power, weight, max\-imum speed, and other such characteristics of various vehicles, each of which would be in a row. Different names are used in different contexts. One of the most typical naming conventions comes from the statistics domain which refers to columns as \emph{variables} and rows as \emph{observations}. Sometimes different nomenclature is used to differentiate features in different stages of the cleaning and preparation process, but in this thesis we use them all indistinctly.
 
 \begin{table}[h]
     \makebox[\textwidth][c]{
@@ -115,17 +115,26 @@ Where $\vb{w}$ is called the \emph{weight vector} and $w_0$ the \emph{bias}. We 
 
 A point will be a solution of one of these inequations depending on whether it is in the subspace, i.e. discriminant region, facing the direction of the normal or the opposite.
 
-A linear binary classification learning machine is thus an algorithm that given some dataset finds appropriate values for the parameters $\vb{w}$ and $w_0$ of the hyper\-plane in order to produce a discriminant function $y : \mathbb{R}^n \rightarrow \mathbb{R}$ such as:
+A linear binary classification learning machine is thus an algorithm that given some dataset finds appropriate values for the parameters $\vb{w}$ and $w_0$ of the hyper\-plane in order to produce a discriminant function $g : \mathbb{R}^n \rightarrow \mathbb{R}$ such as:
 \begin{align}
-    y(\vb{x}) = \vb{w}^{\T}\vb{x} + w_0
+    g(\vb{x}) = \vb{w}^{\T}\vb{x} + w_0
+\end{align}
+
+A two-class classifier $y : \mathbb{R}^n \rightarrow C$ can then be constructed from the discriminant function $g$ as:
+\begin{align}
+    y(\vb{x}) = 
+    \begin{cases}
+        C_0,  & \text{if } g(\vb{x})\geq 0\\
+        C_1,  & \text{otherwise}
+    \end{cases}
 \end{align}
 
 \subsection{Performance}
 \label{sec:ch4.performance}
 
-Usually models produced by a learning machine do not always make correct pre\-dict\-ions, instead we consider them good enough if they can classify new data correctly most of the time. In order to quantize how good of a predictor some model is we can use various performance metrics.
+Usually models produced by a learning machine do not always make correct pre\-dict\-ions, instead we consider them good enough if they can classify new data correctly most of the time. In order to quantify how good of a predictor some model is we can use various performance metrics.
 
-The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions versus the total number of predictions made. The inverse to the accuracy ($1.0 - accuracy$) is defined as the \emph{error}. Note that the classification accuracy for a binary problem will always be some percentage above 50\%. This is because a classifier performing consistently worse, can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
+The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions over the total number of predictions made. The inverse to the accuracy ($1.0 - accuracy$) is defined as the \emph{error}. Note that the classification accuracy for a binary problem will always be some percentage above 50\%. This is because a classifier performing consistently worse can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
 
 In some problems a distinction is made between misclassifications depending on which class is misclassified. An example of this is how misclassifying a patient with cancer with a healthy diagnosis is worse than misclassifying a healthy patient with a cancer diagnosis, the consequence of one is potentially death due to lack of treatment while the other is simply more investigation. For these problems a quadratic amount of cases appears. For the binary classification the standard nomenclature is to name the classes \emph{positive} and \emph{negative} and then prefix them with \emph{true} or \emph{false} depending on whether the prediction was correct or not. In this way a matrix called \emph{confusion matrix} is created, with the diagonal containing all the correct predictions.
 
@@ -154,6 +163,42 @@ Selecting the complexity of an algorithm can be done with the use of some extra 
 Machine learning algorithms work better the more observations they are trained with, however it is not often the case that we have an unlimited amount of them. In analyzing the performance of a leaning machine, or doing model selection, it may be useful to repeat the experiments multiple times with different data of the same distribution, i.e. from the same dataset. This provides second order statistics, such as the mean or the covariance, on the resulting scores, which may prove very useful to get a better idea of what is going on. This however implies further slicing the dataset in as many slices as experiments one wants to do. After so much slicing, the remaining training subsets would often contain very few observations, thus reducing the performance of the models and nullifying the advantages of having a probability distribution on the scores. 
 
 A method called \emph{cross-validation} can be used to make mul\-ti\-ple experiments with\-out increasing the amount of data. The method first makes $K$ partitions called \emph{folds}. For each fold, one experiment is made such that the fold is used as the validation set and the remaining folds become the training set. This allows a portion $(K-1)/K$ of the observations to be used for training in each run and allows assessing performance using the whole dataset. In the particular case where $K = N$, useful for when the amount of observations is really low, we name this method \emph{leave-one-out} cross-validation. It is also possible to shuffle the data, which allows even more re-utilization. Although this method is computationally expensive (since it requires running the whole experiment $K$ times), it has the advantage of being trivial to parallelize, and thus it can run at increased speeds in computers with a multi-core CPU architecture. 
+
+\subsection{Statistics}
+\label{sec:ch4.statistics}
+
+In this section we refresh some basic concepts of statistics that will be used across this project. In this project we'll be using the \emph{mean} as our default average measurement. The mean, which for our case\footnote{Assuming finite and independent observations.} is the same as the \emph{expectation}. Given $n = |X|$, the mean is defined as:
+
+\subsubsection*{Arithmetic mean / Expectation }
+\begin{align*}
+    \mu = E[X] = \frac{1}{n} \sum_{i = 1}^{n} x_i
+\end{align*}
+
+We may now define other measurements such as the \emph{variance}, \emph{standard error} and \emph{range}.
+
+\subsubsection*{Variance}
+\begin{align*}
+    Var(X) = E[(X - \mu)^2] = \sigma^2
+\end{align*}
+
+Where $\sigma$ is defined as the \emph{standard deviation} and calculated as the square root of the variance. This is a measure of how spread out from the mean is our data.
+
+\subsubsection*{Standard error}
+\begin{align*}
+    SE(X) = \frac{\sigma}{\sqrt{n}}
+\end{align*}
+
+\subsubsection*{Range}
+\begin{align*}
+    \max(X) - \min(X)
+\end{align*}
+
+Although this is the statistical definition of \emph{range}, we may use this term in the more colloquial sense.
+
+\subsubsection*{Coefficient of variation}
+\begin{align*}
+    c_v = \frac{\mu}{\sigma}
+\end{align*}
 
 \section{Support Vector Machines}
 
@@ -225,7 +270,7 @@ From this equation we may find the values of the hyperplanes that border the mar
     y_i (\vb{w}^\T \vb{x_i} + b) -1 = 0
 \end{align}
 
-Although now we know the equation for the gutters (analogy for the margin being a street), what we're really interested about is in the distance between them. We can calculate that distance as the diff\-erence vector form any two points in the gutters projected using the unit vector of $\vt{w}$:
+Although now we know the equation for the gutters (analogy for the margin being a street), what we're really interested in is the distance between them. Form any two points $\vt{x}_{(+)}$ and $\vt{x}_{(-)}$, one in each gutter, we can draw the vector of their difference $(\vt{x}_{(+)} - \vt{x}_{(-)})$. The length of this vector projected over the unit vector of $\vt{w}$ will be the length of the margin\footnote{Note that the length of the projection of $\vt{a}$ over $\vt{b}$ is the dot product $\vt{a} \cdot \vt{b}$ if $\vt{b}$ is a unit vector.}:
 \begin{align*}
     (\vt{x}_{(+)} - \vt{x}_{(-)}) \cdot \frac{\vt{w}}{||\vt{w}||}
 \end{align*}
@@ -535,9 +580,9 @@ Note that a feature that is correlated to some class is by itself a class predic
     D(\vt{x}) = \vt{w} \cdot (\vt{x} - \mu) 
 \end{align*}
 
-The opposite is also true, given a wight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
+The opposite is also true, given a weight vector, e.g. one produced by an SVM, the individual coordinates of the vector can be interpreted as individual correlation coefficients. The inputs that are weighted by the largest value influence most the classification decision. Therefore, if the classifier performs well, those inputs with the largest weights correspond to the most informative features.
 
-An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the wight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest absolute weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest absolute weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the wight vector produced by an SVM.
+An alternative geometric interpretation, which leads to the same result, can also be made. By definition, the weight vector produced by a linear SVM corresponds to the normal vector of the decision boundary (a hyperplane). Setting one of the coordinates of such vector $\vt{w_i}$ to $0$ will change its direction and thus produce a rotation on the hyperplane. This rotation will modify the decision regions, thus, points located in the space where the region changes (the intersection space) will be classified incorrectly (assuming no regularization). If we want to reduce the classification error a good idea is to reduce the space in the intersection, which is equivalent to reducing the amount of rotation on the hyperplane or the change in direction of the normal vector. Coordinates with a value close to $0$, when the value is set to $0$, will produce small changes in direction, whilst coordinates where the difference $|0 - w_i|$ is bigger will produce bigger changes. I.e, coordinates with the largest absolute weights correspond to the most informative features (when they are removed more error is produced) and coordinates with the lowest absolute weight are the less informative. As such, we can make a ranking criterion by simply taking the absolute value $|w_i|$, or the square $(w_i)^2$, of the coordinates of the weight vector produced by an SVM.
 
 One problem of this interpretation is that it only works when the decision bound\-ary is lineal. However, it gives us a hint on how to make a generalization for non-linear decision boundaries: We can use the change in objective function (or cost function) when a feature is removed as a ranking criterion. Let $J$ be the SVM cost function $J = (1/2) \boldsymbol{\alpha}^\T \vb{H} \boldsymbol{\alpha} - \alpha^\T \vb{1}$. First, we train the machine and compute the $\boldsymbol{\alpha}$ parameters. Then, to compute the change in cost function $DJ(i)$ caused by removing the feature $i$, we leave the $\boldsymbol{\alpha}$ unchanged (for performance reasons) and recompute the matrix $\vb{H}$, yielding $\vb{H}(-i)$ where the notation $(-i)$ means that the component $i$ has been removed. The resulting ranking coefficient is:
 \begin{align*}
@@ -688,3 +733,11 @@ Calculating all feature subset costs allows us to find and plot the optimal feat
     \caption{Different optimums caused by changing the trade-off for the linear scalarization function, projected as a red line.}
     \label{fig:ch4.tradeoff}
 \end{figure}
+
+\subsubsection*{Importance of scaling preprocessing}
+
+There is one preprocessing step that is important to perform for SVM-RFE. We need to normalize the features of the dataset. This is because feature importances are directly related to the range of the observations of a given feature. That is, if the data on a given dimension has a very big range comparative to the rest, it will stretch all the feature space in that direction. This means that the individual feature importances will all have an individual scale, making comparisons between them (and thus sorting) invalid.
+
+We could determine what is the scale of a feature importance beforehand and then weight each feature importance with something like linear scalarization. An\-oth\-er method is to simply normalize the data as a preprocessing step. We've nor\-mal\-ized the data by component wise scaling to unit variance. 
+
+

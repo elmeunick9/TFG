@@ -2,11 +2,9 @@
 
 \chapter{Conclusions} % Main chapter title
 
-This chapter is a general review on the problems, solutions, and achievements related to the development of this project. 
-
 \section{Problems encountered during development}
 
-\subsection{Changes to the planning}
+\subsection*{Changes to the planning}
 
 Although the writing of the theory section of this thesis was planned for the final phase, it has been switched to the first phase together with research. This has was needed because, in order to have a clear understanding of the ongoing research, it was useful to write it down. Having a written version of the research helps clarify ideas and have an immediate source of truth for the problems encountered while designing the experiments.
 
@@ -19,7 +17,7 @@ Some delays also occurred due to unforeseen circumstances. These forced some mee
     \item 1 week delay caused by ransomware infection on a managed (family business) server. 
 \end{itemize}
 
-\subsection{Cancelled extensions}
+\subsection*{Cancelled extensions}
 
 \subsubsection*{Avoid CV}
 Our definition consisted in using other classifier algorithms, such as LDA (Linear Discriminant Analysis) or Logistic Regression. These however fall too much outside the scope of this project. If they were to be introduced, the theory for both would also need to be written. The theory about the specific characteristics that may make them more suitable, or not, for the RFE procedure would need to be researched as well.
@@ -46,7 +44,7 @@ Initially this extension was planed as a standalone method to reduce the cost in
 
 We reformulated the experiment as method whose objective was merely to find an approximation to of the optional feature subset size, and then use that in\-for\-ma\-tion to improve on the dynamic step extension.
 
-\subsection{Non-linear Kernel}
+\subsection*{Non-linear Kernel}
 
 This has clearly become the bulk of the project as it required the most effort for both the research and the implementation. Various problems where found during the implementation phase:
 
@@ -66,8 +64,6 @@ Applying the optimizations we managed to get a speed increase by a factor of 3. 
 
 \section{Closing thoughts}
 
-We believe to have found some useful techniques to improve the computational cost of SVM-RFE, as shown in the \emph{Combo} extension. Each of these techniques, however, has their own limits. It remains to be seen how useful these techniques would be in practice as an off-the-shelf method.
+We believe to have found some useful techniques to improve the computational cost of SVM-RFE, as shown in the \emph{Combo} extension. Each of these techniques, however, has their own limits. It remains to be seen how useful these techniques would be in practice as an off-the-shelf method. For this, more extensive testing need to be done.
 
-Other extensions, such as \emph{Multi-class}, didn't have much success compared with already well known solutions, and it is doubtful that any application for them may be found.
-
-We've implemented SVM-RFE for non-linear kernels, and some optimizations that where not widely known. This may prove useful to future developers. We've also shown, although already known, that non-lineal kernels may drastically improve the performance of SVM-RFE.
+We've implemented SVM-RFE for non-linear kernels, and some optimizations that where not widely known. This may prove useful to future developers.

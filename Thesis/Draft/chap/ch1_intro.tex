@@ -6,27 +6,29 @@
 
 %----------------------------------------------------------------------------------------
 
-This bachelor thesis of the Computer Engineering Degree, specialization in Com\-puting, has been done in the Facultat d’Informàtica de Barcelona of the Universitat Politècnica de Catalunya and directed by Luis Antonio Belanche Muñoz, doctorate in Computer Science.
+This bachelor thesis at the Computer Engineering Degree, specialization in Com\-puting, has been done in the Facultat d’Informàtica de Barcelona of the Universitat Politècnica de Catalunya (UPC) and directed by Luis Antonio Belanche Muñoz, PhD. in Computer Science.
 
 \section{Context}
 \label{sec:context}
 
-In statistics, machine-learning, data-mining, and other related disciplines, it is often the case that there is redundant or irrelevant data in a dataset\footnote{A table with rows / records / observations and columns / variables / features / dimensions / predictors / attributes.}. Indeed, before we can start working with the data, some form of data analysis and cleaning is required. Data cleaning may include removing duplicated rows or rows with missing values, removing observations that are clearly out-layers, removing irrelevant variables (e.g. name, surname, email address), etc.
+In statistics, machine learning, data-mining, and other related disciplines, it is often the case that there are redundant or irrelevant data in a dataset\footnote{A table with rows / records / observations and columns / variables / features / dimensions / predictors / attributes.}. Indeed, before we can start working with the data, some form of data analysis and cleaning is required. Data cleaning may include removing duplicated rows or rows with missing values, removing observations that are clearly outliers, removing irrelevant variables (e.g. name, surname, email address), etc.
 
-With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine-learning algorithms to this high-dimensional data rises multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data that their predicted performance with the training data. (\cite{li_feature_2017})
+With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine learning algorithms to these high-dimensional data raise multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data than their predicted performance with the training data. (\cite{li_feature_2017})
 
-Simple manual data cleaning is not enough to achieve satisfactory amounts of dimensionality reduction. In this case we can use automatic techniques. We can classify such techniques in two categories, feature extraction, and feature selection.
+Simple manual data cleaning is not enough to achieve satisfactory amounts of dimensionality reduction. In this case we can use automatic techniques. We can classify such techniques in two categories: feature extraction and feature selection.
 
 \subsection{Feature Extraction}
 
-Feature extraction techniques transform the original high-dimensional space into a new low-dimensional space by extracting or deriving information from the original features. The premise is to compress the data in order to pack the same information at the expense of model explainability\footnote{The ability to explain why certain predictions are made. Also, interpretability.}. Continuing with our data compression analogy, virtually all feature extraction techniques perform lossy com\-pres\-sion, that is, some data is lost which makes the process irreversible. Notice that, if the process was reversible then feature extraction would not decrement explainability.
+Feature extraction techniques transform the original high-dimensional space into a new low-dimensional space by extracting or deriving information from the original features. The premise is to compress the data in order to pack the same information at the expense of model explainability\footnote{The ability to explain why certain predictions are made. Also, interpretability.}. Continuing with our data compression analogy, virtually all feature extraction techniques perform lossy com\-pres\-sion. That is, some data is lost which makes the process irreversible. Notice that, if the process was reversible then feature extraction would not decrement explainability.
 
 Some well known feature extraction algorithms include Principal Component Analysis (PCA) and auto-encoders, the first being a linear transformation over the feature-space and the second a neuronal network. PCA may be extended with a kernel method in order to make non-linear transformations. Similarly, we will also use non-linear kernels to extend SVM-RFE.
 
 \subsection{Feature Selection}
 \label{sec:ch1.feature_selection}
 
-In contrast, feature selection only selects a subset of the existing features, ideally the most relevant or useful. This may imply a greater loss of information compared to feature extraction, but it doesn't reduce explainability. Some problems require feature selection explicitly. In domains such as genetic analysis and text mining, feature selection is not necessarily used to build predictors. For example in micro\-array analysis feature selection is used to identify genes (i.e. features) that dis\-criminate between healthy and disease patients. 
+In contrast, feature selection only selects a subset of the existing features, ideally the most relevant or useful. This may imply a greater loss of information compared to feature extraction, but it doesn't reduce explainability. Some problems require feature selection explicitly. In domains such as genetic analysis and text mining, feature selection is not necessarily used to build predictors. For example in micro\-array analysis feature selection is used to identify genes (i.e. features) that dis\-criminate between healthy and sick patients. 
+
+Note that the number of possible selections of all sizes is $2^m$. This is the same as the amount of subsets of a set with size $m$, where $m$ is the amount of total features. The number of possible selections for some feature subset size $k$, is then ${m \choose k} = \frac{m!}{k!(m - k)!}$. This makes the optimal feature selection via exhaustive search intractable. Instead, we use methods that do not require an exhaustive search, such as a greedy algorithm, at the expense of not being able to guarantee an optimal solution.
 
 Feature selection methods may be classified by how they are constructed in three categories:
 
@@ -36,7 +38,7 @@ Feature selection methods may be classified by how they are constructed in three
     \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the trained model itself to make feature selection. Because they don't use the score, they can also skip testing the model.
 \end{itemize}
 
-In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination. It starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criteria to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criteria is to take the variable with the smallest weight in each iteration, where the wights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
+In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination. It starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criteria to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criteria is to take the variable with the smallest weight in each iteration. Where the weights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
 
 %----------------------------------------------------------------------------------------
 
@@ -51,7 +53,7 @@ The paper already proposes some natural extensions to the al\-go\-rithm, such as
 \section{Objective}
 \label{sec:ch1.objective}
 
-The main objective of this project is to research extensions of the SVM-RFE algorithm and try to optimize it. Optimizations may be in the form of improved performance or a reduction in time utilization. We've classified the possible extensions as follows.
+The main objective of this project is to research extensions that optimize the SVM-RFE algorithm. Optimizations may be in the form of improved performance or a reduction in time utilization. We do not propose here any optimizations that may affect space complexity. As such, we also skip the space complexity analysis for the whole project. We've classified the possible extensions as follows.
 
 \subsubsection*{Main extensions}
 
@@ -138,7 +140,7 @@ Some obstacles and risks identified that could potentially prevent the correct e
 
 \subsection{Framework}
 
-The methodology that I will use for the project is a combination of waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In waterfall tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will be managed like this, one phase will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by the Kanban methodology.
+The methodology that we will use for the project is a combination of waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In waterfall, tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by the Kanban method\-ol\-o\-gy.
 
 Kanban is much more flexible than waterfall. Its principal objective is to manage tasks in a general way, by assigning different statuses to them. Kanban stands out by its simplicity, and will continue to endorse that simplicity by managing the visual representation of the cards in a simple, plain, text formatting. Each card will be in a row, with the first column defining its name and the other its status. The statuses we've considered are:
 
