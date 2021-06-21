@@ -1,7 +1,7 @@
 \chapter{Background}
 \label{Chapter4}
 
-In this section we're going to review the concepts required to understand the SVM-RFE algorithm. Section \ref{sec:context} already introduced some concepts around the SVM-RFE algorithm, placed it in context, and enumerated some of its applications. In this section we'll focus on the inner workings of the algorithm and how these parts add together. 
+In this section we review the concepts required to understand the SVM-RFE al\-go\-rithm. Section \ref{sec:context} already introduced some concepts around SVM-RFE, placed it in context, and enumerated some of its applications. In this section we will focus on the inner workings of the algorithm and how these parts add together. 
 
 \section{Machine learning}
 
@@ -11,7 +11,7 @@ Two canonical problems in machine learning are regression and classification pro
 
 \subsection{The dataset}
 
-A dataset is simply a collection of data. In the context of machine learning this data-set will be used to make predictions, take decisions, or find patterns. For a machine learning algorithm to be able to consume a dataset the first step is to represent it in tabular form. 
+In the context of machine learning a dataset will be used to make predictions, take decisions, or find patterns. For a machine learning algorithm to be able to consume a dataset the first step is to represent it in tabular form. 
 
 Most datasets come already in tabular form. Some of the most notable ex\-cep\-tions are datasets involving images. In this case computer vision methods are often used to extract numeric data representing characteristics of the image. Sometimes a more direct transformation can also be made, for example making each feature be the intensity level of a single pixel in the image. This of course produces a high number of features, most of which are redundant or irrelevant (e.g. features representing pixels in the background). 
 
@@ -19,9 +19,9 @@ In a dataset represented as a table, columns describe different \emph{features},
 
 \begin{table}[h]
     \makebox[\textwidth][c]{
-        \begin{tabular}{l l l l l l l l l}
+        \begin{tabular}{r r r r r r r r r}
         \toprule
-        \tabhead{Src} & \tabhead{Dst} & \tabhead{NAT-Src} & \tabhead{NAT-Dst} & \tabhead{Action} & \tabhead{Sent (B)} & \tabhead{Rcvd. (B)} & \tabhead{Packets} & \tabhead{Elapsed (sec)}\\
+        \tabhead{Src} & \tabhead{Dst} & \tabhead{NAT-Src} & \tabhead{NAT-Dst} & \tabhead{Action} & \tabhead{Sent (B)} & \tabhead{Rcvd. (B)} & \tabhead{Packets} & \tabhead{Elapsed (s)}\\
         \midrule
         57222 & 53 & 54587 & 53 & allow & 94 & 83 & 2 & 30 \\
         56258 & 3389 & 56258 & 3389 & allow & 1600 & 3168 & 19 & 17 \\
@@ -38,11 +38,11 @@ In a dataset represented as a table, columns describe different \emph{features},
 \subsection{Classification}
 \label{sec:ch4.classification}
 
-For the classification problem we want to predict in witch group or \emph{class} to assign some new observation. Table \ref{tab:example_dataset} provides an example of what could be a good classification problem. Imagine we are building a firewall and want it to predict if some new packet in the network should be allowed to pass. We could train a classification learning machine with the dataset represented in the table (the full version) and produce a model capable of doing such predictions. Although it is trivial to identify a pattern in the example, it may not be so for real world examples. Automatic \emph{pattern recognition} is key in solving many real world problems, and it is one of the features of these algorithms.
+For the classification problem we want to predict in which group or \emph{class} to assign some new observation. Table \ref{tab:example_dataset} provides an example of what could be a good classification problem. Imagine we are building a firewall and want it to predict if some new packet in the network should be allowed to pass. We could train a classification learning machine with the dataset represented in the table (the full version) and produce a model capable of doing such predictions. Although it is trivial to identify a pattern in the example, it may not be so for real world examples. Automatic \emph{pattern recognition} is key in solving many real world problems, and it is one of the features of these algorithms.
 
 Mathematically, the set of observations is defined as $X = \{\vt{x_1}, \vt{x_2}, \dots, \vt{x_n}\}$ and the set of the corresponding labels or target classes is $y = \{y_1, y_2, \dots, y_n\}$ with every element of this set being some class $y_i = C_k$ of a discrete set of classes with size $K$. They are called \emph{domain set} and \emph{label set} respectively. For our example, the classes would be $C = \{\text{allow}, \text{deny}\}$. Thus, we can describe the goal of a classification problem as assigning some class $C_k$ to an input vector $\vt{x}$.
 
-Although we've used strings to represent classes, part of the preparation process of the dataset involves turning all values into numerical scalars, so our classes would actually be some natural numbers. Also notice that every $\vt{x_i}$ is a vector containing a single numerical value for each feature excluding the label. 
+During the preparation process of the dataset all values will turn into numbers. Our classes, being categorical, will be codified as integers. Also notice that every $\vt{x_i}$ is a vector containing all features excluding the label. 
 
 We make a distinction between two-class problems (or binary) and multi-class problems. Two-class problems typically use $C = \{0, 1\}$ as classes and thus can be modeled with a boolean function or, if a probability is desired, a function that returns values between 0 and 1. This simplifies the model substantially. In fact some learning machines, such as the SVM, can only work with two-class problems, and use different methods to extend to the multi-class version.
 
@@ -86,7 +86,7 @@ This is an equivalent form. This one however is not representable by a function 
     ax + by - c = 0
 \end{align}
 
-A simple linear transformation of the standard form produces the general form (\cite{noauthor_wikipedia_2021}). This conserves the normal vector and also has the advantage of being representable by an implicit function\footnote{A function of multiple variables $f: \mathbb{R}^n \rightarrow \mathbb{R}$ such that we only consider solutions where $f(X) = 0$. For example a circle can be defined with an implicit function $f(x, y) = x^2 + y^2 - r$, but if we were to plot it in 3-D we would instead see an inverted cone.}. Notice that if represented in 3-D it would produce a plane that is perpendicular to the $xy$ plane, since its normal would always have the form $(a, b, 0)$.
+A simple linear transformation of the standard form produces the general form (\cite{noauthor_wikipedia_2021}). This conserves the normal vector and also has the advantage of being representable by an implicit function\footnote{A function of multiple variables $f: \mathbb{R}^n \rightarrow \mathbb{R}$ such that we only consider solutions where $f(\mathbb{R}^n) = 0$. For example a circle can be defined with an implicit function $f(x, y) = x^2 + y^2 - r$, but if we were to plot it in 3-D we would instead see an inverted cone.}. Notice that if represented in 3-D it would produce a plane that is perpendicular to the $xy$ plane, since its normal would always have the form $(a, b, 0)$.
 
 \subsubsection*{Equation of a 3-D Plane}
 \begin{align}
@@ -115,18 +115,19 @@ Where $\vb{w}$ is called the \emph{weight vector} and $w_0$ the \emph{bias}. We 
 
 A point will be a solution of one of these inequations depending on whether it is in the subspace, i.e. discriminant region, facing the direction of the normal or the opposite.
 
-A linear binary classification learning machine is thus an algorithm that given some dataset finds appropriate values for the parameters $\vb{w}$ and $w_0$ of the hyper\-plane in order to produce a discriminant function $g : \mathbb{R}^n \rightarrow \mathbb{R}$ such as:
+A linear binary classification learning machine is thus an algorithm that given some dataset finds appropriate values for the parameters $\vb{w}$ and $w_0$ of the hyper\-plane in order to produce a decision boundary $g : \mathbb{R}^n \rightarrow \mathbb{R}$ such as:
 \begin{align}
     g(\vb{x}) = \vb{w}^{\T}\vb{x} + w_0
 \end{align}
 
-A two-class classifier $y : \mathbb{R}^n \rightarrow C$ can then be constructed from the discriminant function $g$ as:
+A two-class classifier discriminant function $y : \mathbb{R}^n \rightarrow C$ can then be constructed from this boundary as:
 \begin{align}
     y(\vb{x}) = 
     \begin{cases}
         C_0,  & \text{if } g(\vb{x})\geq 0\\
         C_1,  & \text{otherwise}
     \end{cases}
+    \label{eq:ch4.drule}
 \end{align}
 
 \subsection{Performance}
@@ -136,7 +137,7 @@ Usually models produced by a learning machine do not always make correct pre\-di
 
 The most typical metric for classification problems is \emph{accuracy}. This is the ratio of correct predictions over the total number of predictions made. The inverse to the accuracy ($1.0 - accuracy$) is defined as the \emph{error}. Note that the classification accuracy for a binary problem will always be some percentage above 50\%. This is because a classifier performing consistently worse can be turned into a good classifier by simply flipping the output of the discriminant function. Thus, the worst possible classifier is that of a coin toss, i.e. a uniform random distribution, with an expected accuracy of exactly 50\%.
 
-In some problems a distinction is made between misclassifications depending on which class is misclassified. An example of this is how misclassifying a patient with cancer with a healthy diagnosis is worse than misclassifying a healthy patient with a cancer diagnosis, the consequence of one is potentially death due to lack of treatment while the other is simply more investigation. For these problems a quadratic amount of cases appears. For the binary classification the standard nomenclature is to name the classes \emph{positive} and \emph{negative} and then prefix them with \emph{true} or \emph{false} depending on whether the prediction was correct or not. In this way a matrix called \emph{confusion matrix} is created, with the diagonal containing all the correct predictions.
+In some problems a distinction is made between misclassifications depending on which class is misclassified. An example of this is how misclassifying a patient with cancer with a healthy diagnosis is worse than misclassifying a healthy patient with a cancer diagnosis, the consequence of one is potentially death due to lack of treatment while the other is simply more investigation. For these problems a quadratic amount of cases appear. For the binary classification the standard nomenclature is to name the classes \emph{positive} and \emph{negative} and then prefix them with \emph{true} or \emph{false} depending on whether the prediction was correct or not. In this way a matrix called \emph{confusion matrix} is created, with the diagonal containing all the correct predictions.
 
 \begin{figure}[H]
     \centering
@@ -145,9 +146,9 @@ In some problems a distinction is made between misclassifications depending on w
     \label{fig:ch4.confusion}
 \end{figure}
 
-From a confusion matrix various other metrics can be extracted, such as \emph{precision}, \emph{specificity} or \emph{recall}, but it is unlikely that we make use of them in this project. Often models internally use a \emph{loss} or \emph{cost} function that they try to minimize in order to optimize the parameters, the inverse of which is called \emph{utility function}. Even if the model doesn't internally use one such function, one can be constructed form performance metrics, which is then referred as the \emph{score}. 
+From a confusion matrix various other metrics can be extracted such as \emph{precision}, \emph{specificity} or \emph{recall}, but it is unlikely that we make use of them in this project. Often models internally use a \emph{loss} or \emph{cost} function that they try to minimize in order to optimize the parameters, the inverse of which is called \emph{utility function}. Even if the model doesn't internally use one such function, one can be constructed from performance metrics, which is then referred as the \emph{score}. 
 
-It is known that learning requires both \emph{generalization} and \emph{memorization}. If a model memorizes the dataset, thus has high accuracy on data already in the dataset, but doesn't generalize well, thus has low accuracy when predictions are done on new data, we say there is \emph{overfitting}. Notice that for this to be detected we must test the dataset with new data. In order to do so a dataset is often split in \emph{train} and \emph{test} subsets, and although accuracies form both subsets may be reported, only the accuracy of the test subset may be taken as good.
+It is known that learning requires both \emph{generalization} and \emph{memorization}. If a model memorizes the dataset but doesn't generalize well we say there is \emph{overfitting}. This implies high accuracy in data used for training but low accuracy in real data. Notice that for this to be detected we must test the dataset with new data. In order to do so a dataset is often split in \emph{train} and \emph{test} subsets, and although accuracies from both subsets may be reported, only the accuracy of the test subset may be taken as good.
 
 One of the possible causes of overfitting is the \emph{Bias-Variance} trade-off. It's an effect in which if you select a very simple model then the algorithm fails to generalize (bias) but selecting a very complex algorithm increases memorization and leads to high variability in the presence of an unseen observation (variance). The best model is thus one with a middle-ground complexity.
 
@@ -171,7 +172,7 @@ In this section we refresh some basic concepts of statistics that will be used a
 
 \subsubsection*{Arithmetic mean / Expectation }
 \begin{align*}
-    \mu = E[X] = \frac{1}{n} \sum_{i = 1}^{n} x_i
+    \mu = E[X] \approx \frac{1}{n} \sum_{i = 1}^{n} x_i
 \end{align*}
 
 We may now define other measurements such as the \emph{variance}, \emph{standard error} and \emph{range}.
@@ -202,7 +203,7 @@ Although this is the statistical definition of \emph{range}, we may use this ter
 
 \section{Support Vector Machines}
 
-As it has been discussed in section \ref{sec:ch4.visualization}, the decision boundary of a binary class\-ification prob\-lem may be represented with a hyperplane, and it is the weights of this hyperplane what the learning machine tries to fit such that the hyper\-plane correctly separates the two classes. There may be infinitely many hyperplanes that correctly separate the examples of two classes, but some of them are better suited than others. For the purpose of generalization, we want decision regions that can accommodate new data outside the convex hulls\footnote{In geometry, the \emph{convex hull} or \emph{convex envelope} of a shape is the smallest convex set that contains it.} of each group of examples. That is, we want some kind of separation between the hyperplane and the observations.
+As it has been discussed in section \ref{sec:ch4.visualization}, the decision boundary of a binary class\-ification prob\-lem may be represented with a hyperplane. It is the weights of this hyperplane what the learning machine tries to fit such that the hyper\-plane correctly separates the two classes. There may be infinitely many hyperplanes that correctly separate the examples of two classes, but some of them are better suited than others. For the purpose of generalization, we want decision regions that can accommodate new data outside the convex hulls\footnote{In geometry, the \emph{convex hull} or \emph{convex envelope} of a shape is the smallest convex set that contains it.} of each group of examples. That is, we want some kind of separation between the hyperplane and the observations.
 
 \begin{figure}[H]
     \centering
@@ -218,7 +219,7 @@ As it has been discussed in section \ref{sec:ch4.visualization}, the decision bo
     \label{fig:ch4.sep1}
 \end{figure}
 
-There exist various learning machines that accomplish this separation, e.g. the \emph{Fisher’s linear discriminant}. Another such machine is the Support Vector Machine (SVM), which is based on the idea of finding the biggest margin between the extreme points of each class and setting the decision boundary in the center of such margin. For this reason SVM machines are said to be \emph{Maximum Margin Classifiers}.
+There exist various learning machines that accomplish this separation, e.g. the \emph{Fisher’s linear discriminant}. Another such machine is the Support Vector Machine (SVM), which is based on the idea of finding the biggest margin between the extreme points of each class and setting the decision boundary in the center of such margin. For this reason SVMs are said to be \emph{Maximum Margin Classifiers}.
 
 \begin{figure}[H]
     \centering
@@ -236,51 +237,53 @@ There exist various learning machines that accomplish this separation, e.g. the 
 
 The \emph{margin} is defined as the perpendicular distance (i.e. in the direction of the normal) between the decision bound\-ary and the closest of the examples. There is only one decision boundary that maximizes the margin. Only a limited amount of examples, defined by the number of dimensions, will reach the limits of that margin (and thus be the closest), these are called the \emph{support vectors}.
 
+\iffalse
 \subsection{Discriminant function}
 
-We've already seen how to we can build a discriminant function from the equation of the hyperplane. Here we will explore this in a bit more depth and take a different approx. 
+We've already seen how to we can build a discriminant function from the equation of the hyperplane. Here we will explore this in a bit more depth and take a different approach. 
 
 Given a vector of unknown length $\vt{w}$ that is perpendicular to the hyperplane (thus the normal) such that its origin is at the origin of the coordinate system. And given another vector $\vt{x}$ also with origin at the origin of the coordinate system. Note that, by how we are defining them, they are actually points, but we may want to think of them as vectors for now. We are interested in knowing in which decision region the point $\vt{x}$ is placed.
 
-To do so, we make the dot product between $\vt{w}$ and $\vt{x}$, which, in particular, will give us a scalar corresponding to the length of the projection of $\vt{x}$ over $\vt{w}$. Note that for points within the hyperplane, that length will be some constant value $c$. Thus, we can know if point $\vt{x}$ is in one region or another by comparing it with $c$. This can be expressed with the inequality $\vt{w} \cdot \vt{x} \ge c$. By making a variable $b = -c$ and expressing the dot product as a product of matrices, we can conveniently rearrange this equation as the decision rule:
+To do so, we make the dot product between $\vt{w}$ and $\vt{x}$, which, in particular, will give us a scalar corresponding to the length of the projection of $\vt{x}$ over $\vt{w}$. Note that for points within the hyperplane, that length will be some constant value $c$. Thus, we can know if point $\vt{x}$ is in one region or another by comparing it with $c$. This can be expressed with the inequality $\vt{w} \cdot \vt{x} \ge c$. By making a variable $b = -c$ and expressing the dot product as a product of matrices, we can conveniently rearrange this equation as the discriminant function:
 \begin{align}\label{eq:drule}
     \vb{w}^\T \vb{x} + b \ge 0
 \end{align}
-This is analogous to the decision rule found in section \ref{sec:ch4.visualization}, in fact if we make an equality instead of an inequality we discover the equation of the hyperplane, from there we could do the process in reverse until we find the general equation of a line. 
+This is analogous to the discriminant function found in section \ref{sec:ch4.visualization}, in fact if we make an equality instead of an inequality we discover the equation of the hyperplane, from there we could do the process in reverse until we find the general equation of a line. 
+\fi
 
 \subsection{Margin formalization}
 
-Notice from equation \ref{eq:drule} that the constant value of $b$ depends directly on the length $||\vt{w}||$, and because this length is not limited (there are infinite vectors that are normal to the hyperplane), an infinite amount of combinations exists.
+Notice from equation \ref{eq:ch4.drule} that the constant value of $w_0$ (henceforth $b$) depends di\-rect\-ly on the length $||\vt{w}||$, and because this length is not limited (there are infinite vectors that are normal to the hyperplane), an infinite amount of combinations exists.
 
-Therefore, we may want to restrict the decision rule to a single combination. Also, it is convenient that this restriction takes such a form that allows defining the margin. First we assign to our classes the numerical values $C = \{-1, 1\}$. Then we impose the condition that points in a decision region outside the margin must have values greater than $\pm 1$, thus for points $\vb{x}_{(+)}$ in class “$1$” and $\vb{x}_{(-)}$ in class “$-1$” we get:
+Therefore, we may want to restrict the discriminant function to a single com\-bi\-na\-tion. Also, it is convenient that this restriction takes such a form that allows defining the margin. First we assign to our classes the numerical values $C = \{-1, 1\}$. Then we impose the condition that points in a decision region outside the margin must have values greater than $\pm 1$, thus for points $\vb{x}_{(+)}$ in class “$1$” and $\vb{x}_{(-)}$ in class “$-1$” outside the margin we get:
 \begin{align*}
     \vb{w}^\T \vb{x}_{(+)} + b &\ge 1\\
     \vb{w}^\T \vb{x}_{(-)} + b &\le -1
 \end{align*}
 
-This pair of equations can be simplified to a single equation by considering the vector $\vt{y}$ that we defined in section \ref{sec:ch4.classification}. Because of the numerical values we've assigned to the classes, it will contain elements such that every $y_i \in \{-1, 1\}$. Notice that if we multiply both sides by $y_i$ (and given that we know what the value of $y_i$ will be in each case), we can produce the single equation:
+This pair of inequations can be simplified to a single inequation by considering the vector $\vt{y}$ that we defined in section \ref{sec:ch4.classification}. Because of the numerical values we've assigned to the classes, it will contain elements such that every $y_i \in \{-1, 1\}$. Notice that if we multiply both sides by $y_i$ (and given that we know what the value of $y_i$ will be in each case), we can produce the single equation:
 \begin{align}\label{eq:svmconstrain}
     y_i (\vb{w}^\T \vb{x_i} + b) \ge 1
 \end{align}
 
-From this equation we may find the values of the hyperplanes that border the margin (named \emph{gutter}), that is, the points where the last equation is exactly 1. 
+From this equation we may find the values of the hyperplanes that border the margin, that is, the points where the last equation is exactly 1. 
 
-\subsubsection*{Equation of the gutters}
+\subsubsection*{Equation of the borders of the margin}
 \begin{align}\label{eq:gutters}
     y_i (\vb{w}^\T \vb{x_i} + b) -1 = 0
 \end{align}
 
-Although now we know the equation for the gutters (analogy for the margin being a street), what we're really interested in is the distance between them. Form any two points $\vt{x}_{(+)}$ and $\vt{x}_{(-)}$, one in each gutter, we can draw the vector of their difference $(\vt{x}_{(+)} - \vt{x}_{(-)})$. The length of this vector projected over the unit vector of $\vt{w}$ will be the length of the margin\footnote{Note that the length of the projection of $\vt{a}$ over $\vt{b}$ is the dot product $\vt{a} \cdot \vt{b}$ if $\vt{b}$ is a unit vector.}:
+Although now we know the equation for borders, what we're really interested in is the distance between them. For any two points $\vt{x}_{(+)}$ and $\vt{x}_{(-)}$, one in each border, we can draw the vector of their difference $(\vt{x}_{(+)} - \vt{x}_{(-)})$. The length of this vector projected over the unit vector of $\vt{w}$ will be the length of the margin\footnote{Note that the length of the projection of $\vt{a}$ over $\vt{b}$ is the dot product $\vt{a} \cdot \vt{b}$ if $\vt{b}$ is a unit vector.}:
 \begin{align*}
     (\vt{x}_{(+)} - \vt{x}_{(-)}) \cdot \frac{\vt{w}}{||\vt{w}||}
 \end{align*}
 
-Notice that form equation \ref{eq:gutters} we can derive $\vt{w} \cdot \vt{x}_{(+)} = 1 - b$ and $\vt{w} \cdot \vt{x}_{(-)} = b - 1$, applying the distributive property we obtain:
+Notice that from equation \ref{eq:gutters} we can derive $\vt{w} \cdot \vt{x}_{(+)} = 1 - b$ and $\vt{w} \cdot \vt{x}_{(-)} = b - 1$, applying the distributive property we obtain:
 \begin{align*}
     \frac{(1 - b) - (b - 1)}{||\vt{w}||} \implies \frac{2}{||\vt{w}||}
 \end{align*}
 
-Since we've defined the margin to be the distance from the decision boundary to a gutter (i.e. where support vectors are), and since the decision boundary is at the same distance to both gutters, then we can see that the length of the margin will be half the distance between the gutters.
+Since we have defined the margin to be the distance from the decision boundary to a border (i.e. where support vectors are), and since the decision boundary is at the same distance to both borders, then we can see that the length of the margin will be half the distance between the borders.
 
 \subsubsection*{Length of the margin}
 
@@ -297,11 +300,11 @@ The problem of finding the greatest margin can be formulated as an optimization 
     \underset{\vt{w}, b}{\text{arg} \min}\ \frac{1}{2} ||\vt{w}||^2 \text{\quad s.t. \quad} \forall i : y_i (\vb{w}^\T \vb{x_i} + b) - 1 \ge 0
 \end{align}
 
-This is a constrained quadratic optimization problem. There are various known algorithms that can solve constrained optimization problems, such as the \emph{simplex} algorithm. However, in our case it may be appropriate to use the \emph{Lagrangian} method. This method doesn't directly return a solution, instead it transforms the problem into another version, from which a direct solution may be more easily computed.
+This is a constrained quadratic optimization problem. There are various known algorithms that can solve constrained optimization problems, such as the \emph{simplex} algorithm. However, in our case it may be appropriate to use the \emph{Lagrange multipliers} method. This method doesn't directly return a solution, instead it transforms the problem into another version, from which a direct solution may be more easily computed.
 
 \subsubsection*{Lagrangian}
 
-Imagine we had an easier optimization problem. E.g. a maximization pro\-blem such that its optimization function $f : \R^{m-1} \rightarrow \R$ is a function $f(\vt{x})$ of $m$ dimensions, and it has a single equality constrain $g(\vt{x}) = 0$ of $D - 1$ dimensions. Notice how the constraint is “projected” on top of $f(\vt{x})$. Then the Lagrangian method consists on optimizing a new function (equation \ref{eq:lagrangian_base}), via introducing a new pa\-ram\-e\-ter $\lambda$ called the \emph{Lagrangian multiplier}. 
+Imagine we had an easier optimization problem. E.g. a maximization pro\-blem such that its optimization function $f : \R^{D-1} \rightarrow \R$ is a function $f(\vt{x})$ of $D$ dimensions, and it has a single equality constrain $g(\vt{x}) = 0$ of $D - 1$ dimensions. Notice how the constraint is “projected” on top of $f(\vt{x})$. Then the Lagrange multipliers method consists on optimizing a new function (equation \ref{eq:lagrangian_base}), via introducing a new pa\-ram\-e\-ter $\lambda$ called the \emph{Lagrange multiplier}. 
 \begin{align}\label{eq:lagrangian_base} 
     L(\vt{x}, \lambda) = f(x) - \lambda g(x)
 \end{align}
@@ -313,16 +316,16 @@ An interesting property of these functions is that in the stationary points the 
     \nabla f - \lambda \nabla g = 0
 \end{align}
 
-From this we see that the constrained stationary condition is obtained by setting $\nabla_x L = 0$. Notice that the gradient is defined as the partial derivatives of each coordinate in the vector, that is:
+From this we see that the constrained stationary condition is obtained by setting $\nabla_x L = 0$. The gradient is defined as the partial derivatives of each coordinate in the vector, that is:
 \begin{align*}
     \nabla_x L = \left( \frac{\partial L}{\partial x_1}, \frac{\partial L}{\partial x_2}, \cdots, \frac{\partial L}{\partial x_n} \right)
 \end{align*}
 
 At first glance it may look overwhelming, but given that $L$ is the same for all $x_i$ and that we can reuse the arithmetic operators for operations between vectors, doing the gradient is very similar than doing the partial derivate over a single scalar. 
 
-Going back to the SVM formalization, we can define the Lagrangian of the primal form (equation \ref{eq:svm_primal}) as:
+Going back to the SVM formalization, we can obtain the Lagrangian of the primal form (equation \ref{eq:svm_primal}) as:
 \begin{align}\label{eq:svm_lagrangian_from_primal}
-    L(\vt{w}, b, \vt{\alpha}) = \frac{1}{2} ||\vt{w}||^2 - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1\right]
+    L(\vt{w}, b, \boldsymbol{\alpha}) = \frac{1}{2} ||\vt{w}||^2 - \sum_{i=1}^n \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1\right]
 \end{align}
 
 Now we want to take the partial derivative with respect to $\vt{x}$ and equal to 0. Note that $||\vt{w}|| = \sqrt{\vb{w}^\T\vb{w}}$, if we elevate this expression to the power of two we can eliminate the square root. The derivative for one component is $\frac{\partial [(1/2)\vb{w}^\T\vb{w}]}{\partial w_i} = w_i$, combining them (derivative of the vector) we get $\vt{w}$. Therefore:
@@ -367,15 +370,15 @@ If we plug these expressions back in equation \ref{eq:svm_lagrangian_from_primal
 
 \subsubsection*{Dual form}
 \begin{align}
-    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
-    \text{\quad s.t. \quad} \forall \alpha_i : \alpha_i \ge 0 \land \sum \alpha_i y_i = 0
+    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum_{i=1}^n \alpha_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
+    \text{\quad s.t. \quad} \forall \alpha_i : \alpha_i \ge 0 \land \sum_{i=1}^n \alpha_i y_i = 0
 \end{align}
 
-This variation of the optimization problem has the immediate advantage of op\-ti\-miz\-ing over $\vt{\alpha}$ instead of $\vt{w}$. In cases where the number of dimensions exceeds the number of examples, solving this formulation is more efficient. Another historical reason for which the dual form has been preferred is because it allows using kernels (\cite{chapelle_training_2007}), something we will see later in section \ref{sec:ch4.kernels}.
+This variation of the optimization problem has the immediate advantage of op\-ti\-miz\-ing over $\boldsymbol{\alpha}$ instead of $\vt{w}$. In cases where the number of dimensions exceeds the number of examples, solving this formulation is more efficient. Another historical reason for which the dual form has been preferred is because it allows using kernels (\cite{chapelle_training_2007}), something we will see later in section \ref{sec:ch4.kernels}.
 
-Both this form and the primal form will require the use of a quadratic op\-ti\-miza\-tion solver. The general complexity of such algorithms is $O(n^3)$. However, various techniques can be used that accomplish to reduce this complexity for both the primal and the dual forms.
+Both this form and the primal form will require the use of a quadratic op\-ti\-miza\-tion solver. The general complexity of such algorithms is $O(n^3)$. However, various techniques can be used to reduce this complexity for both the primal and the dual forms.
 
-For this dual formulation, instead of directly finding the values of $\vt{w}$ we find the values of $\vt{\alpha}$. If we want to later calculate the values of the weight vector we can use the \emph{representer theorem} (equation \ref{eq:svm_representer}). For the constant parameter $b$ we can use the margin boundary equation \ref{eq:gutters}, which with some algebra can be expressed as $b = y_i - \vb{w^\T}\vb{x_i}$.
+For this dual formulation, instead of directly finding the values of $\vt{w}$ we find the values of $\boldsymbol{\alpha}$. If we want to later calculate the values of the weight vector we can use the \emph{representer theorem} (equation \ref{eq:svm_representer}). For the constant parameter $b$ we can use the margin boundary equation \ref{eq:gutters}, which with some algebra can be expressed as $b = y_i - \vb{w^\T}\vb{x_i}$.
 
 \subsection{Regularization}
 
@@ -392,7 +395,7 @@ Now we can reformulate our \emph{primal} with this new variables, penalizing the
     \forall i : y_i (\vb{w}^\T \vb{x_i} + b) \ge 1 - \xi_i \quad \land \quad \xi_i \ge 0
 \end{align}
 
-An equivalent way to perform regularization is by using an empirical risk mini\-mization approx. Given our decision rule (equation \ref{eq:drule}), we need to find a \emph{loss function} that works well for classification problems, such as the \emph{hinge loss}, defined as:
+An equivalent way to perform regularization is by using an empirical risk mini\-mization approach. Given our decision rule (equation \ref{eq:drule}), we need to find a \emph{loss function} that works well for classification problems, such as the \emph{hinge loss}, defined as:
 \begin{align}
     l(t) = \max \{0, 1 - t\} \text{\quad where \quad} t = y_if(x_i) = y_i (\vb{w}^\T \vb{x_i} + b)
 \end{align}
@@ -426,7 +429,7 @@ Using the same Lagrangian process shown for the hard margin version, we can obta
     \text{\quad s.t. \quad} \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
 \end{align}
 
-This is notably similar to the hard margin version, where only one constrain has changed. 
+This is notably similar to the hard margin version, where only one constraint has changed. 
 
 \pagebreak
 
@@ -439,7 +442,7 @@ The use of kernel functions enables learning machines such as SVM to have non-li
 
 A feature map is a function $\phi : D \rightarrow H$ that transforms, or maps, or projects, vectors in some space $D$ (typically $\mathbb{R}^m$) to another space $H$. In the context of machine learning, $D$ is often the \emph{input space} (the space we've been working with until now) and $H$ the \emph{feature space}. When no feature map is used, there is no distinction between the two.
 
-For the sake of using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that defines an inner product and also is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
+For the sake of using kernels, we restrict feature maps to those whose range $H$ is a \emph{Hilbert space}. A Hilbert space is a \emph{metric space} that is defined by an inner product and is \emph{complete} with respect to the distance function induced by that inner product (\cite{noauthor_wikipedia_2021-1}).
 
 To verify that a space is a real metric space we need to see that, for any vectors $\vb{x}$, $\vb{y}$, $\vb{z}$ and scalars $a$, $b$:
 
@@ -448,7 +451,7 @@ To verify that a space is a real metric space we need to see that, for any vecto
     \begin{align*}
         \ip{\vb{x}, \vb{y}} = \ip{\vb{x}, \vb{y}}
     \end{align*}
-    \item The inner product is lineal:
+    \item The inner product is linear:
     \begin{align*}
         \ip{a\vb{x} + b\vb{y}, \vb{z}} = a\ip{\vb{x}, \vb{z}} + b\ip{\vb{y}, \vb{z}} 
     \end{align*}
@@ -457,12 +460,15 @@ To verify that a space is a real metric space we need to see that, for any vecto
         \ip{\vb{x}, \vb{x}} \ge 0
     \end{align*}
     Where $\ip{\vb{x}, \vb{x}} = 0$ only if $\vb{x}$ is neutral, i.e. $\vt{x} = (0,0,\dots, 0)$. \\
-    These three properties are enough to define a \emph{product space}, to make it also a metric space we need to add the next two.
+\end{enumerate}
+Additionally, the following properties can be derived.
+
+\begin{enumerate}
     \item The triangle inequality holds:
     \begin{align*}
         d(\vb{x}, \vb{z}) \le d(\vb{x}, \vb{y}) + d(\vb{y}, \vb{z}) 
     \end{align*}
-    \item The more general Cauchy–Schwarz inequality, from which the triangle in\-equal\-i\-ty can actually be derived.
+    \item The more general Cauchy–Schwarz inequality also holds:
     \begin{align*}
         |\ip{\vb{x}, \vb{y}}| \le ||\vb{x}||\ ||\vb{y}|| 
     \end{align*}
@@ -472,7 +478,7 @@ It is not hard to extend these properties to complex spaces, although outside th
 
 \subsection{Kernel functions}
 
-A \emph{similarity function} is a function $d : \mathcal{X \times X} \rightarrow \mathbb{R}$ that uses some similarity measure (e.g. euclidean distance) to determine if two objects (e.g. points, vectors) are similar and returns a real number specifying how much. Kernel functions are a class of similarity functions for which a feature map is implicitly defined, such that:
+A \emph{similarity function} is a function $d : \mathcal{X \times X} \rightarrow \mathbb{R}$ that specifies how similar two objects are. Kernel functions are a class of similarity functions for which a feature map is implicitly defined, such that:
 \begin{align}
     k(\vb{x_i}, \vb{x_j}) = \ip{\phi(\vb{x_i}), \phi(\vb{x_j})}
 \end{align}

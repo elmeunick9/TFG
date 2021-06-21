@@ -13,15 +13,15 @@ This bachelor thesis at the Computer Engineering Degree, specialization in Com\-
 
 In statistics, machine learning, data-mining, and other related disciplines, it is often the case that there are redundant or irrelevant data in a dataset\footnote{A table with rows / records / observations and columns / variables / features / dimensions / predictors / attributes.}. Indeed, before we can start working with the data, some form of data analysis and cleaning is required. Data cleaning may include removing duplicated rows or rows with missing values, removing observations that are clearly outliers, removing irrelevant variables (e.g. name, surname, email address), etc.
 
-With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine learning algorithms to these high-dimensional data raise multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively affecting the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data than their predicted performance with the training data. (\cite{li_feature_2017})
+With the new era of Big Data, datasets have increased in size, both in number of observations and in dimensions. Applying classical data-mining and machine learning algorithms to these high-dimensional data raise multiple issues collectively known as “the curse of dimensionality”. One such issue is the elevated, usually intractable, cost and memory requirements derived from the non-linear (on number of dimensions and observations) complexities of the algorithms. Another issue has to do with data in a high-dimensional space becoming sparse and negatively af\-fect\-ing the performance of algorithms designed to work in a low-dimensional space. And finally, a third issue is that with a high number of dimensions the algorithms tend to overfit, that is, they don't generalize enough and end up producing models that perform worse with real data than their predicted performance with the training data. (\cite{li_feature_2017})
 
 Simple manual data cleaning is not enough to achieve satisfactory amounts of dimensionality reduction. In this case we can use automatic techniques. We can classify such techniques in two categories: feature extraction and feature selection.
 
 \subsection{Feature Extraction}
 
-Feature extraction techniques transform the original high-dimensional space into a new low-dimensional space by extracting or deriving information from the original features. The premise is to compress the data in order to pack the same information at the expense of model explainability\footnote{The ability to explain why certain predictions are made. Also, interpretability.}. Continuing with our data compression analogy, virtually all feature extraction techniques perform lossy com\-pres\-sion. That is, some data is lost which makes the process irreversible. Notice that, if the process was reversible then feature extraction would not decrement explainability.
+Feature extraction techniques transform the original high-dimensional space into a new low-dimensional space by extracting or deriving information from the original features. The premise is to compress the data in order to pack the same information at the expense of model explainability\footnote{The ability to explain why certain predictions are made. Also, interpretability.}. Continuing with our data compression analogy, virtually all feature extraction techniques perform lossy com\-pres\-sion. That is, some information is lost which makes the process irreversible. 
 
-Some well known feature extraction algorithms include Principal Component Analysis (PCA) and auto-encoders, the first being a linear transformation over the feature-space and the second a neuronal network. PCA may be extended with a kernel method in order to make non-linear transformations. Similarly, we will also use non-linear kernels to extend SVM-RFE.
+Some well known feature extraction algorithms include Principal Component Analysis (PCA) (\cite{scholkopf_kernel_1997}) and auto-encoders (\cite{vincent_extracting_2008}), the first being a transformation over the feature-space and the second a neuronal network. PCA may be extended with a kernel method in order to make non-linear transformations. Similarly, we will also use non-linear kernels in some of our extensions.
 
 \subsection{Feature Selection}
 \label{sec:ch1.feature_selection}
@@ -33,12 +33,12 @@ Note that the number of possible selections of all sizes is $2^m$. This is the s
 Feature selection methods may be classified by how they are constructed in three categories:
 
 \begin{itemize}
-    \item \textbf{Filter:} A \emph{feature ranking criteria} is used to sort the features in order of relevance, then select the $k$-most relevant.
-    \item \textbf{Wrapper:} They use a learning machine (treated as a black box) to train and test the dataset with different subsets of variables. They rank the subsets based on the performance (score) of the model. A wide range of learning machines and search strategies can be used. Within the greedy strategies we find \emph{forward selection} and \emph{backward elimination}.
-    \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the trained model itself to make feature selection. Because they don't use the score, they can also skip testing the model.
+    \item \textbf{Filters:} A \emph{feature ranking criterion} is used to sort the features in order of rel\-e\-vance, then select the $k$-most relevant.
+    \item \textbf{Wrappers:} They use a learning machine (treated as a black box) to train and validate the dataset with different subsets of variables. They rank the subsets based on the performance (score) of the model. A wide range of learning machines and search strategies can be used. Within the greedy strategies we find \emph{forward selection} and \emph{backward elimination}.
+    \item \textbf{Embedded:} Like wrapper methods but more efficient. They use information from the model itself at training time to make feature selection. Because they don't use the score, they can also skip testing the model.
 \end{itemize}
 
-In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination. It starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criteria to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criteria is to take the variable with the smallest weight in each iteration. Where the weights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
+In both wrapper and embedded methods greedy strategies can be used. \textbf{SVM-RFE} is a feature selection algorithm, of the embedded class, that uses Support Vector Machines (SVM) and a greedy strategy called Recursive Feature Elimination (RFE). This algorithm is an instance of backward elimination. It starts with a set of all features and eliminates the less relevant each iteration. Within each iteration SVM-RFE behaves like a filter method and uses a feature ranking criterion to decide which feature to eliminate. SVM-RFE takes advantage of the fact that, for linear SVM, the ranking criterion is to take the variable with the smallest absolute weight in each iteration. Where the weights are the co\-ef\-fi\-cients of the hyperplane resulting from the SVM training.  (\cite{guyon_introduction_2003})
 
 %----------------------------------------------------------------------------------------
 
@@ -50,14 +50,14 @@ The paper already proposes some natural extensions to the al\-go\-rithm, such as
 
 %----------------------------------------------------------------------------------------
 
-\section{Objective}
+\section{Project goals}
 \label{sec:ch1.objective}
 
-The main objective of this project is to research extensions that optimize the SVM-RFE algorithm. Optimizations may be in the form of improved performance or a reduction in time utilization. We do not propose here any optimizations that may affect space complexity. As such, we also skip the space complexity analysis for the whole project. We've classified the possible extensions as follows.
+The main objective of this project is to research possible extensions and im\-prove\-ments that try to optimize the SVM-RFE algorithm. Optimizations may be in the form of improved performance or a reduction in time utilization. We do not propose here any optimizations that may affect space complexity. As such, we also skip the space complexity analysis for the whole project. We've classified the possible extensions as follows.
 
 \subsubsection*{Main extensions}
 
-These focus on improving the performance of the selection.
+These focus on improving the performance of the selection of features.
 
 \begin{itemize}
     \item \textbf{Non-linear kernel:} Use a more general ranking criterion and apply it to handle SVM with arbitrary kernels.
@@ -80,11 +80,11 @@ Focus on reducing the computational cost.
     \item \textbf{Combo:} Mix \emph{internal sampling}, \emph{dynamic step} and \emph{non-linear Kernels} into a single implementation.
 \end{itemize}
 
-\subsection{Objective break down}
+\subsection{Goals break down}
 
-To accomplish this objective, the project has been sub\-divided in two parts, each having specific tasks for each extension:
+To accomplish these goals, the project has been sub\-divided in two parts, each having specific tasks for each extension:
 
-\subsubsection*{Theoretical Part}
+\subsubsection*{Algorithmic Part}
 
 \begin{itemize}
     \item Do research in SVM-RFE and in the extensions that will be tackled in the project.
@@ -140,9 +140,9 @@ Some obstacles and risks identified that could potentially prevent the correct e
 
 \subsection{Framework}
 
-The methodology that we will use for the project is a combination of waterfall and Kanban methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In waterfall, tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by the Kanban method\-ol\-o\-gy.
+The methodology that we will use for the project is a combination of Kanban (\cite{matharu_empirical_2015}) and Waterfall (\cite{mahadevan_running_2015}) methodologies. Waterfall will be used to define the general phases of the project, and Kanban for tracking the individual tasks. In Waterfall, tasks can not start until the previous task has been completed, and thus following strict deadlines is important. Phases will not start until the previous phase ends. Each phase will be composed of multiple tasks, which will then be managed by the Kanban method\-ol\-o\-gy.
 
-Kanban is much more flexible than waterfall. Its principal objective is to manage tasks in a general way, by assigning different statuses to them. Kanban stands out by its simplicity, and will continue to endorse that simplicity by managing the visual representation of the cards in a simple, plain, text formatting. Each card will be in a row, with the first column defining its name and the other its status. The statuses we've considered are:
+Kanban is much more flexible than Waterfall. Its principal objective is to manage tasks in a general way, by assigning different statuses to them. Kanban stands out by its simplicity, and will continue to endorse that simplicity by managing the visual representation of the cards in a simple, plain, text formatting. Each card will be in a row, with the first column defining its name and the other its status. The statuses we've considered are:
 
 \begin{itemize}
     \item \textbf{To do:} A basic idea of the task is present.
