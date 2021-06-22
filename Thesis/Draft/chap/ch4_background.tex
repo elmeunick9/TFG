@@ -61,7 +61,7 @@ A visualization of the problem in some euclidean space is useful to understand h
         \includegraphics[width=\linewidth]{img/ch4/linsep.png}
         \subcaption*{Linearly separable}
     \end{subfigure}
-    \caption{Decision regions and 1-D hyperplane boundary of some linear model for two datasets. Points are observations, colors indicate the class.}
+    \caption[Linear vs non-linear separability]{Decision regions and 1-D hyperplane boundary of some linear model for two datasets. Points are observations, colors indicate the class.}
     \label{fig:ch4.sep}
 \end{figure}
 
@@ -142,7 +142,7 @@ In some problems a distinction is made between misclassifications depending on w
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{img/ch4/confusion.png}
-    \caption{Confusion matrix extracted from the paper “Automatic Device Classification from Network Traffic Streams of Internet of Things” (\cite{bai_automatic_2018}).}
+    \caption[Confusion matrix]{Confusion matrix extracted from the paper “Automatic Device Classification from Network Traffic Streams of Internet of Things” (\cite{bai_automatic_2018}).}
     \label{fig:ch4.confusion}
 \end{figure}
 
@@ -157,7 +157,7 @@ Selecting the complexity of an algorithm can be done with the use of some extra 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.5\linewidth]{img/ch4/bias-and-variance.png}
-    \caption{Bias-Variance trade-off. Source (\cite{bisong_machine_2021}).}
+    \caption[Bias-Variance trade-off]{Bias-Variance trade-off. Source (\cite{bisong_machine_2021}).}
     \label{fig:ch4.biasvariance}
 \end{figure}
 
@@ -168,7 +168,7 @@ A method called \emph{cross-validation} can be used to make mul\-ti\-ple experim
 \subsection{Statistics}
 \label{sec:ch4.statistics}
 
-In this section we refresh some basic concepts of statistics that will be used across this project. In this project we'll be using the \emph{mean} as our default average measurement. The mean, which for our case\footnote{Assuming finite and independent observations.} is the same as the \emph{expectation}. Given $n = |X|$, the mean is defined as:
+In this section we refresh some basic concepts of statistics that will be used across this project. In this project we'll be using the \emph{mean} as our default average measurement. Specifically to our case, i.e. assuming finite and independent observations, we treat the \emph{expectation} as being equivalent to the mean. Given $n = |X|$, the mean is defined as:
 
 \subsubsection*{Arithmetic mean / Expectation }
 \begin{align*}
@@ -215,7 +215,7 @@ As it has been discussed in section \ref{sec:ch4.visualization}, the decision bo
         \includegraphics[width=\linewidth]{img/ch4/boundrygood.png}
         \subcaption*{Good boundary}
     \end{subfigure}
-    \caption{Showing how one decision boundary may be better than another. \texttt{X} filled in blue represents new data.}
+    \caption[Not all correctly separating boundaries are equally good]{Showing how one decision boundary may be better than another. \texttt{X} filled in blue represents new data.}
     \label{fig:ch4.sep1}
 \end{figure}
 
@@ -231,7 +231,7 @@ There exist various learning machines that accomplish this separation, e.g. the 
         \includegraphics[width=\linewidth]{img/ch4/mmc_bad.png}
         \subcaption*{Quite good margin}
     \end{subfigure}
-    \caption{Two quite good decision boundaries with a margin, a maximum margin classifier would choose the left one.}
+    \caption[Maximum margin boundary comparison]{Two quite good decision boundaries with a margin, a maximum margin classifier would choose the left one.}
     \label{fig:ch4.sep2}
 \end{figure}
 
@@ -370,7 +370,7 @@ If we plug these expressions back in equation \ref{eq:svm_lagrangian_from_primal
 
 \subsubsection*{Dual form}
 \begin{align}
-    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum_{i=1}^n \alpha_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
+    \underset{\boldsymbol{\alpha}}{\text{arg} \max}\ \sum_{i=1}^n \alpha_i - \frac{1}{2} \sum_{i=1}^n \sum_{j=1}^n \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
     \text{\quad s.t. \quad} \forall \alpha_i : \alpha_i \ge 0 \land \sum_{i=1}^n \alpha_i y_i = 0
 \end{align}
 
@@ -425,7 +425,7 @@ Using the same Lagrangian process shown for the hard margin version, we can obta
 
 \subsubsection*{Dual form with regularization}
 \begin{align}\label{eq:svm_dual_reg} 
-    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
+    \underset{\boldsymbol{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \vt{x_i} \cdot \vt{x_j}
     \text{\quad s.t. \quad} \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
 \end{align}
 
@@ -433,7 +433,7 @@ This is notably similar to the hard margin version, where only one constraint ha
 
 \pagebreak
 
-\section{Kernel Methods}
+\section{Kernel methods}
 \label{sec:ch4.kernels}
 
 The use of kernel functions enables learning machines such as SVM to have non-linear decision boundaries, thus allowing them to make correct predictions even if the dataset is not linearly separable (but separable nonetheless), see Figure \ref{fig:ch4.kernels}.
@@ -539,7 +539,7 @@ This kernel has multiple interesting properties. It can be expressed as an infin
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.7\linewidth]{img/ch4/kernels.png}
-    \caption{Input space decision boundary of SVM with different kernels. Source (\cite{deisenroth_mathematics_2020}).}
+    \caption[Decision boundary with non-linear kernel comparison]{Input space decision boundary of SVM with different kernels. Source (\cite{deisenroth_mathematics_2020}).}
     \label{fig:ch4.kernels}
 \end{figure}
 
@@ -548,7 +548,7 @@ This kernel has multiple interesting properties. It can be expressed as an infin
 
 Recalling the SVM formulation with regularization, equation \ref{eq:svm_primal_reg}, what we want to do now is to use a feature map such that the SVM operates on the feature space instead of the input space. If we modify every instance $\vb{x}$ with $\phi(\vb{x})$, replace the dot product with the inner product, and produce the dual using the Lagrangian method over this new formulation, we will obtain:
 \begin{align*}
-    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \ip{\phi(\vt{x_i}), \phi(\vt{x_j})}
+    \underset{\boldsymbol{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j \ip{\phi(\vt{x_i}), \phi(\vt{x_j})}
     \text{\quad s.t. \quad} \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
 \end{align*}
 
@@ -556,7 +556,7 @@ Notice that with this new formulation we can replace the inner product with a ke
 
 \subsubsection*{SVM Dual form (kernel version)}
 \begin{align}\label{eq:svm_dual_kernel} 
-    \underset{\vt{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j k(\vb{x_i}, \vb{x_j})
+    \underset{\boldsymbol{\alpha}}{\text{arg} \max}\ \sum \alpha_i - \frac{1}{2} \sum \sum \alpha_i \alpha_j y_i y_j k(\vb{x_i}, \vb{x_j})
     \text{\ \ \ s.t. \ \ } \forall \alpha_i : 0 \le \alpha_i \le C \land \sum \alpha_i y_i = 0
 \end{align}
 
@@ -622,15 +622,15 @@ Particularly, one method that also returns a ranking coefficient $(w_i)^2$ for t
 
 \subsection{Recursive Feature Elimination}
 
-The criteria $DJ(i)$ estimates the effect of removing one feature at a time on the objective function. It doesn't perform particularly well when several features are removed. This problem can be overcome by using an iterative procedure, called RFE (Recursive Feature Elimination), where we eliminate one feature and retrain the learning machine each iteration.
+The criterion $DJ(i)$ estimates the effect of removing one feature at a time on the objective function. It doesn't perform particularly well when several features are removed. This problem can be overcome by using an iterative procedure, called RFE (Recursive Feature Elimination), where we eliminate one feature and retrain the learning machine each iteration.
 
 This is an instance of backward feature elimination. For performance reasons it may be more efficient to remove multiple features at a time. We introduce a step parameter $t$ for that. In this case the method produces a feature subset ranking, a nested set of the form $F_1 \subset F_2 \subset \dots \subset F$. This feature subset ranking may better be represented as a list of vectors, such that when flat\-tened produces the final feature ranking.
 
-Since the ranking criteria only considers the removal of one feature, while RFE fixes this problem by applying the ranking criteria at each feature subset size, we conclude that RFE will generate better feature rankings the smaller the step.
+Since the ranking criterion only considers the removal of one feature, while RFE fixes this problem by applying the ranking criterion at each feature subset size, we conclude that RFE will generate better feature rankings the smaller the step.
 
 Note that with this method, top ranked features are not necessarily the most relevant when taken individually, it is when taken together that features of a subset $F_m$ are relevant in some sense.
 
-In the following figure we present a pseudocode implementation of the SVM-RFE algorithm, which is the particular case of RFE where SVM are used. For clarity purposes this implementation is restricted to linear SVM and the associated ranking criteria, it doesn't calculate performance nor does it store individual feature subsets.
+In the following figure we present a pseudocode implementation of the SVM-RFE algorithm, which is the particular case of RFE where SVM are used. For clarity purposes this implementation is restricted to linear SVM and the associated ranking criterion, it doesn't calculate performance nor does it store individual feature subsets.
 
 \begin{algorithm}[h]
     \DontPrintSemicolon
@@ -650,7 +650,7 @@ In the following figure we present a pseudocode implementation of the SVM-RFE al
             \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
             $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
 
-            \tcc*[h]{Compute the ranking criteria}\\
+            \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
 
             \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
@@ -701,7 +701,7 @@ When using SVM-RFE we actually have two different methods for evaluating the per
         \includegraphics[width=\linewidth]{img/ch4/vanilla300-svmrfe.png}
         \subcaption*{\textbf{D.} SVM-RFE, step = 1}
     \end{subfigure}
-    \caption{Mean accuracy using 20-fold CV of an SVM classifier with different selection methods.}
+    \caption[Comparison of feature selection by method]{Mean accuracy using 20-fold CV of an SVM classifier with different selection methods.}
     \label{fig:ch4.dynamicStep.vanilla.comp}
 \end{figure}
 
@@ -736,7 +736,7 @@ Calculating all feature subset costs allows us to find and plot the optimal feat
         \includegraphics[width=\linewidth]{img/ch4/vanilla200-tradeoffB.png}
         \subcaption*{$w = (0.6, 0.4)$}
     \end{subfigure}
-    \caption{Different optimums caused by changing the trade-off for the linear scalarization function, projected as a red line.}
+    \caption[Comparison of optimal subset selected by scalarization parameters]{Different optimums caused by changing the trade-off for the linear scalarization function, projected as a red line.}
     \label{fig:ch4.tradeoff}
 \end{figure}
 

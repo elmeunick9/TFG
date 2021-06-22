@@ -5,14 +5,14 @@ This chapter is organized in sections corresponding to each of the extensions we
 
 \section{Introduction}
 
-\subsection{General Framework}
+\subsection{General framework}
 
 The general workflow for testing the extensions is summarized in the following diagram.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.8\linewidth]{img/ch5/diag.png}
-    \caption{Experimental testing process, divided in phases.}
+    \caption[Diagram of the experimental testing process]{Experimental testing process, divided in phases.}
     \label{fig:ch5.diag}
 \end{figure}
 
@@ -68,7 +68,7 @@ For this dataset common accuracy results are around 98\%, but we've found some c
 
 % -----------------------------------------------------------------------------------------
 
-\section{Dynamic Step}
+\section{Dynamic step}
 
 This extension is based on the constant step variant of SVM-RFE (Algorithm \ref{alg:rfe1}), however, instead of using some constant number $t$ as the step in each iteration, we calculate that number dynamically. The most straightforward way to do this is by using a percentage.
 
@@ -105,12 +105,12 @@ Note that by adjusting the percentage you can decide for which of these two obje
             $X=X_0(:,\vt{s})$\VS
 
             \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+            $\boldsymbol{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
 
             \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+            $\vt{w} = \sum_k{\alpha_k y_k \vt{x_k}}$\VS
 
-            \tcc*[h]{Compute the ranking criteria}\\
+            \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
 
             \tcc*[h]{Compute $t$ based on the percentage}\\
@@ -136,7 +136,7 @@ By using this method we can achieve a reduced complexity. This can be il\-lus\-t
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{img/ch5/comparetimes.png}
-    \caption{Amount of features remaining (vertical axis) at each iteration (horizontal axis).}
+    \caption[Dynamic step: Comparison of methods]{Amount of features remaining (vertical axis) at each iteration (horizontal axis).}
     \label{fig:ch5.dstep.comparetime}
 \end{figure}
 
@@ -188,7 +188,7 @@ We start by comparing how the dataset performs under a random feature se\-lec\-t
         \includegraphics[width=\linewidth]{img/ch5/dstep/filter.png}
         \subcaption*{Filter AT (42, 0.88, 0.122)}
     \end{subfigure}
-    \caption{Accuracy of feature rankings produced either by a random method or an SVM-based filter method. AT (\emph{feat.}, \emph{acc.}, \emph{cost})}
+    \caption[Dynamic step: Random vs Filter]{Accuracy of feature rankings produced either by a random method or an SVM-based filter method. AT (\emph{feat.}, \emph{acc.}, \emph{cost})}
     \label{fig:ch5.dstep.init}
 \end{figure}
 
@@ -204,7 +204,7 @@ Based on these results we expect that SVM-RFE must perform better than the filte
         \includegraphics[width=\linewidth]{img/ch5/dstep/vanilla2.png}
         \subcaption*{Dynamic Step $p=0.05, C=0.0001$}
     \end{subfigure}
-    \caption{Accuracy of the best feature rankings produced by SVM-RFE with constant or dynamic step.}
+    \caption[Dynamic step: Constant vs Dynamic]{Accuracy of the best feature rankings produced by SVM-RFE with constant or dynamic step.}
     \label{fig:ch5.dstep.vanillabest}
 \end{figure}
 
@@ -308,7 +308,7 @@ Like before, we start comparing how the dataset performs under a random ranking 
         \includegraphics[width=\linewidth]{img/ch5/madelon-random-c_1}
         \subcaption*{$C=10^3$}
     \end{subfigure}
-    \caption{Accuracy of an SVM classifier with a random feature selection with the Madelon dataset.}
+    \caption[Madelon with random selection]{Accuracy of an SVM classifier with a random feature selection with the Madelon dataset.}
     \label{fig:ch5.dstep.madelon.rand}
 \end{figure}
 
@@ -317,7 +317,7 @@ It seems to perform poorly, even when all features are used. We thought this cou
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{img/ch5/madelon-cv-c}
-    \caption{Hyper-parameter search of $C$. Displaying test accuracy of a linear SVM classifier using all features.}
+    \caption[Search for Madelon regularization parameter (linear kernel)]{Hyper-parameter search of $C$. Displaying test accuracy of a linear SVM classifier using all features.}
     \label{fig:ch5.dstep.madelon.reg}
 \end{figure}
 
@@ -333,7 +333,7 @@ Next've we've tried to see what happens if we apply normal SVM-RFE directly, wit
         \includegraphics[width=\linewidth]{img/ch5/dstep/madelon-lin2.png}
         \subcaption*{Step = 10}
     \end{subfigure}
-    \caption{Accuracy of the ranking produced by SVM-RFE.}
+    \caption[Dynamic step: Madelon with constant step]{Accuracy of the ranking produced by SVM-RFE.}
     \label{fig:ch5.dstep.madelon.lin}
 \end{figure}
 
@@ -349,7 +349,7 @@ Since the problem is not regularization, then it may be that the data is not lin
         \includegraphics[width=\linewidth]{img/ch5/dstep/madelon-dyn2.png}
         \subcaption*{Polynomial, degree 6, $C = 0.6$}
     \end{subfigure}
-    \caption{Accuracy of the ranking produced by a dynamic step SVM-RFE with lineal and polynomial kernels.}
+    \caption[Dynamic step: Madelon with dynamic step]{Accuracy of the ranking produced by a dynamic step SVM-RFE with lineal and polynomial kernels.}
     \label{fig:ch5.dstep.madelon.dyn}
 \end{figure}
 
@@ -372,7 +372,7 @@ In general, we recommend using dynamic step whenever possible.
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
-\section{Sampling}
+\section{Internal sampling}
 
 In this experiment we want to see if using a different subset of observations each iteration can reduce computational cost without negatively affecting performance.
 
@@ -407,12 +407,12 @@ This extension only makes a constant improvement each iteration. This means that
             $X=X_0(idx,\vt{s})$\VS
 
             \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+            $\boldsymbol{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
 
             \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+            $\vt{w} = \sum_k{\alpha_k y_k \vt{x_k}}$\VS
 
-            \tcc*[h]{Compute the ranking criteria}\\
+            \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
 
             \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
@@ -492,7 +492,7 @@ Figure \ref{fig:ch5.sampling.vanilla.comp} illustrates the results for 3 differe
         \includegraphics[width=\linewidth]{img/ch5/sampling/300-s5-p05.png}
         \subcaption*{\textbf{C3.} $t = 5, k = 50\%$}
     \end{subfigure}
-    \caption{Grid comparing algorithms on each row \textbf{A-B-C} and the hyper-parameter configuration for each \textbf{1} (step = 20), \textbf{2} (step = 5, sample = 10\%) and \textbf{3} (step = 5, sample = 50\%).}
+    \caption[Internal sampling: Grid comparison by experiment]{Grid comparing algorithms on each row \textbf{A-B-C} and the hyper-parameter configuration for each \textbf{1} (step = 20), \textbf{2} (step = 5, sample = 10\%) and \textbf{3} (step = 5, sample = 50\%).}
     \label{fig:ch5.sampling.vanilla.comp}
 \end{figure}
 
@@ -630,7 +630,7 @@ In general, we recommend using SVM-RFE with sampling whenever possible, speciall
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
-\section{Stop Condition}
+\section{Stop condition}
 
 This modification intends to find an approximation to the optimal feature subset size within the SVM-RFE phase. This information allows using dynamic step more effectively. Using this extension we don't require a validation phase, which makes it very computationally efficient.
 
@@ -660,7 +660,7 @@ Figure \ref{fig:ch5.stopcond.lines} adds the new method to the dynamic step form
         \includegraphics[width=\linewidth]{img/ch5/stopcond/lines2.png}
         \subcaption*{Step (vertical axis) for each feature subset size (horizontal axis).}
     \end{subfigure}
-    \caption{ The new method “Percentage2” has a much smaller slope/step at the optimal feature subset size (1000).}
+    \caption[Stop condition: Improving on dynamic step]{The new method “Percentage2” has a much smaller slope or step at the optimal feature subset size (1000).}
     \label{fig:ch5.stopcond.lines}
 \end{figure}
 
@@ -674,7 +674,7 @@ We may have better luck by doing an initial grid search under simplified dataset
 
 \subsubsection*{Approximating accuracy by feature importance}
 
-The idea is to approximate the optimal feature subset size based on information we already have within SVM-RFE. Specifically, we want to use the feature importance calculated with the ranking criteria as an estimator of accuracy. This has the ad\-van\-tage that the whole validation phase can be skipped while hopefully still retaining a good approximation. It is also important that the same scalarization trade-off can be used here as well.
+The idea is to approximate the optimal feature subset size based on information we already have within SVM-RFE. Specifically, we want to use the feature importance calculated with the ranking criterion as an estimator of accuracy. This has the ad\-van\-tage that the whole validation phase can be skipped while hopefully still retaining a good approximation. It is also important that the same scalarization trade-off can be used here as well.
 
 We assume that the importance of a feature is directly correlated with the error that is generated when the feature is removed. The total error generated for some feature subset can then be calculated as the commutative sum of the im\-por\-tances for all removed features up to that point. We then scale this result to be between 0.5 and 1.0.
 
@@ -696,12 +696,12 @@ Instead of scaling between two fix values we can get a better approximation by m
             $X=X_0(:,\vt{s})$\VS
 
             \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+            $\boldsymbol{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
 
             \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+            $\vt{w} = \sum_k{\alpha_k y_k \vt{x_k}}$\VS
 
-            \tcc*[h]{Compute the ranking criteria}\\
+            \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
 
             \tcc*[h]{Find the $t$ features with the smallest ranking criterion}\\
@@ -768,7 +768,7 @@ Plot \ref{fig:ch5.stopcond.main} illustrates our algorithm. The green line is ou
         \includegraphics[width=\linewidth]{img/ch5/stopcond/aprox-bad.png}
         \subcaption*{Step = 300. Bad.}
     \end{subfigure}
-    \caption{Accuracy estimation (green) for feature ranking generated with SVM-RFE with a step of 10.}
+    \caption[Stop condition: Comparison by good and bad examples]{Accuracy estimation (green) for feature ranking generated with SVM-RFE with a step of 10.}
     \label{fig:ch5.stopcond.main}
 \end{figure}
 
@@ -852,18 +852,18 @@ In general, we recommend using it when the amount of informative features is not
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
 
-\section{Multi-Class}
+\section{Multi-class criteria}
 
 In this section we extend SVM-RFE to the multi-class classification problem.
 
 \subsection{Description and reasoning}
 \label{sec:stopCond.desc}
 
-When it comes to extending SVM to handle a multi-class problem two common methods exists, OvR (One-vs-Rest) and OvO (One-vs-One). In both cases the idea is to divide the problem in a set of binary classification problems. Then we use a joint decision function that operates on the results of each pair of problems. Because we're not really making any predictions during the SVM-RFE phase, we can not use this joint decision function. Instead, we must find a way to merge the feature rankings obtained from each problem, i.e. find a joint ranking criteria.
+When it comes to extending SVM to handle a multi-class problem two common methods exists, OvR (One-vs-Rest) and OvO (One-vs-One). In both cases the idea is to divide the problem in a set of binary classification problems. Then we use a joint decision function that operates on the results of each pair of problems. Because we're not really making any predictions during the SVM-RFE phase, we can not use this joint decision function. Instead, we must find a way to merge the feature rankings obtained from each problem, i.e. find a joint ranking criterion.
 
-We know that the ranking criteria is an estimator of the importance of some feature for a given binary decision problem. It can be the case that a feature is very useful to distinguish between two classes but useless for the rest. In this case a joint ranking criteria formed by taking the mean, the median or the sum will result in poor selections. A better idea would be to take the maximum. However, it may also be desirable to estimate the joint importance a feature has. For that we may want to consider its individual importance in more than one problem. That is, a feature that is important in more than one pair is more relevant than another that is only important in one such pair, even when the second importance value is greater. A way to perform such ranking would be, for instance, the sum of the squares.
+We know that ranking criteria are estimators of the importance of some feature for a given binary decision problem. It can be the case that a feature is very useful to distinguish between two classes but useless for the rest. In this case a joint ranking criterion formed by taking the mean, the median or the sum will result in poor selections. A better idea would be to take the maximum. However, it may also be desirable to estimate the joint importance a feature has. For that we may want to consider its individual importance in more than one problem. That is, a feature that is important in more than one pair is more relevant than another that is only important in one such pair, even when the second importance value is greater. A way to perform such ranking would be, for instance, the sum of the squares.
 
-Note that \texttt{sklearn} only supports OvO, and is therefore the option we will use.
+Note that \texttt{sklearn} only supports OvO, and is therefore the option we will use. In OvO, we split the dataset in all the combinations of pairs classes and train a SVM for each.
 
 \subsection{Pseudocode formalization}
 
@@ -871,7 +871,7 @@ Note that \texttt{sklearn} only supports OvO, and is therefore the option we wil
     \DontPrintSemicolon
       \KwInput{$t, k$ \tcp*{$t$ = step, $k$ = degree}}
       \KwOutput{$\vt{r}$}
-      \KwData{$\chi_0,\vt{\psi}$}
+      \KwData{$\chi_0,\boldsymbol{\psi}$}
       $\vt{s} = [1,2, \dotsc, m]$ \tcp*{subset of surviving features}
       $\vt{r} = []$ \tcp*{feature ranking list}
       \While{$|\vt{s}| > 0$}
@@ -879,14 +879,14 @@ Note that \texttt{sklearn} only supports OvO, and is therefore the option we wil
             \tcc*[h]{Restrict training examples to good feature indices}\\
             $\chi = \chi_0(:,\vt{s})$\VS
 
-            \tcc*[h]{Compute the joint ranking criteria}\\
+            \tcc*[h]{Compute the joint ranking criterion}\\
             $C = [[], ...]$\\
-            \For{$X \subseteq \chi$, $\vt{y} \subseteq \vt{\psi}$ with $X$ and $\vt{y}$ being an instance of OvO}{
+            \For{$X \subseteq \chi$, $\boldsymbol{y} \subseteq \boldsymbol{\psi}$ with $X$ and $\vt{y}$ being an instance of OvO}{
                 \tcc*[h]{Train the classifier}\\
-                $\vt{\alpha} = \texttt{SVM-train(} X, \vt{y} \texttt{)}$\VS
+                $\boldsymbol{\alpha} = \texttt{SVM-train(} X, \vt{y} \texttt{)}$\VS
 
                 \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-                $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} X_k}$\VS
+                $\vt{w} = \sum_k{\alpha_k y_k \vb{x}_k}$\VS
     
                 \tcc*[h]{Append feature importance list}\\
                 $C = [...C, [(w_i)^2 \text{ for all } i ]]$\VS
@@ -932,7 +932,7 @@ As usual when it comes to a new dataset, we start by plotting the accuracy of a 
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.5\linewidth]{img/ch5/multi/random.png}
-    \caption{Random}
+    \caption[Multi-class criteria: Random feature selection]{Random feature selection}
     \label{fig:ch5.multi.random}
 \end{figure}
 
@@ -958,7 +958,7 @@ Figure \ref{fig:ch5.multi.plot1} illustrates the performances of the four experi
         \includegraphics[width=\linewidth]{img/ch5/multi/w-coef.png}
         \subcaption*{Coef. of var.}
     \end{subfigure}
-    \caption{SVM-RFE ranking performance with C=0.5 for the multi-class problem.}
+    \caption[Multi-class criteria: Comparison with artificial data]{SVM-RFE ranking performance with C=0.5 for the multi-class problem.}
     \label{fig:ch5.multi.plot1}
 \end{figure}
 
@@ -994,7 +994,7 @@ We start with the accuracy of a random ranking (Figure \ref{fig:ch5.multi.digi.r
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{img/ch5/multi/dig-random.png}
-    \caption{Random}
+    \caption[Multi-class criteria: Digits random feature selection]{Random}
     \label{fig:ch5.multi.digi.random}
 \end{figure}
 
@@ -1016,7 +1016,7 @@ We start with the accuracy of a random ranking (Figure \ref{fig:ch5.multi.digi.r
         \includegraphics[width=\linewidth]{img/ch5/multi/w-coef.png}
         \subcaption*{Coef. of var.}
     \end{subfigure}
-    \caption{SVM-RFE ranking performance with C=0.5 for the digits problem.}
+    \caption[Multi-class criteria: Digits comparison]{SVM-RFE ranking performance with C=0.5 for the digits problem.}
     \label{fig:ch5.multi.digit.plot}
 \end{figure}
 
@@ -1062,9 +1062,9 @@ In general, we recommend using a simple \emph{sum}. Try $k \neq 1.0$ may be a go
 % --------------------------------------------------------------------------------------------------------------------------------------------
 % --------------------------------------------------------------------------------------------------------------------------------------------
 
-\section{Non-linear Kernels}
+\section{Non-linear kernel}
 
-This extension intends to apply the required modifications in the calculation of the ranking criteria so that non-linear kernels can be used in the SVM.
+This extension intends to apply the required modifications in the calculation of the ranking criterion so that non-linear kernels can be used in the SVM.
 
 \subsection{Description and reasoning}
 \label{sec:ch5.kernel.desc}
@@ -1122,9 +1122,9 @@ This optimization allows us to update the Hessian matrix where only one feature 
             $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j}) \qquad \text{for all} \qquad \vb{x_i}, \vb{x_j} \in X$\VS
 
             \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y, k \texttt{)}$\VS
+            $\boldsymbol{\alpha} = \texttt{SVM-train(} X, y, k \texttt{)}$\VS
 
-            \tcc*[h]{Compute the ranking criteria}\\
+            \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [c_1, c_2, \dots, c_{|\vt{s}|}]$ \\
             \For{$c_l \in \vt{c}$}{
                 \tcc*[h]{Compute new hessian with the feature $l$ removed}\\
@@ -1175,7 +1175,7 @@ The following table makes a time comparison using different amount of samples. T
     \label{ch5.kernels.tc1}
 \end{table}
 
-Note that the sample size increases the cost more than linearly, this may suggest that methods such as dynamic sampling can perform even better than with the \texttt{LIBLINEAR} implementation.
+Note that the sample size increases the cost more than linearly. This suggests that using extensions such as internal sampling can be even more important now than what they already where with the \texttt{LIBLINEAR} implementation.
 
 We also note that passing a precomputed kernel matrix (\emph{Gramm} matrix) instead of letting \texttt{sklearn} compute it internally, also increases the time. This is likely an implementation detail, and it is not significant enough to require further in\-ves\-ti\-ga\-tion.
 
@@ -1197,7 +1197,7 @@ We can appreciate some differences between the two linear kernels, but they're s
         \includegraphics[width=\linewidth]{img/ch5/kernel/random_precomputed.png}
         \subcaption*{\texttt{LIBSVM} \emph{Precomputed}}
     \end{subfigure}
-    \caption{Comparison of random selection with 2000 observations.}
+    \caption[Non-linear kernel: Effects of changing the SVM implementation]{Comparison of random selection with 2000 observations.}
     \label{fig:ch5.kernel.cmp1}
 \end{figure}
 
@@ -1219,7 +1219,7 @@ As usual, we start by plotting the accuracy performance for a random ranking. No
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.4\linewidth]{img/ch5/kernel/art_random.png}
-    \caption{Random}
+    \caption[Non-linear kernel: Random feature selection]{Random}
     \label{fig:ch5.kernel.random}
 \end{figure}
 
@@ -1235,7 +1235,7 @@ We observe experimentally in figure \ref{fig:ch5.kernel.cmp2} that, for this dat
         \includegraphics[width=\linewidth]{img/ch5/kernel/art_poly.png}
         \subcaption*{Poly-2. $C = 10^{-6}$}
     \end{subfigure}
-    \caption{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and polynomial kernels.}
+    \caption[Non-linear kernel: SVM-RFE comparison linear vs non-linear]{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and polynomial kernels.}
     \label{fig:ch5.kernel.cmp2}
 \end{figure}
 
@@ -1315,7 +1315,7 @@ Figure \ref{fig:ch5.kernel.cmp3} compares the accuracy performance when a non-li
         \includegraphics[width=\linewidth]{img/ch5/madelon-random-c_1}
         \subcaption*{All linear.}
     \end{subfigure}
-    \caption{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and poly-7 kernels. Non-linear validation phases consist of SVM with a Poly-7 kernel.}
+    \caption[Non-linear kernel: SVM-RFE comparison linear vs non-linear for Madelon]{Accuracy of SVM-RFE feature rankings with the best found regularization coefficient $C$ for linear and poly-7 kernels. Non-linear validation phases consist of SVM with a Poly-7 kernel.}
     \label{fig:ch5.kernel.cmp3}
 \end{figure}
 
@@ -1409,8 +1409,8 @@ This is a summary of the results for this extension:
 
 \begin{itemize}
     \item For datasets that are fundamentally not linearly separable, using non-linear kernels produces a huge improvement in accuracy.
-    \item Using non-linear kernels is slow, it makes the ranking criteria calculation re\-quire an extra loop and become the bottleneck.
-    \item Optimizations improve the cost of the ranking criteria calculation.
+    \item Using non-linear kernels is slow, it makes the ranking criterion calculation re\-quire an extra loop and become the bottleneck.
+    \item Optimizations improve the cost of the ranking criterion calculation.
     \item Calculations could be potentially made even faster by using a compiled im\-ple\-men\-ta\-tion. 
 \end{itemize}
 
@@ -1452,7 +1452,7 @@ For this experiment we've used a dynamic reflective step with a percentage of 20
         \includegraphics[width=\linewidth]{img/ch5/combo/twice.png}
         \subcaption*{Poly-2. $C = 10^{-6}$}
     \end{subfigure}
-    \caption{Performance comparison of SVM-RFE feature rankings. Both show similar accuracy, but the one in the right is twice as fast.}
+    \caption[Combo: Comparison with artificial data]{Performance comparison of SVM-RFE feature rankings. Both show similar accuracy, but the one in the right is twice as fast.}
     \label{fig:ch5.combo.art.comp}
 \end{figure}
 
@@ -1541,7 +1541,7 @@ For this experiment we've used a dynamic reflective step with a percentage of 8\
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.4\linewidth]{img/ch5/combo/once.png}
-    \caption{Poly-7, $C=0.6$}
+    \caption[Combo: Result for the best found parameter configuration]{Poly-7, $C=0.6$}
     \label{fig:ch5.combo.madelon.one}
 \end{figure}
 
@@ -1559,7 +1559,7 @@ The following figure (Figure \ref{fig:ch5.combo.art.comp2}) illustrates what hap
         \includegraphics[width=\linewidth]{img/ch5/combo/twice-3.png}
         \subcaption*{Constant step of 10}
     \end{subfigure}
-    \caption{Performance comparison of SVM-RFE (Combo) feature rankings with some extension removed. Poly-7, $C=0.6$}
+    \caption[Combo: Comparison for when using the old methods instead]{Performance comparison of SVM-RFE (Combo) feature rankings with some extension removed. Poly-7, $C=0.6$}
     \label{fig:ch5.combo.art.comp2}
 \end{figure}
 
@@ -1703,4 +1703,4 @@ This is a summary of the results for this extension:
 
 Although this method requires extra parameters, these have well-defined ranges and are not very sensitive to changes. This makes it possible to find adequate values with a simple initial exploratory analysis without requiring more complex model selection algorithms. 
 
-In general, we recommend using this combo approach whenever the data is not linearly separable and the approximate amount of informative features is known. A previous exploration of the data set may be required.
+In general, we recommend using this combo approach whenever the data is not linearly separable and the approximate amount of informative features is known. A previous exploration of the dataset may be required.

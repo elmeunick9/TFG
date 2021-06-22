@@ -173,15 +173,15 @@ table,
 
 	\centering
 	\parbox{0.8\textwidth}{
-		\textbf{English:} In machine learning, feature selection algorithms such as SVM-RFE are used to find a subset of statistically relevant features. In this project, we propose multiple extensions of this algorithm, to try to improve its performance or computational cost. The extensions we've tried, include non-lineal kernels, internal sampling and dynamic step.
+		\textbf{English:} In machine learning, feature selection algorithms such as SVM-RFE are used to find a subset of statistically relevant features. In this project, we propose multiple extensions of this algorithm, to try to improve its performance or computational cost. The extensions we've tried include non-lineal kernels, internal sampling and dynamic step.
 	}\par
 	\vspace{0.4cm}
 	\parbox{0.8\textwidth}{
-		\textbf{Spanish:} En aprendizaje automatico, algoritmos como SVM-RFE son usados para encontrar subconjuntos de caracteristicas estadisticamente relevantes. En este proyecto proponemos multiples extensiones para este algoritmo, con el objectivo de encontrar mejoras en su acierto o su coste computacional. Las extensiones que hemos provado inlcuyen kernels no lineales, muesteo interno y paso dinamico.
+		\textbf{Spanish:} En aprendizaje automático, algoritmos como SVM-RFE son usados para encontrar subconjuntos de características estadísticamente relevantes. En este proyecto proponemos múltiples extensiones para este algoritmo, con el objetivo de encontrar mejoras en su acierto o su coste computacional. Las extensiones que hemos probado incluyen kernels no lineales, muestreo interno y paso dinámico.
 	}\par
 	\vspace{0.4cm}
 	\parbox{0.8\textwidth}{
-		\textbf{Catalan:} En apranentatge automatic, algoritmes com el SVM-RFE son utilitzats per trobar sunconjunts de carecteristiques estatisticament rellevants. En aquest projecte proponem multiples extensions per aquest algoritme amb l'objectiu de trobar millores en el seu encert o el seu cost computacional. Les extensions que hem probat inclouen kernels no lineals, mostreig intern i pas dinamic.
+		\textbf{Catalan:} En aprenentatge automàtic, algoritmes com el SVM-RFE són utilitzats per trobar subconjunts de característiques estadísticament rellevants. En aquest projecte proposem múltiples extensions per aquest algoritme amb l'objectiu de trobar millores en el seu encert o el seu cost computacional. Les extensions que hem provat inclouen kernels no lineals, mostreig intern i pas dinàmic.
 	}
 
 \end{abstract}
@@ -200,7 +200,7 @@ table,
 	$X$ & Dataset & $\{\vt{x_1}, \vt{x_2}, \dots, \vt{x_n}\}$ \\
 	$\vt{x_i}$ & Example, observation, ... & $\{x_1, x_2, \dots, x_d\}$ \\
 	$Y$ & Dataset labels & $\{y_1, y_2, \dots, y_n\}$ \\
-	$\vt{w}$, $\vb{w}$ & Weight vector & $\{w_1, w_2, \dots, w_d\}$ \\
+	$\vt{w}$ & Weight vector & $\{w_1, w_2, \dots, w_d\}$ \\
 	$b$ & Constant term, bias & E.g. $\vt{w} \cdot \vt{x} + b = 0$\\
 	$\vt{u} \cdot \vt{v}$ & Dot/Scalar product (vector) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
 	$\vb{u^\T}\vb{v}$ & Dot/Scalar product (matrix) & $u_1v_1 + u_2v_2 + \dots + u_nv_n$ \\
@@ -222,13 +222,14 @@ table,
 
 	$\phi(\vt{x})$ & Feature map & $\phi : D \rightarrow H$\\
 	$k(\vb{x_i}, \vb{x_j})$ & Kernel function & $\ip{\phi(\vb{x_i}), \phi(\vb{x_j})}$\\
-	$\gamma, \sigma$ & RBF Kernel Parameter & \\
+	$\gamma$ & RBF Kernel Parameter & \\
 	$\vb{H}$ & Hessian Matrix of dual SVM & $\vb{H_{i,j}} = y_iy_jk(\vb{x_i}, \vb{x_j})$\\
 
 	\addlinespace
 
-	$\vt{s}$ & Surviving features & $[1,2, \dotsc, d]$ \\
+	$\vt{s}$ & Surviving features & $[1,2, \dotsc, m]$ \\
 	$t$ & Step & \\
+	$|\vt{x}|, |X|$ & Cardinality of a vector, set, ... & \\
 \end{symbols}
 
 %----------------------------------------------------------------------------------------
@@ -239,6 +240,10 @@ table,
 
 \pagestyle{thesis} % Return the page headers back to the "thesis" style
 \tableofcontents
+
+\listoffigures % Prints the list of figures
+% \listoftables % Prints the list of tables
+
 \include{chap/ch1_intro}
 \include{chap/ch2_plan}
 \include{chap/ch3_budget}
