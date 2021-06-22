@@ -417,7 +417,7 @@ For a given training set we seek to minimize the total loss, while regularizing 
 
 Using the same Lagrangian process shown for the hard margin version, we can obtain the dual form of the soft margin version as follows:
 \begin{align*}
-    L(\vt{w}, b, \vt{\xi}, \vt{\alpha}, \vt{\gamma}) = 
+    L(\vt{w}, b, \boldsymbol{\xi}, \boldsymbol{\alpha}, \boldsymbol{\gamma}) = 
     \frac{1}{2} ||\vt{w}||^2 + C \sum \xi_i
     - \sum \alpha_i \left[ y_i (\vb{w}^\T \vb{x_i} + b) - 1 + \xi_i \right]
     - \sum \gamma_i \xi_i
@@ -645,10 +645,10 @@ In the following figure we present a pseudocode implementation of the SVM-RFE al
             $X=X_0(:,\vt{s})$\VS
 
             \tcc*[h]{Train the classifier}\\
-            $\vt{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
+            $\boldsymbol{\alpha} = \texttt{SVM-train(} X, y \texttt{)}$\VS
 
             \tcc*[h]{Compute the weight vector of dimension length $|\vt{s}|$}\\
-            $\vt{w} = \sum_k{\vt{\alpha_k} \vt{y_k} \vt{x_k}}$\VS
+            $\vt{w} = \sum_k{\alpha_k \vt{y_k} \vt{x_k}}$\VS
 
             \tcc*[h]{Compute the ranking criterion}\\
             $\vt{c} = [(w_i)^2 \text{ for all $i$}]$\VS
